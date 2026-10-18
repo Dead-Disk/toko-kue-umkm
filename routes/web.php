@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AdminAddonController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
@@ -37,9 +39,10 @@ Route::prefix('pesanan')->name('customer.pesanan.')->group(function () {
 });
 
 Route::prefix('customer')->name('customer.')->group(function () {
-    // Pesanan custom cake
-    Route::get('/custom', fn () => view('customer.custom'))->name('custom.create');
-    Route::post('/custom', [CustomerController::class, 'storeCustom'])->name('custom.store');
+    // Pesanan custom cake: form -> review -> simpan final
+    Route::get('/custom', [CustomerController::class, 'customForm'])->name('custom.create');
+    Route::post('/custom', [CustomerController::class, 'reviewCustom'])->name('custom.review');
+    Route::post('/custom/store', [CustomerController::class, 'storeCustom'])->name('custom.store');
 });
 
 /*
@@ -74,4 +77,16 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     // Pesanan masuk & ubah status
     Route::get('pesanan', [AdminOrderController::class, 'index'])->name('pesanan.index');
     Route::patch('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('pesanan.update-status');
+
+    // Pengaturan Varian Custom Cake (CRUD)
+    Route::resource('pengaturan', AdminSettingController::class)
+        ->parameters(['pengaturan' => 'cakeOption'])
+        ->except(['show']);
+
+    // Add-ons / varian tambahan custom cake (CRUD)
+    Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
+        Route::resource('addon', AdminAddonController::class)
+            ->parameters(['addon' => 'cakeAddon'])
+            ->except(['show', 'index']);
+    });
 });

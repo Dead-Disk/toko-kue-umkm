@@ -49,7 +49,8 @@ class TokoKueViewsTest extends TestCase
 
     public function test_forms_submit_to_the_expected_routes(): void
     {
-        $this->assertSame(url('/customer/custom'), route('customer.custom.store'));
+        $this->assertSame(url('/customer/custom'), route('customer.custom.review'));
+        $this->assertSame(url('/customer/custom/store'), route('customer.custom.store'));
         $this->assertSame(url('/admin/produk'), route('admin.produk.store'));
     }
 

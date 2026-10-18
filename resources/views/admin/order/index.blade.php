@@ -10,7 +10,8 @@
 
     <p>
         <a href="{{ route('admin.dashboard') }}">Dashboard</a> |
-        <a href="{{ route('admin.produk.index') }}">Daftar Produk</a>
+        <a href="{{ route('admin.produk.index') }}">Daftar Produk</a> |
+        <a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a>
     </p>
 
     <form action="{{ route('logout') }}" method="POST">
@@ -32,6 +33,7 @@
                 <th>Tipe</th>
                 <th>Jumlah Item</th>
                 <th>Total Harga (Rp)</th>
+                <th>Foto Referensi</th>
                 <th>Status</th>
                 <th>Ubah Status</th>
             </tr>
@@ -46,6 +48,16 @@
                     <td>{{ $order->tipe_pesanan->value }}</td>
                     <td>{{ $order->items_count }}</td>
                     <td>{{ $order->total_harga }}</td>
+                    <td>
+                        @php($foto = $order->items->first()?->foto_referensi)
+                        @if ($foto)
+                            <a href="{{ Storage::disk('public')->url($foto) }}">
+                                <img src="{{ Storage::disk('public')->url($foto) }}" alt="Foto Referensi" width="80">
+                            </a>
+                        @else
+                            -
+                        @endif
+                    </td>
                     <td>{{ $order->status->value }}</td>
                     <td>
                         <form action="{{ route('admin.pesanan.update-status', $order) }}" method="POST">
@@ -63,7 +75,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9">Belum ada pesanan masuk.</td>
+                    <td colspan="10">Belum ada pesanan masuk.</td>
                 </tr>
             @endforelse
         </tbody>

@@ -16,7 +16,7 @@ class AdminOrderController extends Controller
      */
     public function index(): View
     {
-        $orders = Order::withCount('items')->latest()->get();
+        $orders = Order::with(['items'])->withCount('items')->latest()->get();
 
         return view('admin.order.index', ['orders' => $orders]);
     }

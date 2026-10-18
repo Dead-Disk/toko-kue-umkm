@@ -10,7 +10,8 @@
 
     <p>
         <a href="{{ route('admin.dashboard') }}">Dashboard</a> |
-        <a href="{{ route('admin.pesanan.index') }}">Pesanan Masuk</a>
+        <a href="{{ route('admin.pesanan.index') }}">Pesanan Masuk</a> |
+        <a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a>
     </p>
 
     <form action="{{ route('logout') }}" method="POST">

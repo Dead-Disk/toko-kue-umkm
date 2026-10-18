@@ -26,7 +26,10 @@ class TokoKueSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('products'));
         $this->assertTrue(Schema::hasTable('orders'));
         $this->assertTrue(Schema::hasTable('order_items'));
+        $this->assertTrue(Schema::hasTable('cake_addons'));
         $this->assertTrue(Schema::hasColumn('users', 'whatsapp_toko'));
+
+        $this->assertTrue(Schema::hasColumns('cake_addons', ['nama_addon', 'harga_tambahan']));
 
         $this->assertTrue(Schema::hasColumns('products', [
             'category_id', 'nama_kue', 'slug', 'deskripsi', 'harga', 'stok', 'status_stok', 'foto',
@@ -39,7 +42,7 @@ class TokoKueSchemaTest extends TestCase
 
         $this->assertTrue(Schema::hasColumns('order_items', [
             'order_id', 'product_id', 'jumlah', 'subtotal',
-            'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue',
+            'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue', 'addons',
         ]));
     }
 

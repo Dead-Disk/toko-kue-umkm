@@ -55,6 +55,8 @@
                 <th>Nama Kue</th>
                 <th>Jumlah</th>
                 <th>Subtotal</th>
+                <th>Add-ons</th>
+                <th>Foto Referensi</th>
             </tr>
         </thead>
         <tbody>
@@ -64,10 +66,24 @@
                     <td>{{ $item->product?->nama_kue ?? 'Kue Custom' }}</td>
                     <td>{{ $item->jumlah }}</td>
                     <td>Rp{{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                    <td>
+                        @forelse ($item->addons ?? [] as $addon)
+                            {{ $addon['nama_addon'] }} (+Rp{{ number_format($addon['harga_tambahan'], 0, ',', '.') }})<br>
+                        @empty
+                            -
+                        @endforelse
+                    </td>
+                    <td>
+                        @if ($item->foto_referensi)
+                            <img src="{{ Storage::disk('public')->url($item->foto_referensi) }}" alt="Foto Referensi" width="100">
+                        @else
+                            -
+                        @endif
+                    </td>
                 </tr>
             @endforeach
             <tr>
-                <th colspan="3" align="right">Total Harga</th>
+                <th colspan="5" align="right">Total Harga</th>
                 <td>Rp{{ number_format($order->total_harga, 0, ',', '.') }}</td>
             </tr>
         </tbody>
