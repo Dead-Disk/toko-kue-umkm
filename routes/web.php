@@ -77,6 +77,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     // Pesanan masuk & ubah status
     Route::get('pesanan', [AdminOrderController::class, 'index'])->name('pesanan.index');
     Route::patch('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('pesanan.update-status');
+    Route::delete('pesanan/{order}', [AdminOrderController::class, 'destroy'])->name('pesanan.destroy');
 
     // Pengaturan Varian Custom Cake (CRUD)
     Route::resource('pengaturan', AdminSettingController::class)

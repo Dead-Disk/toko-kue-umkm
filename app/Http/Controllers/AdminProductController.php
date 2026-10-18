@@ -88,11 +88,10 @@ class AdminProductController extends Controller
     }
 
     /**
-     * Hapus produk beserta fotonya.
+     * Soft delete produk. File fotonya baru dihapus saat force delete (lihat model Product).
      */
     public function destroy(Product $product): RedirectResponse
     {
-        $this->deleteFoto($product);
         $product->delete();
 
         return redirect()
@@ -120,6 +119,7 @@ class AdminProductController extends Controller
 
     /**
      * Buat slug unik dari nama kue (mengabaikan produk tertentu saat update).
+     * Produk soft-deleted ikut diperiksa karena barisnya masih menempati unique index.
      */
     private function uniqueSlug(string $namaKue, ?int $ignoreId = null): string
     {
@@ -127,7 +127,7 @@ class AdminProductController extends Controller
         $slug = $base;
         $counter = 1;
 
-        while (Product::where('slug', $slug)
+        while (Product::withTrashed()->where('slug', $slug)
             ->when($ignoreId !== null, fn ($query) => $query->where('id', '!=', $ignoreId))
             ->exists()) {
             $slug = $base.'-'.++$counter;

@@ -68,7 +68,7 @@
         <p>
             <label for="foto">Foto Kue</label><br>
             @if ($product->foto)
-                <a href="{{ Storage::url($product->foto) }}">Lihat Foto Saat Ini</a><br>
+                <a href="{{ asset('storage/'.$product->foto) }}">Lihat Foto Saat Ini</a><br>
             @endif
             <input type="file" id="foto" name="foto" accept="image/*">
             <br><small>Biarkan kosong bila tidak ingin mengganti foto.</small>

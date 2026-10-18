@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'kode_pesanan',
@@ -29,6 +30,7 @@ class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
+    use SoftDeletes;
 
     /**
      * Get the attributes that should be cast.
@@ -58,12 +60,13 @@ class Order extends Model
 
     /**
      * Buat kode pesanan unik berformat ORD-YYYYMMDD-XXXX.
+     * Pesanan soft-deleted ikut diperiksa karena kodenya masih menempati unique index.
      */
     public static function generateKodePesanan(): string
     {
         do {
             $kode = sprintf('ORD-%s-%04d', now()->format('Ymd'), random_int(0, 9999));
-        } while (static::query()->where('kode_pesanan', $kode)->exists());
+        } while (static::withTrashed()->where('kode_pesanan', $kode)->exists());
 
         return $kode;
     }

@@ -143,6 +143,6 @@ class AdminProductTest extends TestCase
         $response = $this->actingAs($seller)->delete(route('admin.produk.destroy', $product));
 
         $response->assertRedirect(route('admin.produk.index'));
-        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        $this->assertSoftDeleted('products', ['id' => $product->id]);
     }
 }

@@ -112,12 +112,12 @@ class TokoKueSchemaTest extends TestCase
         $product = Product::factory()->create(['stok' => 5, 'status_stok' => 'ready']);
         $order = Order::factory()->create([
             'tipe_pesanan' => 'custom',
-            'status' => 'diproses',
+            'status' => 'proses',
         ]);
 
         $this->assertSame(StatusStok::Ready, $product->status_stok);
         $this->assertSame(TipePesanan::Custom, $order->tipe_pesanan);
-        $this->assertSame(StatusPesanan::Diproses, $order->status);
+        $this->assertSame(StatusPesanan::Proses, $order->status);
         $this->assertContains($order->opsi_pengiriman->value, ['kurir_toko', 'ambil_sendiri']);
         $this->assertContains($order->metode_pembayaran->value, ['transfer_bank', 'qris']);
         $this->assertNotNull(MetodePembayaran::tryFrom($order->metode_pembayaran->value));
@@ -138,7 +138,7 @@ class TokoKueSchemaTest extends TestCase
     {
         $item = OrderItem::factory()->create();
 
-        $item->product->delete();
+        $item->product->forceDelete();
 
         $this->assertNull($item->fresh()->product_id);
     }

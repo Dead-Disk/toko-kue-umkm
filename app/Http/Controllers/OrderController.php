@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -23,7 +24,7 @@ class OrderController extends Controller
     public function checkout(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'product_id' => ['required', 'integer', Rule::exists('products', 'id')->withoutTrashed()],
             'nama_pemesan' => ['required', 'string', 'max:255'],
             'alamat_lengkap' => ['required', 'string', 'max:1000'],
             'nomor_wa' => ['required', 'string', 'max:20'],
@@ -40,9 +41,17 @@ class OrderController extends Controller
                 ->withErrors(['product_id' => 'Maaf, produk ini sedang habis.']);
         }
 
-        $subtotal = $product->harga * $data['jumlah'];
+        $order = DB::transaction(function () use ($data): Order {
+            $product = Product::query()->lockForUpdate()->findOrFail($data['product_id']);
 
-        $order = DB::transaction(function () use ($data, $product, $subtotal): Order {
+            if ($product->stok < $data['jumlah']) {
+                throw ValidationException::withMessages([
+                    'jumlah' => 'Stok tidak mencukupi. Sisa stok '.$product->stok.'.',
+                ]);
+            }
+
+            $subtotal = $product->harga * $data['jumlah'];
+
             $order = Order::create([
                 'kode_pesanan' => Order::generateKodePesanan(),
                 'tipe_pesanan' => TipePesanan::Reguler,
@@ -60,6 +69,9 @@ class OrderController extends Controller
                 'jumlah' => $data['jumlah'],
                 'subtotal' => $subtotal,
             ]);
+
+            // Stok tidak dipotong di sini; dipotong saat admin menekan "Terima"
+            // (lihat AdminOrderController::updateStatus). Cek stok di atas hanya gerbang awal.
 
             return $order;
         });

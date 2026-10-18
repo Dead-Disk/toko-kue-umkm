@@ -5,7 +5,8 @@ namespace App\Enums;
 enum StatusPesanan: string
 {
     case Pending = 'pending';
-    case Diproses = 'diproses';
+    case Proses = 'proses';
     case Selesai = 'selesai';
+    case Ditolak = 'ditolak';
     case Batal = 'batal';
 }

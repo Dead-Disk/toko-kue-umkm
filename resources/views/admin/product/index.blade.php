@@ -49,7 +49,7 @@
                     <td>{{ $product->status_stok->value }}</td>
                     <td>
                         @if ($product->foto)
-                            <a href="{{ Storage::url($product->foto) }}">Lihat Foto</a>
+                            <a href="{{ asset('storage/'.$product->foto) }}">Lihat Foto</a>
                         @else
                             Tidak ada
                         @endif

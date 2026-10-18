@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'category_id',
@@ -25,6 +27,20 @@ class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+    use SoftDeletes;
+
+    /**
+     * Hapus file foto dari disk 'public' saat produk di-force delete.
+     * Saat soft delete, foto dibiarkan agar aman bila produk di-restore.
+     */
+    protected static function booted(): void
+    {
+        static::forceDeleting(function (Product $product): void {
+            if ($product->foto) {
+                Storage::disk('public')->delete($product->foto);
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
