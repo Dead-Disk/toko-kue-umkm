@@ -26,8 +26,8 @@ Sistem Informasi Penjualan dan Pemesanan Kue (Katalog Regulasi & Custom Cake Dyn
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Laravel 11.x
-- **Language:** PHP 8.x
+- **Framework:** Laravel 13.x
+- **Language:** PHP 8.5
 - **Database:** MySQL / MariaDB / SQLite
 - **Styling:** CSS / Tailwind CSS / Bootstrap
 - **Testing:** PHPUnit (Automated Feature & Schema Tests)
@@ -38,7 +38,7 @@ Sistem Informasi Penjualan dan Pemesanan Kue (Katalog Regulasi & Custom Cake Dyn
 
 1. **Clone Repository**
    ```bash
-   git clone [https://github.com/Dead-Disk/toko-kue-umkm.git](https://github.com/Dead-Disk/toko-kue-umkm.git)
+   git clone https://github.com/Dead-Disk/toko-kue-umkm.git
    cd toko-kue-umkm
    ```
 
@@ -49,27 +49,30 @@ Sistem Informasi Penjualan dan Pemesanan Kue (Katalog Regulasi & Custom Cake Dyn
     npm install 
     ```
 
-    Konfigurasi Environment
-    Bash
+3. **Konfigurasi Environment**
+    ```Bash
 
     cp .env.example .env
     php artisan key:generate
+    ```
 
-    Migrasi Database & Seeder
-    Bash
+4. **Migrasi Database & Seeder**
+    ```Bash
 
     php artisan migrate --seed
+   ```
 
-    Link Storage (Untuk Foto Referensi & Produk)
-    Bash
+5. **Link Storage (Untuk Foto Referensi & Produk)**
+    ```Bash
 
     php artisan storage:link
-
-    Jalankan Local Server
-    Bash
+    ```
+    
+6. **Jalankan Local Server**
+    ```Bash
 
     php artisan serve
-
+    ```
     Akses aplikasi di browser melalui http://127.0.0.1:8000.
 
 📝 Pengujian (Testing)
@@ -77,6 +80,6 @@ Sistem Informasi Penjualan dan Pemesanan Kue (Katalog Regulasi & Custom Cake Dyn
 Proyek ini telah dilengkapi dengan pengujian otomatis untuk validasi skema database dan alur logika pesanan:
 Bash
 
-php artisan test
+```php artisan test```
 
 Dikembangkan untuk Tugas Kelompok SMK RPL - UMKM Toko Kue.
