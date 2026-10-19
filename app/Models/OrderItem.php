@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'foto_referensi',
     'ukuran_kue',
     'rasa_kue',
-    'addons',
 ])]
 class OrderItem extends Model
 {
@@ -34,7 +33,6 @@ class OrderItem extends Model
         return [
             'jumlah' => 'integer',
             'subtotal' => 'integer',
-            'addons' => 'array',
         ];
     }
 

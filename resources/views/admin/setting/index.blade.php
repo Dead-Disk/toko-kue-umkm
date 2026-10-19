@@ -23,6 +23,14 @@
         <p>{{ session('success') }}</p>
     @endif
 
+    @if ($errors->any())
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    @endif
+
     <h2>Kelola Varian Ukuran</h2>
 
     <p><a href="{{ route('admin.pengaturan.create') }}">Tambah Opsi</a></p>
@@ -63,28 +71,30 @@
         </tbody>
     </table>
 
-    <h2>Kelola Add-ons (Varian Tambahan)</h2>
+    <h2>Kelola Kategori Kue</h2>
 
-    <p><a href="{{ route('admin.pengaturan.addon.create') }}">Tambah Add-on</a></p>
+    <p><a href="{{ route('admin.kategori.create') }}">Tambah Kategori</a></p>
 
     <table border="1" cellpadding="6" cellspacing="0">
         <thead>
             <tr>
                 <th>No</th>
-                <th>Nama Add-on</th>
-                <th>Harga Tambahan (Rp)</th>
+                <th>Nama Kategori</th>
+                <th>Slug</th>
+                <th>Jumlah Produk</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($cakeAddons as $cakeAddon)
+            @forelse ($categories as $category)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $cakeAddon->nama_addon }}</td>
-                    <td>{{ $cakeAddon->harga_tambahan }}</td>
+                    <td>{{ $category->nama_kategori }}</td>
+                    <td>{{ $category->slug }}</td>
+                    <td>{{ $category->products_count }}</td>
                     <td>
-                        <a href="{{ route('admin.pengaturan.addon.edit', $cakeAddon) }}">Edit</a>
-                        <form action="{{ route('admin.pengaturan.addon.destroy', $cakeAddon) }}" method="POST" onsubmit="return confirm('Hapus add-on ini?')">
+                        <a href="{{ route('admin.kategori.edit', $category) }}">Edit</a>
+                        <form action="{{ route('admin.kategori.destroy', $category) }}" method="POST" onsubmit="return confirm('Hapus kategori ini?')">
                             @csrf
                             @method('DELETE')
                             <button type="submit">Hapus</button>
@@ -93,7 +103,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4">Belum ada add-on.</td>
+                    <td colspan="5">Belum ada kategori kue.</td>
                 </tr>
             @endforelse
         </tbody>

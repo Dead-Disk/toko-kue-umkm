@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BentukKue;
-use App\Models\CakeAddon;
 use App\Models\CakeOption;
+use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,9 +18,9 @@ class AdminSettingController extends Controller
     public function index(): View
     {
         $cakeOptions = CakeOption::orderBy('bentuk')->orderBy('ukuran')->get();
-        $cakeAddons = CakeAddon::orderBy('nama_addon')->get();
+        $categories = Category::withCount('products')->orderBy('nama_kategori')->get();
 
-        return view('admin.setting.index', compact('cakeOptions', 'cakeAddons'));
+        return view('admin.setting.index', compact('cakeOptions', 'categories'));
     }
 
     /**

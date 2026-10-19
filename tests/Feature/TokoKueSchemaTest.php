@@ -26,10 +26,10 @@ class TokoKueSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('products'));
         $this->assertTrue(Schema::hasTable('orders'));
         $this->assertTrue(Schema::hasTable('order_items'));
-        $this->assertTrue(Schema::hasTable('cake_addons'));
         $this->assertTrue(Schema::hasColumn('users', 'whatsapp_toko'));
+        $this->assertTrue(Schema::hasColumn('categories', 'deleted_at'));
 
-        $this->assertTrue(Schema::hasColumns('cake_addons', ['nama_addon', 'harga_tambahan']));
+        $this->assertTrue(Schema::hasColumns('categories', ['nama_kategori', 'slug']));
 
         $this->assertTrue(Schema::hasColumns('products', [
             'category_id', 'nama_kue', 'slug', 'deskripsi', 'harga', 'stok', 'status_stok', 'foto',
@@ -42,7 +42,7 @@ class TokoKueSchemaTest extends TestCase
 
         $this->assertTrue(Schema::hasColumns('order_items', [
             'order_id', 'product_id', 'jumlah', 'subtotal',
-            'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue', 'addons',
+            'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue',
         ]));
     }
 
@@ -124,12 +124,23 @@ class TokoKueSchemaTest extends TestCase
         $this->assertNotNull(OpsiPengiriman::tryFrom($order->opsi_pengiriman->value));
     }
 
-    public function test_deleting_category_cascades_to_products(): void
+    public function test_soft_deleting_category_keeps_its_products(): void
     {
         $category = Category::factory()->create();
         Product::factory()->for($category)->create();
 
         $category->delete();
+
+        $this->assertSoftDeleted('categories', ['id' => $category->id]);
+        $this->assertDatabaseCount('products', 1);
+    }
+
+    public function test_force_deleting_category_cascades_to_products(): void
+    {
+        $category = Category::factory()->create();
+        Product::factory()->for($category)->create();
+
+        $category->forceDelete();
 
         $this->assertDatabaseCount('products', 0);
     }

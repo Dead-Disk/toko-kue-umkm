@@ -44,22 +44,8 @@
             <td>{{ $draft['jumlah'] }}</td>
         </tr>
         <tr>
-            <th align="left">Add-ons / Varian Tambahan</th>
-            <td>
-                @forelse ($addons as $addon)
-                    {{ $addon->nama_addon }} (+Rp {{ number_format($addon->harga_tambahan, 0, ',', '.') }})<br>
-                @empty
-                    Tidak ada add-on
-                @endforelse
-            </td>
-        </tr>
-        <tr>
-            <th align="left">Total Harga Add-ons</th>
-            <td>Rp {{ number_format($totalAddon, 0, ',', '.') }}</td>
-        </tr>
-        <tr>
             <th align="left">Estimasi Harga</th>
-            <td>Rp {{ number_format($estimasiHarga, 0, ',', '.') }} <small>(Harga Dasar + Total Add-ons) &times; Jumlah)</small></td>
+            <td>Rp {{ number_format($estimasiHarga, 0, ',', '.') }} <small>(Harga Dasar &times; Jumlah)</small></td>
         </tr>
         <tr>
             <th align="left">Foto Referensi</th>

@@ -7,7 +7,6 @@ use App\Enums\MetodePembayaran;
 use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
-use App\Models\CakeAddon;
 use App\Models\CakeOption;
 use App\Models\Order;
 use App\Models\User;
@@ -188,62 +187,6 @@ class CustomOrderTest extends TestCase
         $response->assertOk();
         $response->assertSee('value="Budi"', false);
         $response->assertSee('value="'.$option->id.'" selected', false);
-    }
-
-    public function test_custom_addons_are_counted_in_total_and_saved(): void
-    {
-        Storage::fake('public');
-        $option = $this->cakeOption();
-        $cokelat = CakeAddon::factory()->create(['nama_addon' => 'Cokelat Belgium', 'harga_tambahan' => 20_000]);
-        $glutenFree = CakeAddon::factory()->create(['nama_addon' => 'Tepung Gluten-Free', 'harga_tambahan' => 30_000]);
-
-        $review = $this->post(route('customer.custom.review'), $this->formData($option, [
-            'jumlah' => 2,
-            'addons' => [$cokelat->id, $glutenFree->id],
-        ]));
-
-        $review->assertOk();
-        $review->assertSee('Cokelat Belgium');
-        $review->assertSee('Tepung Gluten-Free');
-        $review->assertSee('Rp 400.000'); // (150.000 + 20.000 + 30.000) * 2
-
-        $this->assertDatabaseCount('orders', 0);
-
-        $this->post(route('customer.custom.store'))->assertRedirect();
-
-        $order = Order::firstOrFail();
-        $this->assertSame(400_000, $order->total_harga);
-
-        $item = $order->items()->first();
-        $this->assertSame(400_000, $item->subtotal);
-        $this->assertSame([
-            ['nama_addon' => 'Cokelat Belgium', 'harga_tambahan' => 20_000],
-            ['nama_addon' => 'Tepung Gluten-Free', 'harga_tambahan' => 30_000],
-        ], $item->addons);
-    }
-
-    public function test_custom_review_rejects_unknown_addon(): void
-    {
-        $option = $this->cakeOption();
-
-        $response = $this->post(route('customer.custom.review'), $this->formData($option, [
-            'addons' => [999],
-        ]));
-
-        $response->assertSessionHasErrors('addons.0');
-        $this->assertDatabaseCount('orders', 0);
-    }
-
-    public function test_custom_form_lists_addons_as_checkboxes(): void
-    {
-        $this->cakeOption();
-        CakeAddon::factory()->create(['nama_addon' => 'Cokelat Belgium', 'harga_tambahan' => 20_000]);
-
-        $response = $this->get(route('customer.custom.create'));
-
-        $response->assertOk();
-        $response->assertSee('name="addons[]"', false);
-        $response->assertSee('Cokelat Belgium (+Rp 20.000)');
     }
 
     public function test_custom_order_appears_on_the_admin_order_page(): void

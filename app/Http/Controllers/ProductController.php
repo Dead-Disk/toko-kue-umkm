@@ -21,12 +21,17 @@ class ProductController extends Controller
 
     /**
      * Detail satu produk beserta form pemesanan reguler.
+     * Draf ringkasan (bila ada) dipakai untuk mengisi ulang form saat pembeli menekan
+     * "Kembali / Edit Pesanan".
      */
     public function show(Product $product): View
     {
+        $draft = session('order_draft', []);
+
         return view('customer.produk', [
             'products' => $this->sortedProducts(),
             'product' => $product,
+            'draft' => ($draft['product_id'] ?? null) === $product->id ? $draft : [],
         ]);
     }
 

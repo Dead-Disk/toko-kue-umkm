@@ -21,7 +21,6 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         $namaKue = fake()->unique()->words(3, true);
-        $stok = fake()->numberBetween(0, 50);
 
         return [
             'category_id' => Category::factory(),
@@ -29,8 +28,8 @@ class ProductFactory extends Factory
             'slug' => Str::slug($namaKue),
             'deskripsi' => fake()->sentence(),
             'harga' => fake()->numberBetween(15_000, 500_000),
-            'stok' => $stok,
-            'status_stok' => $stok > 0 ? StatusStok::Ready : StatusStok::Habis,
+            'stok' => fake()->numberBetween(1, 50),
+            'status_stok' => StatusStok::Ready,
             'foto' => null,
         ];
     }

@@ -58,19 +58,6 @@
             <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah', $draft['jumlah'] ?? 1) }}" min="1" required>
         </p>
 
-        @php($selectedAddons = array_map('intval', (array) old('addons', $draft['addons'] ?? [])))
-        <fieldset>
-            <legend>Add-ons / Varian Tambahan</legend>
-            @forelse ($cakeAddons as $addon)
-                <label>
-                    <input type="checkbox" name="addons[]" value="{{ $addon->id }}" @checked(in_array($addon->id, $selectedAddons, true))>
-                    {{ $addon->nama_addon }} (+Rp {{ number_format($addon->harga_tambahan, 0, ',', '.') }})
-                </label><br>
-            @empty
-                <p>Tidak ada add-on tersedia.</p>
-            @endforelse
-        </fieldset>
-
         <fieldset>
             <legend>Opsi Pengiriman</legend>
             <label>
@@ -101,7 +88,7 @@
         </p>
 
         <p>
-            <button type="submit">Kirim Pesanan</button>
+            <button type="submit">Lanjut ke Ringkasan Pesanan</button>
         </p>
     </form>
 </body>

@@ -10,11 +10,30 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class CustomerProductTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * Langkah 1 (ringkasan pesanan): kirim form pesanan reguler, jangan simpan ke DB.
+     *
+     * @param  array<string, mixed>  $overrides
+     */
+    private function postReview(Product $product, array $overrides = []): TestResponse
+    {
+        return $this->post(route('customer.pesanan.review'), array_merge([
+            'product_id' => $product->id,
+            'nama_pemesan' => 'Budi',
+            'alamat_lengkap' => 'Jl. Merdeka No. 1',
+            'nomor_wa' => '08123456789',
+            'jumlah' => 3,
+            'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
+            'metode_pembayaran' => MetodePembayaran::TransferBank->value,
+        ], $overrides));
+    }
 
     public function test_catalog_orders_ready_products_first_then_habis_alphabetically(): void
     {
@@ -75,15 +94,9 @@ class CustomerProductTest extends TestCase
             'harga' => 75_000,
         ]);
 
-        $response = $this->post(route('customer.pesanan.checkout'), [
-            'product_id' => $product->id,
-            'nama_pemesan' => 'Budi',
-            'alamat_lengkap' => 'Jl. Merdeka No. 1',
-            'nomor_wa' => '08123456789',
-            'jumlah' => 3,
-            'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
-            'metode_pembayaran' => MetodePembayaran::TransferBank->value,
-        ]);
+        $this->postReview($product);
+
+        $response = $this->post(route('customer.pesanan.checkout'));
 
         $order = Order::firstWhere('nama_pemesan', 'Budi');
 
@@ -109,34 +122,24 @@ class CustomerProductTest extends TestCase
     {
         $product = Product::factory()->create();
 
-        $this->post(route('customer.pesanan.checkout'), [
-            'product_id' => $product->id,
-            'nama_pemesan' => 'Budi',
-            'alamat_lengkap' => 'Jl. Merdeka No. 1',
-            'nomor_wa' => '08123456789',
+        $this->postReview($product, [
             'jumlah' => 1,
             'opsi_pengiriman' => OpsiPengiriman::AmbilSendiri->value,
             'metode_pembayaran' => MetodePembayaran::Qris->value,
         ]);
+
+        $this->post(route('customer.pesanan.checkout'));
 
         $order = Order::firstOrFail();
 
         $this->assertMatchesRegularExpression('/^ORD-\d{8}-\d{4}$/', $order->kode_pesanan);
     }
 
-    public function test_checkout_rejects_products_that_are_out_of_stock(): void
+    public function test_order_review_rejects_products_that_are_out_of_stock(): void
     {
         $product = Product::factory()->habis()->create();
 
-        $response = $this->from(route('customer.produk.show', $product))->post(route('customer.pesanan.checkout'), [
-            'product_id' => $product->id,
-            'nama_pemesan' => 'Budi',
-            'alamat_lengkap' => 'Jl. Merdeka No. 1',
-            'nomor_wa' => '08123456789',
-            'jumlah' => 1,
-            'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
-            'metode_pembayaran' => MetodePembayaran::TransferBank->value,
-        ]);
+        $response = $this->from(route('customer.produk.show', $product))->postReview($product);
 
         $response->assertRedirect(route('customer.produk.show', $product));
         $response->assertSessionHasErrors('product_id');
@@ -144,9 +147,9 @@ class CustomerProductTest extends TestCase
         $this->assertDatabaseCount('order_items', 0);
     }
 
-    public function test_checkout_validates_required_fields(): void
+    public function test_order_review_validates_required_fields(): void
     {
-        $response = $this->post(route('customer.pesanan.checkout'), []);
+        $response = $this->post(route('customer.pesanan.review'), []);
 
         $response->assertSessionHasErrors([
             'product_id',
@@ -193,15 +196,8 @@ class CustomerProductTest extends TestCase
         $seller = User::factory()->create();
         $product = Product::factory()->create(['harga' => 50_000]);
 
-        $this->post(route('customer.pesanan.checkout'), [
-            'product_id' => $product->id,
-            'nama_pemesan' => 'Budi',
-            'alamat_lengkap' => 'Jl. Merdeka No. 1',
-            'nomor_wa' => '08123456789',
-            'jumlah' => 2,
-            'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
-            'metode_pembayaran' => MetodePembayaran::TransferBank->value,
-        ]);
+        $this->postReview($product, ['jumlah' => 2]);
+        $this->post(route('customer.pesanan.checkout'));
 
         $order = Order::firstOrFail();
 
@@ -210,5 +206,55 @@ class CustomerProductTest extends TestCase
         $response->assertOk();
         $response->assertSee($order->kode_pesanan);
         $response->assertSee('Budi');
+    }
+
+    public function test_order_review_shows_recap_and_does_not_save_an_order(): void
+    {
+        $product = Product::factory()->create(['nama_kue' => 'Tart Cokelat', 'harga' => 75_000]);
+
+        $response = $this->postReview($product, ['jumlah' => 2]);
+
+        $response->assertOk();
+        $response->assertSee('Ringkasan Pesanan');
+        $response->assertSee('Budi');
+        $response->assertSee('08123456789');
+        $response->assertSee('Jl. Merdeka No. 1');
+        $response->assertSee('Diantar Kurir');
+        $response->assertSee('Transfer Bank');
+        $response->assertSee('Tart Cokelat');
+        $response->assertSee('Rp150.000');
+        $response->assertSee('Konfirmasi &amp; Kirim Pesanan', false);
+        $response->assertSee('Kembali / Edit Pesanan');
+
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_items', 0);
+    }
+
+    public function test_order_form_is_prefilled_from_the_review_draft(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product, [
+            'nama_pemesan' => 'Rina',
+            'jumlah' => 4,
+            'opsi_pengiriman' => OpsiPengiriman::AmbilSendiri->value,
+        ]);
+
+        $response = $this->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSee('value="Rina"', false);
+        $response->assertSee('value="4"', false);
+        $response->assertSee('Ambil Sendiri');
+        $response->assertSee('Lanjut ke Ringkasan Pesanan');
+    }
+
+    public function test_checkout_without_a_review_draft_redirects_to_the_catalog(): void
+    {
+        $response = $this->post(route('customer.pesanan.checkout'));
+
+        $response->assertRedirect(route('customer.produk.index'));
+        $response->assertSessionHasErrors('order');
+        $this->assertDatabaseCount('orders', 0);
     }
 }

@@ -18,7 +18,7 @@ class TokoKueViewsTest extends TestCase
         $response = $this->get(route('customer.custom.create'));
 
         $response->assertOk();
-        $response->assertSee('Kirim Pesanan');
+        $response->assertSee('Lanjut ke Ringkasan Pesanan');
         $response->assertSee('enctype="multipart/form-data"', false);
         $response->assertSee('name="foto_referensi"', false);
         $response->assertSee('name="jumlah"', false);
@@ -51,6 +51,8 @@ class TokoKueViewsTest extends TestCase
     {
         $this->assertSame(url('/customer/custom'), route('customer.custom.review'));
         $this->assertSame(url('/customer/custom/store'), route('customer.custom.store'));
+        $this->assertSame(url('/pesanan/review'), route('customer.pesanan.review'));
+        $this->assertSame(url('/pesanan/checkout'), route('customer.pesanan.checkout'));
         $this->assertSame(url('/admin/produk'), route('admin.produk.store'));
     }
 

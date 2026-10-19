@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AdminAddonController;
+use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminSettingController;
@@ -32,6 +32,7 @@ Route::prefix('produk')->name('customer.produk.')->group(function () {
 });
 
 Route::prefix('pesanan')->name('customer.pesanan.')->group(function () {
+    Route::post('/review', [OrderController::class, 'review'])->name('review');
     Route::post('/checkout', [OrderController::class, 'checkout'])->name('checkout');
     Route::get('/sukses/{kode_pesanan}', [OrderController::class, 'success'])
         ->where('kode_pesanan', '[A-Za-z0-9\-]+')
@@ -84,10 +85,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         ->parameters(['pengaturan' => 'cakeOption'])
         ->except(['show']);
 
-    // Add-ons / varian tambahan custom cake (CRUD)
-    Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
-        Route::resource('addon', AdminAddonController::class)
-            ->parameters(['addon' => 'cakeAddon'])
-            ->except(['show', 'index']);
+    // Kategori Kue (CRUD), ditampilkan di halaman Pengaturan.
+    Route::prefix('pengaturan')->group(function () {
+        Route::resource('kategori', AdminCategoryController::class)
+            ->parameters(['kategori' => 'category'])
+            ->except(['show']);
     });
 });

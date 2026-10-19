@@ -19,9 +19,10 @@ use Illuminate\View\View;
 class OrderController extends Controller
 {
     /**
-     * Simpan pesanan reguler dari pembeli, lalu arahkan ke halaman sukses.
+     * Langkah 1: validasi form pesanan reguler, simpan draf sementara ke session,
+     * lalu tampilkan halaman ringkasan. Belum ada yang ditulis ke database orders.
      */
-    public function checkout(Request $request): RedirectResponse
+    public function review(Request $request): View|RedirectResponse
     {
         $data = $request->validate([
             'product_id' => ['required', 'integer', Rule::exists('products', 'id')->withoutTrashed()],
@@ -41,40 +42,87 @@ class OrderController extends Controller
                 ->withErrors(['product_id' => 'Maaf, produk ini sedang habis.']);
         }
 
-        $order = DB::transaction(function () use ($data): Order {
-            $product = Product::query()->lockForUpdate()->findOrFail($data['product_id']);
+        if ($product->stok < $data['jumlah']) {
+            return back()
+                ->withInput()
+                ->withErrors(['jumlah' => 'Stok tidak mencukupi. Sisa stok '.$product->stok.'.']);
+        }
 
-            if ($product->stok < $data['jumlah']) {
-                throw ValidationException::withMessages([
-                    'jumlah' => 'Stok tidak mencukupi. Sisa stok '.$product->stok.'.',
+        $draft = [
+            'product_id' => (int) $data['product_id'],
+            'nama_pemesan' => $data['nama_pemesan'],
+            'alamat_lengkap' => $data['alamat_lengkap'],
+            'nomor_wa' => $data['nomor_wa'],
+            'jumlah' => (int) $data['jumlah'],
+            'opsi_pengiriman' => $data['opsi_pengiriman'],
+            'metode_pembayaran' => $data['metode_pembayaran'],
+        ];
+
+        session(['order_draft' => $draft]);
+
+        return view('customer.pesanan-review', [
+            'draft' => $draft,
+            'product' => $product,
+            'subtotal' => $product->harga * $draft['jumlah'],
+        ]);
+    }
+
+    /**
+     * Langkah 2: simpan pesanan reguler dari draf ringkasan, lalu arahkan ke halaman sukses.
+     */
+    public function checkout(): RedirectResponse
+    {
+        $draft = session('order_draft');
+
+        if (empty($draft)) {
+            return redirect()
+                ->route('customer.produk.index')
+                ->withErrors(['order' => 'Data pesanan belum lengkap. Silakan pilih produk dan isi form pesanan terlebih dahulu.']);
+        }
+
+        try {
+            $order = DB::transaction(function () use ($draft): Order {
+                $product = Product::query()->lockForUpdate()->findOrFail($draft['product_id']);
+
+                if ($product->stok < $draft['jumlah']) {
+                    throw ValidationException::withMessages([
+                        'jumlah' => 'Stok tidak mencukupi. Sisa stok '.$product->stok.'.',
+                    ]);
+                }
+
+                $subtotal = $product->harga * $draft['jumlah'];
+
+                $order = Order::create([
+                    'kode_pesanan' => Order::generateKodePesanan(),
+                    'tipe_pesanan' => TipePesanan::Reguler,
+                    'nama_pemesan' => $draft['nama_pemesan'],
+                    'nomor_wa' => $draft['nomor_wa'],
+                    'alamat_lengkap' => $draft['alamat_lengkap'],
+                    'opsi_pengiriman' => $draft['opsi_pengiriman'],
+                    'metode_pembayaran' => $draft['metode_pembayaran'],
+                    'total_harga' => $subtotal,
+                    'status' => StatusPesanan::Pending,
                 ]);
-            }
 
-            $subtotal = $product->harga * $data['jumlah'];
+                $order->items()->create([
+                    'product_id' => $product->id,
+                    'jumlah' => $draft['jumlah'],
+                    'subtotal' => $subtotal,
+                ]);
 
-            $order = Order::create([
-                'kode_pesanan' => Order::generateKodePesanan(),
-                'tipe_pesanan' => TipePesanan::Reguler,
-                'nama_pemesan' => $data['nama_pemesan'],
-                'nomor_wa' => $data['nomor_wa'],
-                'alamat_lengkap' => $data['alamat_lengkap'],
-                'opsi_pengiriman' => $data['opsi_pengiriman'],
-                'metode_pembayaran' => $data['metode_pembayaran'],
-                'total_harga' => $subtotal,
-                'status' => StatusPesanan::Pending,
-            ]);
+                // Stok tidak dipotong di sini; dipotong saat admin menekan "Terima"
+                // (lihat AdminOrderController::updateStatus). Cek stok di atas hanya gerbang awal.
 
-            $order->items()->create([
-                'product_id' => $product->id,
-                'jumlah' => $data['jumlah'],
-                'subtotal' => $subtotal,
-            ]);
+                return $order;
+            });
+        } catch (ValidationException $exception) {
+            // Stok berubah setelah review (race). Kembalikan ke form tanpa kehilangan inputan.
+            return redirect()
+                ->route('customer.produk.show', $draft['product_id'])
+                ->withErrors($exception->errors());
+        }
 
-            // Stok tidak dipotong di sini; dipotong saat admin menekan "Terima"
-            // (lihat AdminOrderController::updateStatus). Cek stok di atas hanya gerbang awal.
-
-            return $order;
-        });
+        session()->forget('order_draft');
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }

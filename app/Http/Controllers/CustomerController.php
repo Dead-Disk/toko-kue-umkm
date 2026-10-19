@@ -6,7 +6,6 @@ use App\Enums\MetodePembayaran;
 use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
-use App\Models\CakeAddon;
 use App\Models\CakeOption;
 use App\Models\Order;
 use App\Models\Product;
@@ -83,7 +82,6 @@ class CustomerController extends Controller
     {
         return view('customer.custom', [
             'cakeOptions' => CakeOption::orderBy('bentuk')->orderBy('ukuran')->get(),
-            'cakeAddons' => CakeAddon::orderBy('nama_addon')->get(),
             'draft' => session('custom_order_draft', []),
         ]);
     }
@@ -104,8 +102,6 @@ class CustomerController extends Controller
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
             'foto_referensi' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'addons' => ['nullable', 'array'],
-            'addons.*' => ['integer', 'exists:cake_addons,id'],
         ]);
 
         // Simpan file sementara ke folder public (temp_custom) dan simpan path-nya di session
@@ -124,8 +120,6 @@ class CustomerController extends Controller
             $tempFoto = session('temp_foto');
         }
 
-        $addonIds = array_map('intval', $data['addons'] ?? []);
-
         $draft = [
             'nama_pemesan' => $data['nama_pemesan'],
             'nomor_wa' => $data['nomor_wa'],
@@ -136,21 +130,16 @@ class CustomerController extends Controller
             'opsi_pengiriman' => $data['opsi_pengiriman'],
             'metode_pembayaran' => $data['metode_pembayaran'],
             'foto_referensi' => $tempFoto,
-            'addons' => $addonIds,
         ];
 
         session(['custom_order_draft' => $draft]);
 
         $cakeOption = CakeOption::findOrFail($draft['cake_option_id']);
-        $addons = CakeAddon::whereIn('id', $addonIds)->orderBy('nama_addon')->get();
-        $totalAddon = $addons->sum('harga_tambahan');
 
         return view('customer.custom_review', [
             'draft' => $draft,
             'cakeOption' => $cakeOption,
-            'addons' => $addons,
-            'totalAddon' => $totalAddon,
-            'estimasiHarga' => ($cakeOption->harga_dasar + $totalAddon) * $draft['jumlah'],
+            'estimasiHarga' => $cakeOption->harga_dasar * $draft['jumlah'],
         ]);
     }
 
@@ -176,17 +165,7 @@ class CustomerController extends Controller
         }
 
         $jumlah = (int) $draft['jumlah'];
-
-        $addonIds = array_map('intval', $draft['addons'] ?? []);
-        $addons = CakeAddon::whereIn('id', $addonIds)->orderBy('nama_addon')->get();
-        $totalAddon = $addons->sum('harga_tambahan');
-        $subtotal = ($cakeOption->harga_dasar + $totalAddon) * $jumlah;
-
-        // Snapshot add-on (nama + harga saat pesan) supaya riwayat pesanan tetap utuh.
-        $addonSnapshot = $addons->map(fn (CakeAddon $addon): array => [
-            'nama_addon' => $addon->nama_addon,
-            'harga_tambahan' => $addon->harga_tambahan,
-        ])->all();
+        $subtotal = $cakeOption->harga_dasar * $jumlah;
 
         $tempFoto = session('temp_foto') ?? ($draft['foto_referensi'] ?? null);
         $fotoPermanen = null;
@@ -207,7 +186,7 @@ class CustomerController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($draft, $cakeOption, $jumlah, $subtotal, $fotoPermanen, $addonSnapshot): Order {
+        $order = DB::transaction(function () use ($draft, $cakeOption, $jumlah, $subtotal, $fotoPermanen): Order {
             $order = Order::create([
                 'kode_pesanan' => Order::generateKodePesanan(),
                 'tipe_pesanan' => TipePesanan::Custom,
@@ -227,7 +206,6 @@ class CustomerController extends Controller
                 'deskripsi_custom' => $draft['deskripsi_custom'],
                 'foto_referensi' => $fotoPermanen,
                 'ukuran_kue' => $cakeOption->label(),
-                'addons' => $addonSnapshot,
             ]);
 
             return $order;
