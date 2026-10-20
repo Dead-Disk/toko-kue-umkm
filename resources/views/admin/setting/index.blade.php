@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengaturan Custom Cake - Admin Toko Kue</title>
+    @vite('resources/js/app.js')
 </head>
 <body>
     <h1>Pengaturan Custom Cake</h1>
@@ -56,7 +57,7 @@
                     <td>{{ $cakeOption->label() }}</td>
                     <td>
                         <a href="{{ route('admin.pengaturan.edit', $cakeOption) }}">Edit</a>
-                        <form action="{{ route('admin.pengaturan.destroy', $cakeOption) }}" method="POST" onsubmit="return confirm('Hapus opsi ini?')">
+                        <form action="{{ route('admin.pengaturan.destroy', $cakeOption) }}" method="POST" data-confirm="Hapus opsi ini?">
                             @csrf
                             @method('DELETE')
                             <button type="submit">Hapus</button>
@@ -94,7 +95,7 @@
                     <td>{{ $category->products_count }}</td>
                     <td>
                         <a href="{{ route('admin.kategori.edit', $category) }}">Edit</a>
-                        <form action="{{ route('admin.kategori.destroy', $category) }}" method="POST" onsubmit="return confirm('Hapus kategori ini?')">
+                        <form action="{{ route('admin.kategori.destroy', $category) }}" method="POST" data-confirm="Hapus kategori ini?">
                             @csrf
                             @method('DELETE')
                             <button type="submit">Hapus</button>

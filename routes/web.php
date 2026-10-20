@@ -5,9 +5,11 @@ use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,7 +33,19 @@ Route::prefix('produk')->name('customer.produk.')->group(function () {
     Route::get('/{product}', [ProductController::class, 'show'])->name('show');
 });
 
+/*
+| Keranjang belanja tamu (session, tanpa login).
+*/
+Route::prefix('keranjang')->name('cart.')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::post('/tambah/{product}', [CartController::class, 'add'])->name('add');
+    Route::patch('/update/{product}', [CartController::class, 'update'])->name('update');
+    Route::delete('/hapus/{product}', [CartController::class, 'remove'])->name('remove');
+    Route::delete('/kosongkan', [CartController::class, 'clear'])->name('clear');
+});
+
 Route::prefix('pesanan')->name('customer.pesanan.')->group(function () {
+    Route::get('/review', [OrderController::class, 'reviewCart'])->name('review-cart');
     Route::post('/review', [OrderController::class, 'review'])->name('review');
     Route::post('/checkout', [OrderController::class, 'checkout'])->name('checkout');
     Route::get('/sukses/{kode_pesanan}', [OrderController::class, 'success'])
@@ -66,29 +80,42 @@ Route::post('logout', [LoginController::class, 'destroy'])
 |--------------------------------------------------------------------------
 | Web Penjual / Admin (wajib login)
 |--------------------------------------------------------------------------
+| Akses bersama (admin & staff): dashboard, pesanan, dan lihat stok produk.
+| Khusus admin: CRUD produk, pesanan (hapus), pengaturan, dan kategori.
 */
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
 
-    // Produk (CRUD). Parameter URL tetap {product} agar cocok dengan route model binding.
-    Route::resource('produk', AdminProductController::class)
-        ->parameters(['produk' => 'product'])
-        ->except(['show']);
+    Route::middleware('role:admin,staff')->group(function () {
+        // Pesanan masuk & ubah status
+        Route::get('pesanan', [AdminOrderController::class, 'index'])->name('pesanan.index');
+        Route::patch('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('pesanan.update-status');
 
-    // Pesanan masuk & ubah status
-    Route::get('pesanan', [AdminOrderController::class, 'index'])->name('pesanan.index');
-    Route::patch('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('pesanan.update-status');
-    Route::delete('pesanan/{order}', [AdminOrderController::class, 'destroy'])->name('pesanan.destroy');
+        // Lihat status stok/inventory (read-only untuk staff)
+        Route::get('produk', [AdminProductController::class, 'index'])->name('produk.index');
+    });
 
-    // Pengaturan Varian Custom Cake (CRUD)
-    Route::resource('pengaturan', AdminSettingController::class)
-        ->parameters(['pengaturan' => 'cakeOption'])
-        ->except(['show']);
+    Route::middleware('role:admin')->group(function () {
+        // Produk (CRUD). Parameter URL tetap {product} agar cocok dengan route model binding.
+        Route::resource('produk', AdminProductController::class)
+            ->parameters(['produk' => 'product'])
+            ->except(['show', 'index']);
 
-    // Kategori Kue (CRUD), ditampilkan di halaman Pengaturan.
-    Route::prefix('pengaturan')->group(function () {
-        Route::resource('kategori', AdminCategoryController::class)
-            ->parameters(['kategori' => 'category'])
+        Route::delete('pesanan/{order}', [AdminOrderController::class, 'destroy'])->name('pesanan.destroy');
+
+        // Pengaturan Varian Custom Cake (CRUD)
+        Route::resource('pengaturan', AdminSettingController::class)
+            ->parameters(['pengaturan' => 'cakeOption'])
             ->except(['show']);
+
+        // Kategori Kue (CRUD), ditampilkan di halaman Pengaturan.
+        Route::prefix('pengaturan')->group(function () {
+            Route::resource('kategori', AdminCategoryController::class)
+                ->parameters(['kategori' => 'category'])
+                ->except(['show']);
+        });
+
+        // Kelola akun admin/staf (khusus admin).
+        Route::resource('users', UserController::class)->except(['show']);
     });
 });

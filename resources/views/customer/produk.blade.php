@@ -11,6 +11,7 @@
     <nav>
         <a href="{{ route('customer.index') }}">Beranda</a> |
         <a href="{{ route('customer.produk.index') }}">Produk</a> |
+        <a href="{{ route('cart.index') }}">Keranjang</a> |
         <a href="{{ route('customer.page', 'tentang-kami') }}">Tentang Kami</a> |
         <a href="{{ route('customer.custom.create') }}">Pesan Custom Cake</a>
     </nav>
@@ -103,6 +104,21 @@
         </table>
 
         @if ($product->status_stok === \App\Enums\StatusStok::Ready)
+            <h2>Tambah ke Keranjang</h2>
+
+            <form action="{{ route('cart.add', $product) }}" method="POST">
+                @csrf
+
+                <p>
+                    <label for="cart_quantity">Jumlah</label><br>
+                    <input type="number" id="cart_quantity" name="quantity" value="1" min="1" required>
+                </p>
+
+                <p>
+                    <button type="submit">Tambah ke Keranjang</button>
+                </p>
+            </form>
+
             <h2>Form Pesanan</h2>
 
             <form action="{{ route('customer.pesanan.review') }}" method="POST">
@@ -150,6 +166,10 @@
                     <label>
                         <input type="radio" name="metode_pembayaran" value="qris" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'qris')>
                         QRIS
+                    </label>
+                    <label>
+                        <input type="radio" name="metode_pembayaran" value="cash" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'cash')>
+                        Tunai / Bayar di Toko
                     </label>
                 </fieldset>
 

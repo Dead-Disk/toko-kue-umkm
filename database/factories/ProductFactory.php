@@ -28,7 +28,7 @@ class ProductFactory extends Factory
             'slug' => Str::slug($namaKue),
             'deskripsi' => fake()->sentence(),
             'harga' => fake()->numberBetween(15_000, 500_000),
-            'stok' => fake()->numberBetween(1, 50),
+            'stok' => fake()->numberBetween(10, 50),
             'status_stok' => StatusStok::Ready,
             'foto' => null,
         ];

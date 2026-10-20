@@ -59,7 +59,7 @@
         </tr>
         <tr>
             <th align="left">Metode Pembayaran</th>
-            <td>{{ $draft['metode_pembayaran'] === 'transfer_bank' ? 'Transfer Bank' : 'QRIS' }}</td>
+            <td>{{ \App\Enums\MetodePembayaran::from($draft['metode_pembayaran'])->label() }}</td>
         </tr>
     </table>
 

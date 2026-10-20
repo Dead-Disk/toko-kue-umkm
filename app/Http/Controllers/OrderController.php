@@ -19,6 +19,25 @@ use Illuminate\View\View;
 class OrderController extends Controller
 {
     /**
+     * Langkah 1 (jalur keranjang): tampilkan ringkasan isi keranjang + form data pemesan.
+     */
+    public function reviewCart(): View|RedirectResponse
+    {
+        $cart = session('cart', []);
+
+        if (empty($cart)) {
+            return redirect()
+                ->route('cart.index')
+                ->with('warning', 'Keranjang belanja Anda masih kosong.');
+        }
+
+        return view('customer.pesanan-review-cart', [
+            'cart' => $cart,
+            'total' => collect($cart)->sum(fn (array $item): int => $item['price'] * $item['quantity']),
+        ]);
+    }
+
+    /**
      * Langkah 1: validasi form pesanan reguler, simpan draf sementara ke session,
      * lalu tampilkan halaman ringkasan. Belum ada yang ditulis ke database orders.
      */
@@ -70,8 +89,12 @@ class OrderController extends Controller
     /**
      * Langkah 2: simpan pesanan reguler dari draf ringkasan, lalu arahkan ke halaman sukses.
      */
-    public function checkout(): RedirectResponse
+    public function checkout(Request $request): RedirectResponse
     {
+        if ($request->input('checkout_mode') === 'cart') {
+            return $this->checkoutCart($request);
+        }
+
         $draft = session('order_draft');
 
         if (empty($draft)) {
@@ -123,6 +146,87 @@ class OrderController extends Controller
         }
 
         session()->forget('order_draft');
+
+        return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
+    }
+
+    /**
+     * Simpan pesanan multi-item dari keranjang session (jalur keranjang tamu).
+     */
+    private function checkoutCart(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'nama_pemesan' => ['required', 'string', 'max:255'],
+            'alamat_lengkap' => ['required', 'string', 'max:1000'],
+            'nomor_wa' => ['required', 'string', 'max:20'],
+            'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
+            'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
+        ]);
+
+        $cart = session('cart', []);
+
+        if (empty($cart)) {
+            return redirect()
+                ->route('cart.index')
+                ->with('warning', 'Keranjang belanja Anda masih kosong.');
+        }
+
+        try {
+            $order = DB::transaction(function () use ($cart, $data): Order {
+                $baris = [];
+                $total = 0;
+
+                foreach ($cart as $item) {
+                    $product = Product::query()->lockForUpdate()->find($item['id']);
+
+                    if ($product === null) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Salah satu produk di keranjang sudah tidak tersedia.',
+                        ]);
+                    }
+
+                    if ($product->stok < $item['quantity']) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Stok '.$product->nama_kue.' tidak mencukupi. Sisa stok '.$product->stok.'.',
+                        ]);
+                    }
+
+                    $subtotal = $product->harga * $item['quantity'];
+                    $total += $subtotal;
+                    $baris[] = [$product, $item['quantity'], $subtotal];
+                }
+
+                $order = Order::create([
+                    'kode_pesanan' => Order::generateKodePesanan(),
+                    'tipe_pesanan' => TipePesanan::Reguler,
+                    'nama_pemesan' => $data['nama_pemesan'],
+                    'nomor_wa' => $data['nomor_wa'],
+                    'alamat_lengkap' => $data['alamat_lengkap'],
+                    'opsi_pengiriman' => $data['opsi_pengiriman'],
+                    'metode_pembayaran' => $data['metode_pembayaran'],
+                    'total_harga' => $total,
+                    'status' => StatusPesanan::Pending,
+                ]);
+
+                foreach ($baris as [$product, $jumlah, $subtotal]) {
+                    $order->items()->create([
+                        'product_id' => $product->id,
+                        'jumlah' => $jumlah,
+                        'subtotal' => $subtotal,
+                    ]);
+                }
+
+                // Stok dipotong saat admin menekan "Terima" (lihat AdminOrderController).
+
+                return $order;
+            });
+        } catch (ValidationException $exception) {
+            return redirect()
+                ->route('cart.index')
+                ->withErrors($exception->errors());
+        }
+
+        session()->forget('cart');
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }

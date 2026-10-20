@@ -147,6 +147,23 @@ class CustomerProductTest extends TestCase
         $this->assertDatabaseCount('order_items', 0);
     }
 
+    public function test_order_review_accepts_cash_payment_and_shows_its_label(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->postReview($product, [
+            'jumlah' => 1,
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ]);
+
+        $response->assertOk();
+        $response->assertSee('Tunai / Bayar di Toko');
+
+        $this->post(route('customer.pesanan.checkout'));
+
+        $this->assertSame(MetodePembayaran::Cash, Order::firstOrFail()->metode_pembayaran);
+    }
+
     public function test_order_review_validates_required_fields(): void
     {
         $response = $this->post(route('customer.pesanan.review'), []);

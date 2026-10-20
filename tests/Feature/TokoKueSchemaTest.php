@@ -119,7 +119,7 @@ class TokoKueSchemaTest extends TestCase
         $this->assertSame(TipePesanan::Custom, $order->tipe_pesanan);
         $this->assertSame(StatusPesanan::Proses, $order->status);
         $this->assertContains($order->opsi_pengiriman->value, ['kurir_toko', 'ambil_sendiri']);
-        $this->assertContains($order->metode_pembayaran->value, ['transfer_bank', 'qris']);
+        $this->assertContains($order->metode_pembayaran->value, ['transfer_bank', 'qris', 'cash']);
         $this->assertNotNull(MetodePembayaran::tryFrom($order->metode_pembayaran->value));
         $this->assertNotNull(OpsiPengiriman::tryFrom($order->opsi_pengiriman->value));
     }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Masuk - Admin Toko Kue</title>
+    @vite('resources/js/app.js')
 </head>
 <body>
     <h1>Pesanan Masuk</h1>
@@ -11,7 +12,9 @@
     <p>
         <a href="{{ route('admin.dashboard') }}">Dashboard</a> |
         <a href="{{ route('admin.produk.index') }}">Daftar Produk</a> |
-        <a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a>
+        @if (auth()->user()->isAdmin())
+            <a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a>
+        @endif
     </p>
 
     <form action="{{ route('logout') }}" method="POST">
@@ -124,11 +127,13 @@
                                 @break
                             @default
                                 <span>{{ $order->status->value }}</span>
-                                <form action="{{ route('admin.pesanan.destroy', $order) }}" method="POST" style="display:inline" onsubmit="return confirm('Yakin ingin menghapus pesanan ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" style="background:#dc2626;color:#fff">Hapus</button>
-                                </form>
+                                @if (auth()->user()->isAdmin())
+                                    <form action="{{ route('admin.pesanan.destroy', $order) }}" method="POST" style="display:inline" data-confirm="Yakin ingin menghapus pesanan ini?">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" style="background:#dc2626;color:#fff">Hapus</button>
+                                    </form>
+                                @endif
                         @endswitch
                     </td>
                 </tr>

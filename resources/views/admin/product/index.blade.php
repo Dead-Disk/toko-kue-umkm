@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Produk - Admin Toko Kue</title>
+    @vite('resources/js/app.js')
 </head>
 <body>
     <h1>Daftar Produk</h1>
@@ -11,7 +12,9 @@
     <p>
         <a href="{{ route('admin.dashboard') }}">Dashboard</a> |
         <a href="{{ route('admin.pesanan.index') }}">Pesanan Masuk</a> |
-        <a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a>
+        @if (auth()->user()->isAdmin())
+            <a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a>
+        @endif
     </p>
 
     <form action="{{ route('logout') }}" method="POST">
@@ -23,7 +26,9 @@
         <p>{{ session('success') }}</p>
     @endif
 
-    <p><a href="{{ route('admin.produk.create') }}">Tambah Produk</a></p>
+    @if (auth()->user()->isAdmin())
+        <p><a href="{{ route('admin.produk.create') }}">Tambah Produk</a></p>
+    @endif
 
     <table border="1" cellpadding="6" cellspacing="0">
         <thead>
@@ -55,12 +60,16 @@
                         @endif
                     </td>
                     <td>
-                        <a href="{{ route('admin.produk.edit', $product) }}">Edit</a>
-                        <form action="{{ route('admin.produk.destroy', $product) }}" method="POST" onsubmit="return confirm('Hapus produk ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit">Hapus</button>
-                        </form>
+                        @if (auth()->user()->isAdmin())
+                            <a href="{{ route('admin.produk.edit', $product) }}">Edit</a>
+                            <form action="{{ route('admin.produk.destroy', $product) }}" method="POST" data-confirm="Hapus produk ini?">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit">Hapus</button>
+                            </form>
+                        @else
+                            -
+                        @endif
                     </td>
                 </tr>
             @empty

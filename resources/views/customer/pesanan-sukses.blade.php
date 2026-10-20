@@ -38,7 +38,7 @@
         </tr>
         <tr>
             <th align="left">Metode Pembayaran</th>
-            <td>{{ $order->metode_pembayaran === \App\Enums\MetodePembayaran::TransferBank ? 'Transfer Bank' : 'QRIS' }}</td>
+            <td>{{ $order->metode_pembayaran->label() }}</td>
         </tr>
         <tr>
             <th align="left">Status</th>

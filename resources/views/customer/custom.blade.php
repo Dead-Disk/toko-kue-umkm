@@ -76,6 +76,7 @@
                 <option value="">-- Pilih Metode --</option>
                 <option value="transfer_bank" @selected(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'transfer_bank')>Transfer Bank</option>
                 <option value="qris" @selected(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'qris')>QRIS</option>
+                <option value="cash" @selected(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'cash')>Tunai / Bayar di Toko</option>
             </select>
         </p>
 
