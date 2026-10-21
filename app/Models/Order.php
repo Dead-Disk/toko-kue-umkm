@@ -25,11 +25,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'total_harga',
     'status',
     'catatan',
+    'bukti_pembayaran',
 ])]
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     /**

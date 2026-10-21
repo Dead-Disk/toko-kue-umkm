@@ -9,9 +9,12 @@ use App\Enums\StatusStok;
 use App\Enums\TipePesanan;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -34,6 +37,7 @@ class OrderController extends Controller
         return view('customer.pesanan-review-cart', [
             'cart' => $cart,
             'total' => collect($cart)->sum(fn (array $item): int => $item['price'] * $item['quantity']),
+            'storeSetting' => StoreSetting::current(),
         ]);
     }
 
@@ -51,9 +55,19 @@ class OrderController extends Controller
             'jumlah' => ['required', 'integer', 'min:1'],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
+            'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $product = Product::findOrFail($data['product_id']);
+
+        $storeSetting = StoreSetting::current();
+        $metode = MetodePembayaran::from($data['metode_pembayaran']);
+
+        if (! $storeSetting->supports($metode)) {
+            return back()
+                ->withInput()
+                ->withErrors(['metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.']);
+        }
 
         if ($product->status_stok !== StatusStok::Ready) {
             return back()
@@ -75,6 +89,7 @@ class OrderController extends Controller
             'jumlah' => (int) $data['jumlah'],
             'opsi_pengiriman' => $data['opsi_pengiriman'],
             'metode_pembayaran' => $data['metode_pembayaran'],
+            'catatan' => $data['catatan'] ?? null,
         ];
 
         session(['order_draft' => $draft]);
@@ -83,6 +98,7 @@ class OrderController extends Controller
             'draft' => $draft,
             'product' => $product,
             'subtotal' => $product->harga * $draft['jumlah'],
+            'storeSetting' => $storeSetting,
         ]);
     }
 
@@ -103,8 +119,31 @@ class OrderController extends Controller
                 ->withErrors(['order' => 'Data pesanan belum lengkap. Silakan pilih produk dan isi form pesanan terlebih dahulu.']);
         }
 
+        if (! StoreSetting::current()->supports(MetodePembayaran::from($draft['metode_pembayaran']))) {
+            return redirect()
+                ->route('customer.produk.show', $draft['product_id'])
+                ->withErrors(['metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.']);
+        }
+
+        $proofValidator = Validator::make($request->all(), [
+            'bukti_pembayaran' => $this->paymentProofRules(
+                MetodePembayaran::from($draft['metode_pembayaran']) !== MetodePembayaran::Cash
+            ),
+        ]);
+
+        // Halaman review tidak punya route GET, jadi kegagalan validasi diarahkan
+        // kembali ke form produk (draf pesanan tetap tersimpan).
+        if ($proofValidator->fails()) {
+            return redirect()
+                ->route('customer.produk.show', $draft['product_id'])
+                ->withErrors($proofValidator)
+                ->withInput();
+        }
+
+        $buktiPembayaran = $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
+
         try {
-            $order = DB::transaction(function () use ($draft): Order {
+            $order = DB::transaction(function () use ($draft, $buktiPembayaran): Order {
                 $product = Product::query()->lockForUpdate()->findOrFail($draft['product_id']);
 
                 if ($product->stok < $draft['jumlah']) {
@@ -125,6 +164,8 @@ class OrderController extends Controller
                     'metode_pembayaran' => $draft['metode_pembayaran'],
                     'total_harga' => $subtotal,
                     'status' => StatusPesanan::Pending,
+                    'catatan' => $draft['catatan'] ?? null,
+                    'bukti_pembayaran' => $buktiPembayaran,
                 ]);
 
                 $order->items()->create([
@@ -140,6 +181,10 @@ class OrderController extends Controller
             });
         } catch (ValidationException $exception) {
             // Stok berubah setelah review (race). Kembalikan ke form tanpa kehilangan inputan.
+            if ($buktiPembayaran) {
+                Storage::delete($buktiPembayaran);
+            }
+
             return redirect()
                 ->route('customer.produk.show', $draft['product_id'])
                 ->withErrors($exception->errors());
@@ -161,6 +206,10 @@ class OrderController extends Controller
             'nomor_wa' => ['required', 'string', 'max:20'],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
+            'catatan' => ['nullable', 'string', 'max:1000'],
+            'bukti_pembayaran' => $this->paymentProofRules(
+                $request->input('metode_pembayaran') !== MetodePembayaran::Cash->value
+            ),
         ]);
 
         $cart = session('cart', []);
@@ -171,8 +220,16 @@ class OrderController extends Controller
                 ->with('warning', 'Keranjang belanja Anda masih kosong.');
         }
 
+        if (! StoreSetting::current()->supports(MetodePembayaran::from($data['metode_pembayaran']))) {
+            return redirect()
+                ->route('customer.pesanan.review-cart')
+                ->withErrors(['metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.']);
+        }
+
+        $buktiPembayaran = $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
+
         try {
-            $order = DB::transaction(function () use ($cart, $data): Order {
+            $order = DB::transaction(function () use ($cart, $data, $buktiPembayaran): Order {
                 $baris = [];
                 $total = 0;
 
@@ -206,6 +263,8 @@ class OrderController extends Controller
                     'metode_pembayaran' => $data['metode_pembayaran'],
                     'total_harga' => $total,
                     'status' => StatusPesanan::Pending,
+                    'catatan' => $data['catatan'] ?? null,
+                    'bukti_pembayaran' => $buktiPembayaran,
                 ]);
 
                 foreach ($baris as [$product, $jumlah, $subtotal]) {
@@ -221,14 +280,35 @@ class OrderController extends Controller
                 return $order;
             });
         } catch (ValidationException $exception) {
+            if ($buktiPembayaran) {
+                Storage::delete($buktiPembayaran);
+            }
+
             return redirect()
                 ->route('cart.index')
                 ->withErrors($exception->errors());
         }
 
-        session()->forget('cart');
+        session()->forget(['cart', 'cart_note']);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
+    }
+
+    /**
+     * Aturan validasi bukti pembayaran: wajib untuk transfer bank & QRIS,
+     * opsional untuk pembayaran tunai.
+     *
+     * @return array<int, mixed>
+     */
+    private function paymentProofRules(bool $wajib): array
+    {
+        return [
+            'nullable',
+            'image',
+            'mimes:jpg,jpeg,png,webp',
+            'max:2048',
+            Rule::requiredIf($wajib),
+        ];
     }
 
     /**

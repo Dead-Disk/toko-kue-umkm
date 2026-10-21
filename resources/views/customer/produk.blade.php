@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produk Kue - Toko Kue</title>
+    @vite('resources/js/app.js')
 </head>
 <body>
     <h1>Katalog Produk Kue</h1>
@@ -115,6 +116,11 @@
                 </p>
 
                 <p>
+                    <label for="cart_catatan">Catatan Khusus (opsional)</label><br>
+                    <textarea id="cart_catatan" name="catatan" rows="3" cols="40" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan') }}</textarea>
+                </p>
+
+                <p>
                     <button type="submit">Tambah ke Keranjang</button>
                 </p>
             </form>
@@ -157,21 +163,58 @@
                     </label>
                 </fieldset>
 
-                <fieldset>
-                    <legend>Metode Pembayaran</legend>
-                    <label>
-                        <input type="radio" name="metode_pembayaran" value="transfer_bank" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? 'transfer_bank') === 'transfer_bank')>
-                        Transfer Bank
-                    </label>
-                    <label>
-                        <input type="radio" name="metode_pembayaran" value="qris" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'qris')>
-                        QRIS
-                    </label>
-                    <label>
-                        <input type="radio" name="metode_pembayaran" value="cash" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'cash')>
-                        Tunai / Bayar di Toko
-                    </label>
-                </fieldset>
+                @php
+                    $bankSiap = $storeSetting->hasBankDetails();
+                    $qrisSiap = $storeSetting->hasQrisImage();
+                @endphp
+
+                <div data-payment-group>
+                    <fieldset>
+                        <legend>Metode Pembayaran</legend>
+                        <label>
+                            <input type="radio" name="metode_pembayaran" value="transfer_bank" @checked($bankSiap && old('metode_pembayaran', $draft['metode_pembayaran'] ?? 'transfer_bank') === 'transfer_bank') @disabled(! $bankSiap)>
+                            Transfer Bank
+                        </label>
+                        @unless ($bankSiap)
+                            <small style="color:#b45309">Transfer Bank belum dikonfigurasi oleh penjual.</small>
+                        @endunless
+                        <br>
+                        <label>
+                            <input type="radio" name="metode_pembayaran" value="qris" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'qris') @disabled(! $qrisSiap)>
+                            QRIS
+                        </label>
+                        @unless ($qrisSiap)
+                            <small style="color:#b45309">QRIS belum dikonfigurasi oleh penjual.</small>
+                        @endunless
+                        <br>
+                        <label>
+                            <input type="radio" name="metode_pembayaran" value="cash" @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'cash')>
+                            Tunai / Bayar di Toko
+                        </label>
+                    </fieldset>
+
+                    @if ($bankSiap)
+                        <div data-payment-detail="transfer_bank" hidden>
+                            <p>
+                                <strong>Transfer Bank:</strong>
+                                {{ $storeSetting->bank_name }} - {{ $storeSetting->bank_account_number }}
+                                a.n. {{ $storeSetting->bank_account_holder }}
+                            </p>
+                        </div>
+                    @endif
+
+                    @if ($qrisSiap)
+                        <div data-payment-detail="qris" hidden>
+                            <p><strong>Scan QRIS berikut untuk membayar:</strong></p>
+                            <img src="{{ asset('storage/'.$storeSetting->qris_image_path) }}" alt="QRIS {{ $storeSetting->store_name }}" width="240">
+                        </div>
+                    @endif
+                </div>
+
+                <p>
+                    <label for="catatan">Catatan Khusus (opsional)</label><br>
+                    <textarea id="catatan" name="catatan" rows="3" cols="40" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan', $draft['catatan'] ?? '') }}</textarea>
+                </p>
 
                 <p>
                     <button type="submit">Lanjut ke Ringkasan Pesanan</button>

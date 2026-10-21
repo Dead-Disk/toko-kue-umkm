@@ -8,14 +8,34 @@ use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class CustomerProductTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Default: rekening bank & QRIS sudah dikonfigurasi supaya alur pembayaran bisa diuji.
+        StoreSetting::factory()->withQris()->create();
+        Storage::fake('local');
+    }
+
+    /**
+     * File bukti pembayaran palsu (GD tidak tersedia di lingkungan test).
+     */
+    private function paymentProof(string $name = 'bukti.png'): UploadedFile
+    {
+        return UploadedFile::fake()->create($name, 10, 'image/png');
+    }
 
     /**
      * Langkah 1 (ringkasan pesanan): kirim form pesanan reguler, jangan simpan ke DB.
@@ -96,7 +116,9 @@ class CustomerProductTest extends TestCase
 
         $this->postReview($product);
 
-        $response = $this->post(route('customer.pesanan.checkout'));
+        $response = $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
 
         $order = Order::firstWhere('nama_pemesan', 'Budi');
 
@@ -128,7 +150,9 @@ class CustomerProductTest extends TestCase
             'metode_pembayaran' => MetodePembayaran::Qris->value,
         ]);
 
-        $this->post(route('customer.pesanan.checkout'));
+        $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
 
         $order = Order::firstOrFail();
 
@@ -214,7 +238,9 @@ class CustomerProductTest extends TestCase
         $product = Product::factory()->create(['harga' => 50_000]);
 
         $this->postReview($product, ['jumlah' => 2]);
-        $this->post(route('customer.pesanan.checkout'));
+        $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
 
         $order = Order::firstOrFail();
 
@@ -264,6 +290,248 @@ class CustomerProductTest extends TestCase
         $response->assertSee('value="4"', false);
         $response->assertSee('Ambil Sendiri');
         $response->assertSee('Lanjut ke Ringkasan Pesanan');
+    }
+
+    public function test_order_note_is_shown_on_review_and_saved_at_checkout(): void
+    {
+        $product = Product::factory()->create(['harga' => 50_000]);
+
+        $response = $this->postReview($product, [
+            'jumlah' => 1,
+            'catatan' => 'Potong jadi 8 bagian dan tambahkan lilin angka 18',
+        ]);
+
+        $response->assertOk();
+        $response->assertSee('Potong jadi 8 bagian dan tambahkan lilin angka 18');
+        $this->assertDatabaseCount('orders', 0);
+
+        $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
+
+        $this->assertSame(
+            'Potong jadi 8 bagian dan tambahkan lilin angka 18',
+            Order::firstOrFail()->catatan
+        );
+    }
+
+    public function test_order_note_is_optional_and_saved_as_null_when_blank(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product);
+        $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
+
+        $this->assertNull(Order::firstOrFail()->catatan);
+    }
+
+    public function test_order_review_rejects_a_note_longer_than_1000_characters(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->postReview($product, ['catatan' => str_repeat('a', 1001)]);
+
+        $response->assertSessionHasErrors('catatan');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_product_page_shows_configured_bank_details(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSee('BNI - 1234567890');
+        $response->assertSee('a.n. Toko Kue');
+        $response->assertDontSee('Transfer Bank belum dikonfigurasi oleh penjual.');
+    }
+
+    public function test_product_page_shows_qris_image_when_configured(): void
+    {
+        StoreSetting::current()->update(['qris_image_path' => 'qris/qris-toko.png']);
+        $product = Product::factory()->create();
+
+        $response = $this->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSee('qris/qris-toko.png', false);
+        $response->assertSee('QRIS Toko Kue');
+        $response->assertDontSee('QRIS belum dikonfigurasi oleh penjual.');
+    }
+
+    public function test_product_page_disables_unconfigured_payment_methods(): void
+    {
+        StoreSetting::current()->update([
+            'bank_name' => null,
+            'bank_account_number' => null,
+            'bank_account_holder' => null,
+            'qris_image_path' => null,
+        ]);
+        $product = Product::factory()->create();
+
+        $response = $this->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSee('Transfer Bank belum dikonfigurasi oleh penjual.');
+        $response->assertSee('QRIS belum dikonfigurasi oleh penjual.');
+        $response->assertSee('disabled', false);
+        $response->assertSee('Tunai / Bayar di Toko');
+    }
+
+    public function test_order_review_rejects_transfer_bank_when_bank_details_are_missing(): void
+    {
+        StoreSetting::current()->update([
+            'bank_name' => null,
+            'bank_account_number' => null,
+            'bank_account_holder' => null,
+        ]);
+        $product = Product::factory()->create();
+
+        $response = $this->from(route('customer.produk.show', $product))->postReview($product);
+
+        $response->assertRedirect(route('customer.produk.show', $product));
+        $response->assertSessionHasErrors([
+            'metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.',
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_order_review_rejects_qris_when_image_is_missing(): void
+    {
+        StoreSetting::current()->update(['qris_image_path' => null]);
+        $product = Product::factory()->create();
+
+        $response = $this->postReview($product, [
+            'metode_pembayaran' => MetodePembayaran::Qris->value,
+        ]);
+
+        $response->assertSessionHasErrors([
+            'metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.',
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_order_review_shows_bank_details_for_selected_transfer(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->postReview($product);
+
+        $response->assertOk();
+        $response->assertSee('Transfer Bank');
+        $response->assertSee('BNI - 1234567890');
+        $response->assertSee('a.n. Toko Kue');
+    }
+
+    public function test_checkout_blocks_transfer_when_bank_details_are_removed_after_review(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product);
+
+        StoreSetting::current()->update([
+            'bank_name' => null,
+            'bank_account_number' => null,
+            'bank_account_holder' => null,
+        ]);
+
+        $response = $this->post(route('customer.pesanan.checkout'));
+
+        $response->assertRedirect(route('customer.produk.show', $product));
+        $response->assertSessionHasErrors([
+            'metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.',
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_review_page_requires_payment_proof_for_transfer_bank(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->postReview($product);
+
+        $response->assertOk();
+        $response->assertSee('enctype="multipart/form-data"', false);
+        $response->assertSee('name="bukti_pembayaran"', false);
+        $response->assertSee('Unggah Bukti Pembayaran (JPG/PNG)');
+        $response->assertSee('required', false);
+    }
+
+    public function test_review_page_makes_payment_proof_optional_for_cash(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->postReview($product, [
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ]);
+
+        $response->assertOk();
+        $response->assertSee('Unggah Bukti Pembayaran (opsional)');
+        $response->assertDontSee('Unggah Bukti Pembayaran (JPG/PNG)');
+    }
+
+    public function test_checkout_requires_payment_proof_for_transfer_bank(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product);
+
+        $response = $this->post(route('customer.pesanan.checkout'));
+
+        $response->assertRedirect(route('customer.produk.show', $product));
+        $response->assertSessionHasErrors('bukti_pembayaran');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_requires_payment_proof_for_qris(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product, [
+            'metode_pembayaran' => MetodePembayaran::Qris->value,
+        ]);
+
+        $response = $this->post(route('customer.pesanan.checkout'));
+
+        $response->assertRedirect(route('customer.produk.show', $product));
+        $response->assertSessionHasErrors('bukti_pembayaran');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_stores_payment_proof_for_transfer_bank(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product);
+
+        $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
+
+        $order = Order::firstOrFail();
+
+        $this->assertNotNull($order->bukti_pembayaran);
+        $this->assertStringStartsWith('bukti_pembayaran/', $order->bukti_pembayaran);
+        Storage::disk('local')->assertExists($order->bukti_pembayaran);
+    }
+
+    public function test_cash_checkout_does_not_require_payment_proof(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product, [
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ]);
+
+        $response = $this->post(route('customer.pesanan.checkout'));
+
+        $order = Order::firstOrFail();
+
+        $response->assertRedirect(route('customer.pesanan.sukses', $order->kode_pesanan));
+        $this->assertNull($order->bukti_pembayaran);
     }
 
     public function test_checkout_without_a_review_draft_redirects_to_the_catalog(): void

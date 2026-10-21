@@ -53,7 +53,7 @@ class CustomOrderTest extends TestCase
 
     public function test_custom_form_submission_shows_review_without_saving_order(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $option = $this->cakeOption();
 
         $response = $this->post(route('customer.custom.review'), $this->formData($option));
@@ -71,7 +71,7 @@ class CustomOrderTest extends TestCase
 
     public function test_custom_order_is_saved_with_uploaded_photo_after_confirmation(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $option = $this->cakeOption();
 
         $review = $this->post(route('customer.custom.review'), $this->formData($option, [
@@ -79,16 +79,15 @@ class CustomOrderTest extends TestCase
         ]));
 
         $review->assertOk();
-        $review->assertSee('<img src="', false);
+        $review->assertSee('Foto referensi sudah diunggah.');
 
         $tempFoto = session('temp_foto');
 
         $this->assertNotNull($tempFoto);
-        $review->assertSee(asset($tempFoto), false);
-        $review->assertSee('width="150" style="border: 1px solid #ccc; padding: 4px;"', false);
+        $this->assertStringStartsWith('temp_custom/', $tempFoto);
 
         $filename = basename($tempFoto);
-        Storage::disk('public')->assertExists('temp_custom/'.$filename);
+        Storage::disk('local')->assertExists('temp_custom/'.$filename);
 
         $response = $this->post(route('customer.custom.store'));
 
@@ -112,8 +111,8 @@ class CustomOrderTest extends TestCase
         $this->assertSame('Lingkaran 20 cm - Rp 150.000', $item->ukuran_kue);
         $this->assertSame('Tulisan Happy Birthday', $item->deskripsi_custom);
         $this->assertSame('custom_cakes/'.$filename, $item->foto_referensi);
-        Storage::disk('public')->assertExists($item->foto_referensi);
-        Storage::disk('public')->assertMissing('temp_custom/'.$filename);
+        Storage::disk('local')->assertExists($item->foto_referensi);
+        Storage::disk('local')->assertMissing('temp_custom/'.$filename);
 
         $this->assertNull(session('custom_order_draft'));
         $this->assertNull(session('temp_foto'));
@@ -121,7 +120,7 @@ class CustomOrderTest extends TestCase
 
     public function test_custom_order_is_saved_without_photo(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $option = $this->cakeOption();
 
         $review = $this->post(route('customer.custom.review'), $this->formData($option, ['jumlah' => 1]));
@@ -177,7 +176,7 @@ class CustomOrderTest extends TestCase
 
     public function test_custom_form_is_prefilled_from_the_saved_review_draft(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $option = $this->cakeOption();
 
         $this->post(route('customer.custom.review'), $this->formData($option, ['nama_pemesan' => 'Budi']))->assertOk();
@@ -191,7 +190,7 @@ class CustomOrderTest extends TestCase
 
     public function test_custom_order_appears_on_the_admin_order_page(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
         $seller = User::factory()->create();
         $option = $this->cakeOption();
 

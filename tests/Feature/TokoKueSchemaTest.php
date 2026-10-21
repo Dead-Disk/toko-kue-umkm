@@ -38,11 +38,17 @@ class TokoKueSchemaTest extends TestCase
         $this->assertTrue(Schema::hasColumns('orders', [
             'kode_pesanan', 'tipe_pesanan', 'nama_pemesan', 'nomor_wa', 'alamat_lengkap',
             'opsi_pengiriman', 'metode_pembayaran', 'total_harga', 'status', 'catatan',
+            'bukti_pembayaran',
         ]));
 
         $this->assertTrue(Schema::hasColumns('order_items', [
             'order_id', 'product_id', 'jumlah', 'subtotal',
             'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue',
+        ]));
+
+        $this->assertTrue(Schema::hasColumns('store_settings', [
+            'store_name', 'store_description', 'store_address', 'store_phone',
+            'bank_name', 'bank_account_number', 'bank_account_holder', 'qris_image_path',
         ]));
     }
 

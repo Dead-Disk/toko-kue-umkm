@@ -14,6 +14,7 @@
         <li><a href="{{ route('admin.produk.index') }}">Kelola Produk</a></li>
         <li><a href="{{ route('admin.pesanan.index') }}">Pesanan Masuk</a></li>
         @if (auth()->user()->isAdmin())
+            <li><a href="{{ route('admin.settings.index') }}">Pengaturan Toko</a></li>
             <li><a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a></li>
             <li><a href="{{ route('admin.users.index') }}">Kelola User / Staf</a></li>
         @endif

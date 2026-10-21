@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminOrderTest extends TestCase
@@ -79,6 +80,125 @@ class AdminOrderTest extends TestCase
         $this->actingAs($seller)
             ->get(route('admin.pesanan.index'))
             ->assertDontSee($order->kode_pesanan);
+    }
+
+    public function test_index_filters_orders_by_type_param(): void
+    {
+        $seller = User::factory()->create();
+        $reguler = Order::factory()->create();
+        $custom = Order::factory()->custom()->create();
+
+        $response = $this->actingAs($seller)->get(route('admin.pesanan.index', ['type' => 'custom']));
+
+        $response->assertOk();
+        $response->assertSee('Custom Cake');
+        $response->assertSee($custom->kode_pesanan);
+        $response->assertDontSee($reguler->kode_pesanan);
+    }
+
+    public function test_index_shows_type_badges_for_reguler_and_custom_orders(): void
+    {
+        $seller = User::factory()->create();
+        Order::factory()->create();
+        Order::factory()->custom()->create();
+
+        $response = $this->actingAs($seller)->get(route('admin.pesanan.index'));
+
+        $response->assertOk();
+        $response->assertSee('Kue Jadi');
+        $response->assertSee('Custom Cake');
+    }
+
+    public function test_index_lists_each_order_item_name_and_quantity(): void
+    {
+        $seller = User::factory()->create();
+        $tart = Product::factory()->create(['nama_kue' => 'Kue Water']);
+        $bolu = Product::factory()->create(['nama_kue' => 'Bolu Pandan']);
+        $order = Order::factory()->create();
+        OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $tart->id, 'jumlah' => 2]);
+        OrderItem::factory()->create(['order_id' => $order->id, 'product_id' => $bolu->id, 'jumlah' => 1]);
+
+        $response = $this->actingAs($seller)->get(route('admin.pesanan.index'));
+
+        $response->assertOk();
+        $response->assertSee('3 Pcs (2 jenis)');
+        $response->assertSee('Kue Water');
+        $response->assertSee('Bolu Pandan');
+        $response->assertSeeInOrder(['2x', 'Kue Water']);
+    }
+
+    public function test_index_shows_the_order_note_when_present(): void
+    {
+        $seller = User::factory()->create();
+        Order::factory()->create(['catatan' => 'Tolong tambahkan lilin angka 18']);
+
+        $response = $this->actingAs($seller)->get(route('admin.pesanan.index'));
+
+        $response->assertOk();
+        $response->assertSee('Catatan:');
+        $response->assertSee('Tolong tambahkan lilin angka 18');
+    }
+
+    public function test_index_shows_a_payment_proof_preview(): void
+    {
+        $seller = User::factory()->create();
+        $order = Order::factory()->create(['bukti_pembayaran' => 'bukti_pembayaran/bukti.png']);
+
+        $response = $this->actingAs($seller)->get(route('admin.pesanan.index'));
+
+        $response->assertOk();
+        $response->assertSee('Bukti Pembayaran');
+        $response->assertSee(route('admin.orders.bukti', $order), false);
+    }
+
+    public function test_admin_can_view_the_private_payment_proof(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('bukti_pembayaran/bukti.png', 'gambar');
+
+        $seller = User::factory()->create();
+        $order = Order::factory()->create(['bukti_pembayaran' => 'bukti_pembayaran/bukti.png']);
+
+        $this->actingAs($seller)
+            ->get(route('admin.orders.bukti', $order))
+            ->assertOk();
+    }
+
+    public function test_staff_can_view_the_private_custom_photo(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('custom_cakes/kue.png', 'gambar');
+
+        $staff = User::factory()->staff()->create();
+        $order = Order::factory()->custom()->create();
+        OrderItem::factory()->custom()->create([
+            'order_id' => $order->id,
+            'foto_referensi' => 'custom_cakes/kue.png',
+        ]);
+
+        $this->actingAs($staff)
+            ->get(route('admin.orders.custom_photo', $order))
+            ->assertOk();
+    }
+
+    public function test_guest_cannot_view_private_uploads(): void
+    {
+        $order = Order::factory()->create(['bukti_pembayaran' => 'bukti_pembayaran/bukti.png']);
+
+        $this->get(route('admin.orders.bukti', $order))->assertRedirect(route('login'));
+        $this->get(route('admin.orders.custom_photo', $order))->assertRedirect(route('login'));
+    }
+
+    public function test_private_upload_route_returns_not_found_when_file_is_missing(): void
+    {
+        Storage::fake('local');
+
+        $seller = User::factory()->create();
+        $order = Order::factory()->create(['bukti_pembayaran' => 'bukti_pembayaran/hilang.png']);
+
+        $this->actingAs($seller)
+            ->get(route('admin.orders.bukti', $order))
+            ->assertNotFound();
     }
 
     public function test_update_status_changes_the_order_status(): void

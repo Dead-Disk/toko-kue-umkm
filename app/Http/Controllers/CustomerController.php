@@ -104,17 +104,16 @@ class CustomerController extends Controller
             'foto_referensi' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        // Simpan file sementara ke folder public (temp_custom) dan simpan path-nya di session
+        // Simpan file sementara ke private storage (temp_custom) dan simpan path-nya di session
         if ($request->hasFile('foto_referensi')) {
             if ($oldTemp = session('temp_foto')) {
                 $oldDiskPath = 'temp_custom/'.basename($oldTemp);
-                if (Storage::disk('public')->exists($oldDiskPath)) {
-                    Storage::disk('public')->delete($oldDiskPath);
+                if (Storage::exists($oldDiskPath)) {
+                    Storage::delete($oldDiskPath);
                 }
             }
 
-            $storedPath = $request->file('foto_referensi')->store('temp_custom', 'public');
-            $tempFoto = 'storage/'.$storedPath;
+            $tempFoto = $request->file('foto_referensi')->store('temp_custom');
             session(['temp_foto' => $tempFoto]);
         } else {
             $tempFoto = session('temp_foto');
@@ -175,13 +174,10 @@ class CustomerController extends Controller
             $tempDiskPath = 'temp_custom/'.$filename;
             $permanentDiskPath = 'custom_cakes/'.$filename;
 
-            if (Storage::disk('public')->exists($tempDiskPath)) {
-                Storage::disk('public')->move($tempDiskPath, $permanentDiskPath);
+            if (Storage::exists($tempDiskPath)) {
+                Storage::move($tempDiskPath, $permanentDiskPath);
                 $fotoPermanen = $permanentDiskPath;
-            } elseif (Storage::disk('public')->exists($permanentDiskPath)) {
-                $fotoPermanen = $permanentDiskPath;
-            } elseif (Storage::disk('public')->exists($tempFoto)) {
-                Storage::disk('public')->move($tempFoto, $permanentDiskPath);
+            } elseif (Storage::exists($permanentDiskPath)) {
                 $fotoPermanen = $permanentDiskPath;
             }
         }

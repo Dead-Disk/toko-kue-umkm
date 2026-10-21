@@ -67,7 +67,7 @@
                     <td>Rp{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                     <td>
                         @if ($item->foto_referensi)
-                            <img src="{{ Storage::disk('public')->url($item->foto_referensi) }}" alt="Foto Referensi" width="100">
+                            <span>Sudah diunggah</span>
                         @else
                             -
                         @endif

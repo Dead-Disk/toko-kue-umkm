@@ -51,7 +51,7 @@
             <th align="left">Foto Referensi</th>
             <td>
                 @if(session('temp_foto'))
-                    <img src="{{ asset(session('temp_foto')) }}" alt="Foto Referensi" width="150" style="border: 1px solid #ccc; padding: 4px;">
+                    <span>Foto referensi sudah diunggah.</span>
                 @else
                     <span>Tidak ada foto referensi</span>
                 @endif

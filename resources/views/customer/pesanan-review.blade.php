@@ -27,10 +27,29 @@
             <th align="left">Opsi Pengiriman</th>
             <td>{{ $draft['opsi_pengiriman'] === 'kurir_toko' ? 'Diantar Kurir' : 'Ambil Sendiri' }}</td>
         </tr>
+        @php($metodePembayaran = \App\Enums\MetodePembayaran::from($draft['metode_pembayaran']))
         <tr>
             <th align="left">Metode Pembayaran</th>
-            <td>{{ \App\Enums\MetodePembayaran::from($draft['metode_pembayaran'])->label() }}</td>
+            <td>
+                {{ $metodePembayaran->label() }}
+                @if ($metodePembayaran === \App\Enums\MetodePembayaran::TransferBank && $storeSetting->hasBankDetails())
+                    <div>
+                        Transfer ke {{ $storeSetting->bank_name }} - {{ $storeSetting->bank_account_number }}
+                        a.n. {{ $storeSetting->bank_account_holder }}
+                    </div>
+                @elseif ($metodePembayaran === \App\Enums\MetodePembayaran::Qris && $storeSetting->hasQrisImage())
+                    <div>
+                        <img src="{{ asset('storage/'.$storeSetting->qris_image_path) }}" alt="QRIS {{ $storeSetting->store_name }}" width="240">
+                    </div>
+                @endif
+            </td>
         </tr>
+        @if (! empty($draft['catatan']))
+            <tr>
+                <th align="left">Catatan</th>
+                <td>{{ $draft['catatan'] }}</td>
+            </tr>
+        @endif
     </table>
 
     <h2>Detail Produk</h2>
@@ -64,8 +83,21 @@
         <a href="{{ route('customer.produk.show', $product) }}">Kembali / Edit Pesanan</a>
     </p>
 
-    <form action="{{ route('customer.pesanan.checkout') }}" method="POST">
+    <form action="{{ route('customer.pesanan.checkout') }}" method="POST" enctype="multipart/form-data">
         @csrf
+
+        @if ($metodePembayaran !== \App\Enums\MetodePembayaran::Cash)
+            <p>
+                <label for="bukti_pembayaran">Unggah Bukti Pembayaran (JPG/PNG)</label><br>
+                <input type="file" id="bukti_pembayaran" name="bukti_pembayaran" accept="image/*" required>
+            </p>
+        @else
+            <p>
+                <label for="bukti_pembayaran">Unggah Bukti Pembayaran (opsional)</label><br>
+                <input type="file" id="bukti_pembayaran" name="bukti_pembayaran" accept="image/*">
+            </p>
+        @endif
+
         <button type="submit">Konfirmasi &amp; Kirim Pesanan</button>
     </form>
 </body>

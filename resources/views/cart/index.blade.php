@@ -86,6 +86,10 @@
             <a href="{{ route('customer.pesanan.review-cart') }}">Lanjut ke Review Pesanan</a>
         </p>
 
+        @if (session('cart_note'))
+            <p><strong>Catatan pesanan:</strong> {{ session('cart_note') }}</p>
+        @endif
+
         <p><a href="{{ route('customer.produk.index') }}">Kembali Belanja</a></p>
 
         <form action="{{ route('cart.clear') }}" method="POST" data-confirm="Kosongkan seluruh keranjang?">

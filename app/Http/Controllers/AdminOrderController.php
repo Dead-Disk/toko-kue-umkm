@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusPesanan;
+use App\Enums\TipePesanan;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminOrderController extends Controller
 {
@@ -29,14 +32,17 @@ class AdminOrderController extends Controller
     ];
 
     /**
-     * Daftar pesanan masuk dari pembeli, bisa difilter lewat ?status= dan ?start_date=/&end_date=.
+     * Daftar pesanan masuk dari pembeli, bisa difilter lewat ?status=, ?type=, dan ?start_date=/&end_date=.
      */
     public function index(Request $request): View
     {
         $status = $request->query('status');
         $filter = is_string($status) && array_key_exists($status, self::FILTER_STATUS) ? $status : null;
 
-        $orders = Order::with(['items'])
+        $type = $request->query('type');
+        $filterTipe = is_string($type) ? TipePesanan::tryFrom($type) : null;
+
+        $orders = Order::with(['items.product'])
             ->withCount('items')
             ->when($request->start_date, fn ($query) => $query->whereDate('created_at', '>=', $request->start_date))
             ->when($request->end_date, fn ($query) => $query->whereDate('created_at', '<=', $request->end_date));
@@ -45,9 +51,14 @@ class AdminOrderController extends Controller
             $orders->whereIn('status', self::FILTER_STATUS[$filter]);
         }
 
+        if ($filterTipe !== null) {
+            $orders->where('tipe_pesanan', $filterTipe);
+        }
+
         return view('admin.order.index', [
             'orders' => $orders->latest()->get(),
             'filter' => $filter,
+            'filterTipe' => $filterTipe,
         ]);
     }
 
@@ -100,6 +111,34 @@ class AdminOrderController extends Controller
         return redirect()
             ->route('admin.pesanan.index', array_filter($request->only(['status', 'start_date', 'end_date'])))
             ->with('success', 'Pesanan '.$order->kode_pesanan.' berhasil dihapus.');
+    }
+
+    /**
+     * Kirim file bukti pembayaran dari private storage. Hanya admin/staf yang login.
+     */
+    public function viewBuktiPembayaran(Order $order): BinaryFileResponse
+    {
+        return $this->privateFileResponse($order->bukti_pembayaran);
+    }
+
+    /**
+     * Kirim foto referensi custom cake dari private storage. Hanya admin/staf yang login.
+     */
+    public function viewCustomPhoto(Order $order): BinaryFileResponse
+    {
+        $foto = $order->items()->whereNotNull('foto_referensi')->value('foto_referensi');
+
+        return $this->privateFileResponse($foto);
+    }
+
+    /**
+     * Baca file dari disk private ('local'), 404 bila path kosong/tidak ada.
+     */
+    private function privateFileResponse(?string $path): BinaryFileResponse
+    {
+        abort_if($path === null || ! Storage::disk('local')->exists($path), 404);
+
+        return response()->file(Storage::disk('local')->path($path));
     }
 
     /**

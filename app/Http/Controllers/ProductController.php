@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusStok;
 use App\Models\Product;
+use App\Models\StoreSetting;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\View;
 
@@ -32,6 +33,7 @@ class ProductController extends Controller
             'products' => $this->sortedProducts(),
             'product' => $product,
             'draft' => ($draft['product_id'] ?? null) === $product->id ? $draft : [],
+            'storeSetting' => StoreSetting::current(),
         ]);
     }
 

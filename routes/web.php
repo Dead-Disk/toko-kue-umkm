@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminSettingController;
+use App\Http\Controllers\AdminStoreSettingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerController;
@@ -93,6 +94,12 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
         // Lihat status stok/inventory (read-only untuk staff)
         Route::get('produk', [AdminProductController::class, 'index'])->name('produk.index');
+
+        // File sensitif dari private storage: bukti pembayaran & foto custom cake.
+        Route::get('pesanan/{order}/bukti-pembayaran', [AdminOrderController::class, 'viewBuktiPembayaran'])
+            ->name('orders.bukti');
+        Route::get('pesanan/{order}/custom-photo', [AdminOrderController::class, 'viewCustomPhoto'])
+            ->name('orders.custom_photo');
     });
 
     Route::middleware('role:admin')->group(function () {
@@ -102,6 +109,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             ->except(['show', 'index']);
 
         Route::delete('pesanan/{order}', [AdminOrderController::class, 'destroy'])->name('pesanan.destroy');
+
+        // Pengaturan toko: profil, rekening bank, dan QRIS (single-row).
+        Route::get('settings', [AdminStoreSettingController::class, 'index'])->name('settings.index');
+        Route::put('settings', [AdminStoreSettingController::class, 'update'])->name('settings.update');
 
         // Pengaturan Varian Custom Cake (CRUD)
         Route::resource('pengaturan', AdminSettingController::class)

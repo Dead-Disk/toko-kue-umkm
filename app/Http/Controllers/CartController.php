@@ -52,6 +52,12 @@ class CartController extends Controller
 
         session(['cart' => $cart]);
 
+        $catatan = $request->input('catatan');
+
+        if (is_string($catatan) && trim($catatan) !== '') {
+            session(['cart_note' => trim($catatan)]);
+        }
+
         return back()->with('success', $product->nama_kue.' ditambahkan ke keranjang.');
     }
 
@@ -96,7 +102,7 @@ class CartController extends Controller
      */
     public function clear(): RedirectResponse
     {
-        session()->forget('cart');
+        session()->forget(['cart', 'cart_note']);
 
         return back()->with('success', 'Keranjang belanja dikosongkan.');
     }
