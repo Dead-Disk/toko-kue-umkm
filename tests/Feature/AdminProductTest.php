@@ -76,6 +76,58 @@ class AdminProductTest extends TestCase
         $response->assertSessionHasErrors(['nama_kue', 'category_id', 'harga', 'stok', 'status_stok']);
     }
 
+    public function test_store_saves_max_per_order(): void
+    {
+        $seller = User::factory()->create();
+        $category = Category::factory()->create();
+
+        $this->actingAs($seller)->post(route('admin.produk.store'), [
+            'nama_kue' => 'Kue Batas',
+            'category_id' => $category->id,
+            'harga' => 25_000,
+            'stok' => 20,
+            'max_per_order' => 3,
+            'status_stok' => StatusStok::Ready->value,
+        ]);
+
+        $this->assertSame(3, Product::firstWhere('nama_kue', 'Kue Batas')->max_per_order);
+    }
+
+    public function test_store_defaults_max_per_order_to_five_when_left_empty(): void
+    {
+        $seller = User::factory()->create();
+        $category = Category::factory()->create();
+
+        $this->actingAs($seller)->post(route('admin.produk.store'), [
+            'nama_kue' => 'Kue Tanpa Batas',
+            'category_id' => $category->id,
+            'harga' => 25_000,
+            'stok' => 20,
+            'max_per_order' => '',
+            'status_stok' => StatusStok::Ready->value,
+        ]);
+
+        $this->assertSame(5, Product::firstWhere('nama_kue', 'Kue Tanpa Batas')->max_per_order);
+    }
+
+    public function test_store_rejects_max_per_order_below_one(): void
+    {
+        $seller = User::factory()->create();
+        $category = Category::factory()->create();
+
+        $response = $this->actingAs($seller)->post(route('admin.produk.store'), [
+            'nama_kue' => 'Kue Tidak Valid',
+            'category_id' => $category->id,
+            'harga' => 25_000,
+            'stok' => 20,
+            'max_per_order' => 0,
+            'status_stok' => StatusStok::Ready->value,
+        ]);
+
+        $response->assertSessionHasErrors('max_per_order');
+        $this->assertDatabaseMissing('products', ['nama_kue' => 'Kue Tidak Valid']);
+    }
+
     public function test_edit_page_shows_existing_product(): void
     {
         $seller = User::factory()->create();
@@ -112,6 +164,24 @@ class AdminProductTest extends TestCase
         $this->assertSame('Bolu Pandan Spesial', $product->nama_kue);
         $this->assertSame(StatusStok::Habis, $product->status_stok);
         $this->assertSame('bolu-pandan-spesial', $product->slug);
+    }
+
+    public function test_update_saves_max_per_order(): void
+    {
+        $seller = User::factory()->create();
+        $product = Product::factory()->create(['max_per_order' => 5]);
+        $category = Category::factory()->create();
+
+        $this->actingAs($seller)->put(route('admin.produk.update', $product), [
+            'nama_kue' => $product->nama_kue,
+            'category_id' => $category->id,
+            'harga' => 10_000,
+            'stok' => 10,
+            'max_per_order' => 8,
+            'status_stok' => StatusStok::Ready->value,
+        ]);
+
+        $this->assertSame(8, $product->fresh()->max_per_order);
     }
 
     public function test_update_replaces_the_old_photo(): void

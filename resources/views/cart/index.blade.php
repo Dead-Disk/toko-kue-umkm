@@ -20,9 +20,14 @@
         <p>{{ session('success') }}</p>
     @endif
 
+    @if (session('error'))
+        <div data-toast-message="{{ session('error') }}" data-toast-type="error" hidden></div>
+    @endif
+
     @if ($errors->any())
         <ul>
             @foreach ($errors->all() as $error)
+                @continue(session('error') === $error)
                 <li>{{ $error }}</li>
             @endforeach
         </ul>

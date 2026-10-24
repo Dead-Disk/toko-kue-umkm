@@ -19,12 +19,21 @@ export function initPaymentDetails() {
 
             const proofContainer = group.querySelector('[data-payment-proof]');
             const proofInput = group.querySelector('[data-payment-proof-input]');
+            const cashInfo = group.querySelector('[data-payment-cash-info]');
 
             if (proofContainer && proofInput) {
                 const wajib = selected !== null && selected !== 'cash';
 
                 proofContainer.hidden = !wajib;
                 proofInput.required = wajib;
+
+                if (selected === 'cash') {
+                    proofInput.value = '';
+                }
+            }
+
+            if (cashInfo) {
+                cashInfo.hidden = selected !== 'cash';
             }
         };
 

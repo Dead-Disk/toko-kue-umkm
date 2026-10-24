@@ -29,6 +29,7 @@ class ProductFactory extends Factory
             'deskripsi' => fake()->sentence(),
             'harga' => fake()->numberBetween(15_000, 500_000),
             'stok' => fake()->numberBetween(10, 50),
+            'max_per_order' => 5,
             'status_stok' => StatusStok::Ready,
             'foto' => null,
         ];

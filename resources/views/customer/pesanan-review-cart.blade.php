@@ -36,9 +36,14 @@
         </tbody>
     </table>
 
+    @if (session('error'))
+        <div data-toast-message="{{ session('error') }}" data-toast-type="error" hidden></div>
+    @endif
+
     @if ($errors->any())
         <ul>
             @foreach ($errors->all() as $error)
+                @continue(session('error') === $error)
                 <li>{{ $error }}</li>
             @endforeach
         </ul>
@@ -80,6 +85,7 @@
         @php
             $bankSiap = $storeSetting->hasBankDetails();
             $qrisSiap = $storeSetting->hasQrisImage();
+            $cashSelected = old('metode_pembayaran') === 'cash';
         @endphp
 
         <div data-payment-group>
@@ -124,11 +130,15 @@
                 </div>
             @endif
 
-            <p data-payment-proof>
+            <p data-payment-proof @if ($cashSelected) hidden @endif>
                 <label for="bukti_pembayaran">Unggah Bukti Pembayaran (JPG/PNG)</label><br>
                 <input type="file" id="bukti_pembayaran" name="bukti_pembayaran" accept="image/*" data-payment-proof-input>
                 <br>
-                <small>Wajib untuk Transfer Bank dan QRIS. Boleh dikosongkan untuk pembayaran tunai.</small>
+                <small>Wajib untuk Transfer Bank dan QRIS.</small>
+            </p>
+
+            <p data-payment-cash-info @unless ($cashSelected) hidden @endunless>
+                <em>Pembayaran tunai dilakukan secara langsung di toko / saat penerimaan kue.</em>
             </p>
         </div>
 

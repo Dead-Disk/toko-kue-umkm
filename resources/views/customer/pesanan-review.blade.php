@@ -77,7 +77,11 @@
         </tbody>
     </table>
 
-    <p><em>Tidak ada pembayaran di halaman ini. Penjual akan mengonfirmasi pesanan dan cara pembayaran.</em></p>
+    @if ($metodePembayaran === \App\Enums\MetodePembayaran::Cash)
+        <p><em>Pembayaran dilakukan secara tunai (Cash) saat pengambilan / pengantaran pesanan.</em></p>
+    @else
+        <p><em>Silakan lakukan pembayaran sesuai nominal di atas, lalu unggah bukti transfer di bawah ini.</em></p>
+    @endif
 
     <p>
         <a href="{{ route('customer.produk.show', $product) }}">Kembali / Edit Pesanan</a>
@@ -86,17 +90,12 @@
     <form action="{{ route('customer.pesanan.checkout') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        @if ($metodePembayaran !== \App\Enums\MetodePembayaran::Cash)
+        @unless ($metodePembayaran === \App\Enums\MetodePembayaran::Cash)
             <p>
                 <label for="bukti_pembayaran">Unggah Bukti Pembayaran (JPG/PNG)</label><br>
                 <input type="file" id="bukti_pembayaran" name="bukti_pembayaran" accept="image/*" required>
             </p>
-        @else
-            <p>
-                <label for="bukti_pembayaran">Unggah Bukti Pembayaran (opsional)</label><br>
-                <input type="file" id="bukti_pembayaran" name="bukti_pembayaran" accept="image/*">
-            </p>
-        @endif
+        @endunless
 
         <button type="submit">Konfirmasi &amp; Kirim Pesanan</button>
     </form>

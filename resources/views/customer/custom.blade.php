@@ -42,11 +42,23 @@
         </p>
 
         <p>
+            <label for="base_product_id">Produk Acuan (opsional)</label><br>
+            <select id="base_product_id" name="base_product_id">
+                <option value="">-- Tanpa Produk Acuan --</option>
+                @foreach ($products as $item)
+                    <option value="{{ $item->id }}" @selected((string) old('base_product_id', $draft['base_product_id'] ?? '') === (string) $item->id) data-harga="{{ $item->harga }}">
+                        {{ $item->nama_kue }} - Rp {{ number_format($item->harga, 0, ',', '.') }}
+                    </option>
+                @endforeach
+            </select>
+        </p>
+
+        <p>
             <label for="cake_option_id">Ukuran Kue</label><br>
             <select id="cake_option_id" name="cake_option_id" required>
                 <option value="">-- Pilih Ukuran --</option>
                 @foreach ($cakeOptions as $option)
-                    <option value="{{ $option->id }}" @selected((string) old('cake_option_id', $draft['cake_option_id'] ?? '') === (string) $option->id)>
+                    <option value="{{ $option->id }}" @selected((string) old('cake_option_id', $draft['cake_option_id'] ?? '') === (string) $option->id) data-harga="{{ $option->harga_dasar }}">
                         {{ $option->label() }}
                     </option>
                 @endforeach
@@ -55,7 +67,11 @@
 
         <p>
             <label for="jumlah">Jumlah Beli (Pcs / Biji)</label><br>
-            <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah', $draft['jumlah'] ?? 1) }}" min="1" required>
+            <input type="number" id="jumlah" name="jumlah" value="{{ $jumlah }}" min="1" max="{{ $maxQuantity }}" step="1" data-max-quantity="{{ $maxQuantity }}" data-max-quantity-message="Maksimal pemesanan untuk pesanan ini adalah {{ $maxQuantity }} pcs." required>
+        </p>
+
+        <p>
+            <strong id="estimasi-total">Estimasi Total: Rp {{ number_format($estimasiHarga, 0, ',', '.') }}</strong>
         </p>
 
         <fieldset>
@@ -92,5 +108,95 @@
             <button type="submit">Lanjut ke Ringkasan Pesanan</button>
         </p>
     </form>
+
+    <script>
+        (() => {
+            const baseProduct = document.getElementById('base_product_id');
+            const cakeOption = document.getElementById('cake_option_id');
+            const quantity = document.getElementById('jumlah');
+            const estimate = document.getElementById('estimasi-total');
+
+            if (!baseProduct || !cakeOption || !quantity || !estimate) {
+                return;
+            }
+
+            const parseInteger = (value) => {
+                const parsed = Number.parseInt(value, 10);
+
+                return Number.isNaN(parsed) ? 0 : parsed;
+            };
+
+            const maxQuantity = parseInteger(quantity.dataset.maxQuantity) || 5;
+            const maxQuantityMessage =
+                quantity.dataset.maxQuantityMessage ||
+                `Maksimal pemesanan untuk pesanan ini adalah ${maxQuantity} pcs.`;
+
+            const selectedPrice = (select) => {
+                const option = select.selectedOptions[0];
+
+                return option ? parseInteger(option.dataset.harga) : 0;
+            };
+
+            const formatRupiah = (value) => new Intl.NumberFormat('id-ID').format(value);
+
+            const showToast = (message) => {
+                let container = document.querySelector('[data-toast-container]');
+
+                if (!container) {
+                    container = document.createElement('div');
+                    container.dataset.toastContainer = '';
+                    container.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;pointer-events:none;';
+                    document.body.appendChild(container);
+                }
+
+                const toast = document.createElement('div');
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.textContent = message;
+                toast.style.cssText = 'background:#b91c1c;color:#fff;padding:.75rem 1rem;border-radius:.5rem;box-shadow:0 10px 25px rgba(0,0,0,.18);font:14px/1.45 system-ui,sans-serif;max-width:24rem;pointer-events:auto;';
+                container.appendChild(toast);
+
+                window.setTimeout(() => toast.remove(), 5000);
+            };
+
+            const updateEstimate = () => {
+                const basePrice = selectedPrice(baseProduct);
+                const sizePrice = selectedPrice(cakeOption);
+                const price = baseProduct.value !== '' ? basePrice : sizePrice;
+                const quantityValue = parseInteger(quantity.value);
+                const total = price * quantityValue;
+
+                estimate.textContent = `Estimasi Total: Rp ${formatRupiah(total)}`;
+            };
+
+            const handleQuantityChange = () => {
+                if (parseInteger(quantity.value) > maxQuantity) {
+                    quantity.value = String(maxQuantity);
+                    showToast(maxQuantityMessage);
+                }
+
+                updateEstimate();
+            };
+
+            baseProduct.addEventListener('change', updateEstimate);
+            cakeOption.addEventListener('change', updateEstimate);
+
+            ['input', 'change', 'keyup'].forEach((eventName) => {
+                quantity.addEventListener(eventName, handleQuantityChange);
+            });
+
+            quantity.form?.addEventListener('submit', (event) => {
+                if (parseInteger(quantity.value) > maxQuantity) {
+                    quantity.value = String(maxQuantity);
+                    showToast(maxQuantityMessage);
+                    updateEstimate();
+                    event.preventDefault();
+                    quantity.focus();
+                }
+            });
+
+            handleQuantityChange();
+        })();
+    </script>
 </body>
 </html>

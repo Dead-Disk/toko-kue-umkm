@@ -20,9 +20,14 @@
     @if ($errors->any())
         <ul>
             @foreach ($errors->all() as $error)
+                @continue(session('error') === $error)
                 <li>{{ $error }}</li>
             @endforeach
         </ul>
+    @endif
+
+    @if (session('error'))
+        <div data-toast-message="{{ session('error') }}" data-toast-type="error" hidden></div>
     @endif
 
     <table border="1" cellpadding="6" cellspacing="0">
@@ -67,6 +72,10 @@
     </table>
 
     @isset($product)
+        @php
+            $maxPerOrder = $product->max_per_order ?? 5;
+        @endphp
+
         <h2>Detail Produk</h2>
 
         <table border="1" cellpadding="6" cellspacing="0">
@@ -112,7 +121,7 @@
 
                 <p>
                     <label for="cart_quantity">Jumlah</label><br>
-                    <input type="number" id="cart_quantity" name="quantity" value="1" min="1" required>
+                    <input type="number" id="cart_quantity" name="quantity" value="1" min="1" max="{{ $maxPerOrder }}" data-max-per-order="{{ $maxPerOrder }}" data-max-order-message="Produk ini hanya dapat dipesan maksimal {{ $maxPerOrder }} pcs per transaksi." required>
                 </p>
 
                 <p>
@@ -148,7 +157,7 @@
 
                 <p>
                     <label for="jumlah">Jumlah Beli</label><br>
-                    <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah', $draft['jumlah'] ?? 1) }}" min="1" required>
+                    <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah', $draft['jumlah'] ?? 1) }}" min="1" max="{{ $maxPerOrder }}" data-max-per-order="{{ $maxPerOrder }}" data-max-order-message="Produk ini hanya dapat dipesan maksimal {{ $maxPerOrder }} pcs per transaksi." required>
                 </p>
 
                 <fieldset>

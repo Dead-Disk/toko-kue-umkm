@@ -70,6 +70,80 @@ class GuestCartTest extends TestCase
         $this->assertSame(4, session('cart.'.$product->id.'.quantity'));
     }
 
+    public function test_cart_add_rejects_quantity_above_the_product_limit(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3, 'stok' => 10]);
+
+        $response = $this->post(route('cart.add', $product), ['quantity' => 4]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('cart');
+        $response->assertSessionHas('error', 'Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi.');
+        $this->assertEmpty(session('cart', []));
+    }
+
+    public function test_cart_add_rejects_exceeding_the_limit_across_multiple_adds(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3, 'stok' => 10]);
+
+        $this->post(route('cart.add', $product), ['quantity' => 2]);
+        $response = $this->post(route('cart.add', $product), ['quantity' => 2]);
+
+        $response->assertSessionHasErrors('cart');
+        $response->assertSessionHas('error', 'Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi.');
+        $this->assertSame(2, session('cart.'.$product->id.'.quantity'));
+    }
+
+    public function test_cart_update_rejects_quantity_above_the_product_limit(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3, 'stok' => 10]);
+
+        $this->post(route('cart.add', $product));
+
+        $response = $this->patch(route('cart.update', $product), ['quantity' => 4]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('cart');
+        $response->assertSessionHas('error', 'Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi.');
+        $this->assertSame(1, session('cart.'.$product->id.'.quantity'));
+    }
+
+    public function test_cart_page_renders_flash_error_as_toast(): void
+    {
+        $response = $this->withSession([
+            'error' => 'Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi.',
+        ])->get(route('cart.index'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'data-toast-message="Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi."',
+            false
+        );
+    }
+
+    public function test_cart_checkout_rejects_quantity_above_the_current_limit(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 5, 'stok' => 10]);
+
+        $this->post(route('cart.add', $product), ['quantity' => 5]);
+        $product->update(['max_per_order' => 2]);
+
+        $response = $this->post(route('customer.pesanan.checkout'), [
+            'checkout_mode' => 'cart',
+            'nama_pemesan' => 'Budi',
+            'alamat_lengkap' => 'Jl. Merdeka No. 1',
+            'nomor_wa' => '08123456789',
+            'opsi_pengiriman' => 'kurir_toko',
+            'metode_pembayaran' => 'cash',
+        ]);
+
+        $response->assertRedirect(route('cart.index'));
+        $response->assertSessionHasErrors('cart');
+        $response->assertSessionHas('error', 'Produk ini hanya dapat dipesan maksimal 2 pcs per transaksi.');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertNotEmpty(session('cart', []));
+    }
+
     public function test_guest_can_remove_item_from_cart(): void
     {
         $product = Product::factory()->create();
@@ -262,5 +336,39 @@ class GuestCartTest extends TestCase
         $order = Order::firstOrFail();
 
         $this->assertNull($order->bukti_pembayaran);
+    }
+
+    public function test_cart_checkout_with_cash_ignores_a_stray_payment_proof_upload(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product));
+
+        $response = $this->post(route('customer.pesanan.checkout'), [
+            'checkout_mode' => 'cart',
+            'nama_pemesan' => 'Budi',
+            'alamat_lengkap' => 'Jl. Merdeka No. 1',
+            'nomor_wa' => '08123456789',
+            'opsi_pengiriman' => 'kurir_toko',
+            'metode_pembayaran' => 'cash',
+            'bukti_pembayaran' => UploadedFile::fake()->create('catatan.txt', 10, 'text/plain'),
+        ]);
+
+        $order = Order::firstOrFail();
+
+        $response->assertRedirect(route('customer.pesanan.sukses', $order->kode_pesanan));
+        $this->assertNull($order->bukti_pembayaran);
+    }
+
+    public function test_review_cart_page_includes_cash_info_and_proof_markup(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product));
+
+        $response = $this->get(route('customer.pesanan.review-cart'));
+
+        $response->assertOk();
+        $response->assertSee('data-payment-proof', false);
+        $response->assertSee('data-payment-cash-info', false);
+        $response->assertSee('Pembayaran tunai dilakukan secara langsung di toko / saat penerimaan kue.');
     }
 }

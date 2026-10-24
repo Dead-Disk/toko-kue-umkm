@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
     'deskripsi',
     'harga',
     'stok',
+    'max_per_order',
     'status_stok',
     'foto',
 ])]
@@ -27,6 +28,7 @@ class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
     use SoftDeletes;
 
     /**
@@ -52,6 +54,7 @@ class Product extends Model
         return [
             'harga' => 'integer',
             'stok' => 'integer',
+            'max_per_order' => 'integer',
             'status_stok' => StatusStok::class,
         ];
     }

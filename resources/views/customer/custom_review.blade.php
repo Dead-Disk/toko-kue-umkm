@@ -35,17 +35,26 @@
             <th align="left">Ukuran Kue</th>
             <td>{{ $cakeOption->label() }}</td>
         </tr>
+        @if ($baseProduct)
+            <tr>
+                <th align="left">Produk Acuan:</th>
+                <td>{{ $baseProduct->nama_kue }}</td>
+            </tr>
+        @endif
         <tr>
-            <th align="left">Harga Dasar per Kue</th>
-            <td>Rp {{ number_format($cakeOption->harga_dasar, 0, ',', '.') }}</td>
+            <th align="left">Harga Dasar / Acuan</th>
+            <td>
+                Rp {{ number_format($hargaAcuan, 0, ',', '.') }}
+                <small>({{ $baseProduct ? 'Harga Produk Acuan' : 'Harga Ukuran Kue' }})</small>
+            </td>
         </tr>
         <tr>
             <th align="left">Jumlah Beli (Pcs / Biji)</th>
             <td>{{ $draft['jumlah'] }}</td>
         </tr>
         <tr>
-            <th align="left">Estimasi Harga</th>
-            <td>Rp {{ number_format($estimasiHarga, 0, ',', '.') }} <small>(Harga Dasar &times; Jumlah)</small></td>
+            <th align="left">Estimasi Total Harga</th>
+            <td>Rp {{ number_format($estimasiHarga, 0, ',', '.') }} <small>(Harga Acuan &times; Jumlah)</small></td>
         </tr>
         <tr>
             <th align="left">Foto Referensi</th>

@@ -20,6 +20,11 @@ use Illuminate\View\View;
 class CustomerController extends Controller
 {
     /**
+     * Batas maksimal jumlah kue pada satu pesanan custom.
+     */
+    private const MAX_CUSTOM_QUANTITY = 5;
+
+    /**
      * Halaman utama (landing page) pembeli.
      */
     public function index(): View
@@ -78,11 +83,28 @@ class CustomerController extends Controller
     /**
      * Form pesanan custom cake, lengkap dengan pilihan ukuran dari database.
      */
-    public function customForm(): View
+    public function customForm(Request $request): View
     {
+        $draft = session('custom_order_draft', []);
+        $products = Product::query()->orderBy('nama_kue')->get();
+        $cakeOptions = CakeOption::orderBy('bentuk')->orderBy('ukuran')->get();
+
+        $baseProductId = $request->old('base_product_id', $draft['base_product_id'] ?? null);
+        $cakeOptionId = $request->old('cake_option_id', $draft['cake_option_id'] ?? null);
+        $jumlah = (int) $request->old('jumlah', $draft['jumlah'] ?? 1);
+        $jumlah = min(self::MAX_CUSTOM_QUANTITY, max(1, $jumlah));
+
+        $baseProduct = $baseProductId ? $products->firstWhere('id', (int) $baseProductId) : null;
+        $cakeOption = $cakeOptionId ? $cakeOptions->firstWhere('id', (int) $cakeOptionId) : null;
+        $hargaAcuan = $baseProduct?->harga ?? $cakeOption?->harga_dasar ?? 0;
+
         return view('customer.custom', [
-            'cakeOptions' => CakeOption::orderBy('bentuk')->orderBy('ukuran')->get(),
-            'draft' => session('custom_order_draft', []),
+            'cakeOptions' => $cakeOptions,
+            'products' => $products,
+            'draft' => $draft,
+            'jumlah' => $jumlah,
+            'maxQuantity' => self::MAX_CUSTOM_QUANTITY,
+            'estimasiHarga' => $hargaAcuan * $jumlah,
         ]);
     }
 
@@ -98,10 +120,13 @@ class CustomerController extends Controller
             'alamat_lengkap' => ['required', 'string', 'max:1000'],
             'deskripsi_custom' => ['required', 'string', 'max:2000'],
             'cake_option_id' => ['required', 'integer', 'exists:cake_options,id'],
-            'jumlah' => ['required', 'integer', 'min:1'],
+            'base_product_id' => ['nullable', 'integer', Rule::exists('products', 'id')->whereNull('deleted_at')],
+            'jumlah' => ['required', 'integer', 'min:1', 'max:'.self::MAX_CUSTOM_QUANTITY],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
             'foto_referensi' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], [
+            'jumlah.max' => 'Maksimal pemesanan untuk pesanan ini adalah '.self::MAX_CUSTOM_QUANTITY.' pcs.',
         ]);
 
         // Simpan file sementara ke private storage (temp_custom) dan simpan path-nya di session
@@ -125,6 +150,7 @@ class CustomerController extends Controller
             'alamat_lengkap' => $data['alamat_lengkap'],
             'deskripsi_custom' => $data['deskripsi_custom'],
             'cake_option_id' => (int) $data['cake_option_id'],
+            'base_product_id' => ! empty($data['base_product_id']) ? (int) $data['base_product_id'] : null,
             'jumlah' => (int) $data['jumlah'],
             'opsi_pengiriman' => $data['opsi_pengiriman'],
             'metode_pembayaran' => $data['metode_pembayaran'],
@@ -134,11 +160,17 @@ class CustomerController extends Controller
         session(['custom_order_draft' => $draft]);
 
         $cakeOption = CakeOption::findOrFail($draft['cake_option_id']);
+        $baseProduct = ! empty($draft['base_product_id'])
+            ? Product::find($draft['base_product_id'])
+            : null;
+        $hargaAcuan = $baseProduct?->harga ?? $cakeOption->harga_dasar;
 
         return view('customer.custom_review', [
             'draft' => $draft,
             'cakeOption' => $cakeOption,
-            'estimasiHarga' => $cakeOption->harga_dasar * $draft['jumlah'],
+            'baseProduct' => $baseProduct,
+            'hargaAcuan' => $hargaAcuan,
+            'estimasiHarga' => $hargaAcuan * $draft['jumlah'],
         ]);
     }
 
@@ -164,7 +196,19 @@ class CustomerController extends Controller
         }
 
         $jumlah = (int) $draft['jumlah'];
-        $subtotal = $cakeOption->harga_dasar * $jumlah;
+
+        if ($jumlah < 1 || $jumlah > self::MAX_CUSTOM_QUANTITY) {
+            return redirect()
+                ->route('customer.custom.create')
+                ->withErrors(['jumlah' => 'Maksimal pemesanan untuk pesanan ini adalah '.self::MAX_CUSTOM_QUANTITY.' pcs.']);
+        }
+
+        $baseProduct = ! empty($draft['base_product_id'])
+            ? Product::find($draft['base_product_id'])
+            : null;
+        $baseProductId = $baseProduct?->id;
+        $hargaAcuan = $baseProduct?->harga ?? $cakeOption->harga_dasar;
+        $subtotal = $hargaAcuan * $jumlah;
 
         $tempFoto = session('temp_foto') ?? ($draft['foto_referensi'] ?? null);
         $fotoPermanen = null;
@@ -182,7 +226,7 @@ class CustomerController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($draft, $cakeOption, $jumlah, $subtotal, $fotoPermanen): Order {
+        $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $jumlah, $subtotal, $fotoPermanen): Order {
             $order = Order::create([
                 'kode_pesanan' => Order::generateKodePesanan(),
                 'tipe_pesanan' => TipePesanan::Custom,
@@ -196,7 +240,7 @@ class CustomerController extends Controller
             ]);
 
             $order->items()->create([
-                'product_id' => null,
+                'product_id' => $baseProductId,
                 'jumlah' => $jumlah,
                 'subtotal' => $subtotal,
                 'deskripsi_custom' => $draft['deskripsi_custom'],

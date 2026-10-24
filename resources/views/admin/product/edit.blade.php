@@ -58,6 +58,11 @@
         </p>
 
         <p>
+            <label for="max_per_order">Maksimal Beli per Pesanan (Opsional, Default: 5)</label><br>
+            <input type="number" id="max_per_order" name="max_per_order" value="{{ old('max_per_order', $product->max_per_order ?? 5) }}" min="1" step="1">
+        </p>
+
+        <p>
             <label for="status_stok">Status Stok</label><br>
             <select id="status_stok" name="status_stok" required>
                 <option value="ready" @selected(old('status_stok', $product->status_stok->value) === 'ready')>Ready</option>

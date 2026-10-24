@@ -9,6 +9,7 @@ use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
 use App\Models\CakeOption;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -186,6 +187,146 @@ class CustomOrderTest extends TestCase
         $response->assertOk();
         $response->assertSee('value="Budi"', false);
         $response->assertSee('value="'.$option->id.'" selected', false);
+    }
+
+    public function test_custom_form_shows_base_products_and_the_live_estimate_preview(): void
+    {
+        $product = Product::factory()->create([
+            'nama_kue' => 'Kue Cokelat Acuan',
+            'harga' => 200_000,
+        ]);
+        $this->cakeOption();
+
+        $response = $this->get(route('customer.custom.create'));
+
+        $response->assertOk();
+        $response->assertSee('name="base_product_id"', false);
+        $response->assertSee('Kue Cokelat Acuan');
+        $response->assertSee('data-harga="200000"', false);
+        $response->assertSee('id="estimasi-total"', false);
+        $response->assertSee('Estimasi Total:');
+        $response->assertSee('name="cake_option_id"', false);
+    }
+
+    public function test_custom_form_limits_quantity_to_five(): void
+    {
+        $this->cakeOption();
+
+        $response = $this->get(route('customer.custom.create'));
+
+        $response->assertOk();
+        $response->assertSee('max="5"', false);
+        $response->assertSee('data-max-quantity="5"', false);
+        $response->assertSee('Maksimal pemesanan untuk pesanan ini adalah 5 pcs.', false);
+    }
+
+    public function test_custom_review_rejects_quantity_above_five(): void
+    {
+        $option = $this->cakeOption();
+
+        $response = $this->post(route('customer.custom.review'), $this->formData($option, [
+            'jumlah' => 6,
+        ]));
+
+        $response->assertSessionHasErrors([
+            'jumlah' => 'Maksimal pemesanan untuk pesanan ini adalah 5 pcs.',
+        ]);
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_items', 0);
+    }
+
+    public function test_custom_form_resets_quantity_above_five_from_old_input(): void
+    {
+        $option = $this->cakeOption();
+        $product = Product::factory()->create(['harga' => 200_000]);
+
+        $this->from(route('customer.custom.create'))
+            ->post(route('customer.custom.review'), $this->formData($option, [
+                'base_product_id' => $product->id,
+                'jumlah' => 6,
+            ]))
+            ->assertRedirect(route('customer.custom.create'));
+
+        $response = $this->get(route('customer.custom.create'));
+
+        $response->assertOk();
+        $response->assertSee('id="jumlah" name="jumlah" value="5"', false);
+        $response->assertSee('Estimasi Total: Rp 1.000.000');
+    }
+
+    public function test_custom_form_prefills_the_selected_base_product_from_the_draft(): void
+    {
+        Storage::fake('local');
+        $option = $this->cakeOption();
+        $product = Product::factory()->create(['harga' => 200_000]);
+
+        $this->post(route('customer.custom.review'), $this->formData($option, [
+            'base_product_id' => $product->id,
+        ]))->assertOk();
+
+        $response = $this->get(route('customer.custom.create'));
+
+        $response->assertOk();
+        $response->assertSee('value="'.$product->id.'" selected', false);
+        $response->assertSee('Estimasi Total: Rp 400.000');
+    }
+
+    public function test_custom_review_uses_the_base_product_price_for_the_estimate(): void
+    {
+        Storage::fake('local');
+        $option = $this->cakeOption();
+        $product = Product::factory()->create([
+            'nama_kue' => 'Kue Cokelat Acuan',
+            'harga' => 200_000,
+        ]);
+
+        $response = $this->post(route('customer.custom.review'), $this->formData($option, [
+            'base_product_id' => $product->id,
+        ]));
+
+        $response->assertOk();
+        $response->assertSee('Produk Acuan:');
+        $response->assertSee('Kue Cokelat Acuan');
+        $response->assertSeeText('Produk Acuan: Kue Cokelat Acuan');
+        $response->assertSee('Harga Dasar / Acuan');
+        $response->assertSee('Estimasi Total Harga');
+        $response->assertSee('Rp 400.000');
+        $response->assertDontSee('Rp 300.000');
+    }
+
+    public function test_custom_review_rejects_an_unavailable_base_product(): void
+    {
+        Storage::fake('local');
+        $option = $this->cakeOption();
+        $product = Product::factory()->create();
+        $product->delete();
+
+        $response = $this->post(route('customer.custom.review'), $this->formData($option, [
+            'base_product_id' => $product->id,
+        ]));
+
+        $response->assertSessionHasErrors('base_product_id');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_custom_order_saves_the_base_product_reference_and_price(): void
+    {
+        Storage::fake('local');
+        $option = $this->cakeOption();
+        $product = Product::factory()->create(['harga' => 200_000]);
+
+        $this->post(route('customer.custom.review'), $this->formData($option, [
+            'base_product_id' => $product->id,
+        ]))->assertOk();
+
+        $this->post(route('customer.custom.store'))->assertRedirect();
+
+        $order = Order::firstOrFail();
+        $item = $order->items()->firstOrFail();
+
+        $this->assertSame(400_000, $order->total_harga);
+        $this->assertSame($product->id, $item->product_id);
+        $this->assertSame(400_000, $item->subtotal);
     }
 
     public function test_custom_order_appears_on_the_admin_order_page(): void

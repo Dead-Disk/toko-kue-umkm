@@ -81,6 +81,17 @@ class OrderController extends Controller
                 ->withErrors(['jumlah' => 'Stok tidak mencukupi. Sisa stok '.$product->stok.'.']);
         }
 
+        $maxPerOrder = $product->max_per_order ?? 5;
+
+        if ($data['jumlah'] > $maxPerOrder) {
+            $message = 'Produk ini hanya dapat dipesan maksimal '.$maxPerOrder.' pcs per transaksi.';
+
+            return back()
+                ->withInput()
+                ->with('error', $message)
+                ->withErrors(['jumlah' => $message]);
+        }
+
         $draft = [
             'product_id' => (int) $data['product_id'],
             'nama_pemesan' => $data['nama_pemesan'],
@@ -119,16 +130,16 @@ class OrderController extends Controller
                 ->withErrors(['order' => 'Data pesanan belum lengkap. Silakan pilih produk dan isi form pesanan terlebih dahulu.']);
         }
 
-        if (! StoreSetting::current()->supports(MetodePembayaran::from($draft['metode_pembayaran']))) {
+        $metode = MetodePembayaran::from($draft['metode_pembayaran']);
+
+        if (! StoreSetting::current()->supports($metode)) {
             return redirect()
                 ->route('customer.produk.show', $draft['product_id'])
                 ->withErrors(['metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.']);
         }
 
         $proofValidator = Validator::make($request->all(), [
-            'bukti_pembayaran' => $this->paymentProofRules(
-                MetodePembayaran::from($draft['metode_pembayaran']) !== MetodePembayaran::Cash
-            ),
+            'bukti_pembayaran' => $this->paymentProofRules($metode !== MetodePembayaran::Cash),
         ]);
 
         // Halaman review tidak punya route GET, jadi kegagalan validasi diarahkan
@@ -140,7 +151,10 @@ class OrderController extends Controller
                 ->withInput();
         }
 
-        $buktiPembayaran = $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
+        // Pembayaran tunai tidak memerlukan (dan tidak menyimpan) bukti pembayaran.
+        $buktiPembayaran = $metode === MetodePembayaran::Cash
+            ? null
+            : $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
 
         try {
             $order = DB::transaction(function () use ($draft, $buktiPembayaran): Order {
@@ -149,6 +163,14 @@ class OrderController extends Controller
                 if ($product->stok < $draft['jumlah']) {
                     throw ValidationException::withMessages([
                         'jumlah' => 'Stok tidak mencukupi. Sisa stok '.$product->stok.'.',
+                    ]);
+                }
+
+                $maxPerOrder = $product->max_per_order ?? 5;
+
+                if ($draft['jumlah'] > $maxPerOrder) {
+                    throw ValidationException::withMessages([
+                        'jumlah' => 'Produk ini hanya dapat dipesan maksimal '.$maxPerOrder.' pcs per transaksi.',
                     ]);
                 }
 
@@ -187,6 +209,7 @@ class OrderController extends Controller
 
             return redirect()
                 ->route('customer.produk.show', $draft['product_id'])
+                ->with('error', $this->firstValidationMessage($exception))
                 ->withErrors($exception->errors());
         }
 
@@ -226,7 +249,10 @@ class OrderController extends Controller
                 ->withErrors(['metode_pembayaran' => 'Metode pembayaran belum dikonfigurasi oleh penjual.']);
         }
 
-        $buktiPembayaran = $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
+        // Pembayaran tunai tidak memerlukan (dan tidak menyimpan) bukti pembayaran.
+        $buktiPembayaran = MetodePembayaran::from($data['metode_pembayaran']) === MetodePembayaran::Cash
+            ? null
+            : $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
 
         try {
             $order = DB::transaction(function () use ($cart, $data, $buktiPembayaran): Order {
@@ -245,6 +271,14 @@ class OrderController extends Controller
                     if ($product->stok < $item['quantity']) {
                         throw ValidationException::withMessages([
                             'cart' => 'Stok '.$product->nama_kue.' tidak mencukupi. Sisa stok '.$product->stok.'.',
+                        ]);
+                    }
+
+                    $maxPerOrder = $product->max_per_order ?? 5;
+
+                    if ($item['quantity'] > $maxPerOrder) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Produk ini hanya dapat dipesan maksimal '.$maxPerOrder.' pcs per transaksi.',
                         ]);
                     }
 
@@ -286,12 +320,21 @@ class OrderController extends Controller
 
             return redirect()
                 ->route('cart.index')
+                ->with('error', $this->firstValidationMessage($exception))
                 ->withErrors($exception->errors());
         }
 
         session()->forget(['cart', 'cart_note']);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
+    }
+
+    /**
+     * Ambil pesan validasi pertama untuk ditampilkan sebagai toast.
+     */
+    private function firstValidationMessage(ValidationException $exception): string
+    {
+        return collect($exception->errors())->flatten()->first() ?? 'Pesanan gagal diproses.';
     }
 
     /**
@@ -302,12 +345,15 @@ class OrderController extends Controller
      */
     private function paymentProofRules(bool $wajib): array
     {
+        if (! $wajib) {
+            return ['nullable'];
+        }
+
         return [
-            'nullable',
+            'required',
             'image',
             'mimes:jpg,jpeg,png,webp',
             'max:2048',
-            Rule::requiredIf($wajib),
         ];
     }
 

@@ -31,7 +31,6 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'admin',
-            'whatsapp_toko' => fake()->numerify('08##########'),
             'remember_token' => Str::random(10),
         ];
     }

@@ -11,7 +11,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\User;
+use App\Models\StoreSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -26,13 +26,13 @@ class TokoKueSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('products'));
         $this->assertTrue(Schema::hasTable('orders'));
         $this->assertTrue(Schema::hasTable('order_items'));
-        $this->assertTrue(Schema::hasColumn('users', 'whatsapp_toko'));
+        $this->assertFalse(Schema::hasColumn('users', 'whatsapp_toko'));
         $this->assertTrue(Schema::hasColumn('categories', 'deleted_at'));
 
         $this->assertTrue(Schema::hasColumns('categories', ['nama_kategori', 'slug']));
 
         $this->assertTrue(Schema::hasColumns('products', [
-            'category_id', 'nama_kue', 'slug', 'deskripsi', 'harga', 'stok', 'status_stok', 'foto',
+            'category_id', 'nama_kue', 'slug', 'deskripsi', 'harga', 'stok', 'max_per_order', 'status_stok', 'foto',
         ]));
 
         $this->assertTrue(Schema::hasColumns('orders', [
@@ -43,7 +43,7 @@ class TokoKueSchemaTest extends TestCase
 
         $this->assertTrue(Schema::hasColumns('order_items', [
             'order_id', 'product_id', 'jumlah', 'subtotal',
-            'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue',
+            'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue', 'addons',
         ]));
 
         $this->assertTrue(Schema::hasColumns('store_settings', [
@@ -160,10 +160,41 @@ class TokoKueSchemaTest extends TestCase
         $this->assertNull($item->fresh()->product_id);
     }
 
-    public function test_seller_can_store_whatsapp_number(): void
+    public function test_store_contact_is_stored_in_store_settings(): void
     {
-        $seller = User::factory()->create(['whatsapp_toko' => '081234567890']);
+        $setting = StoreSetting::factory()->create(['store_phone' => '081234567890']);
 
-        $this->assertSame('081234567890', $seller->fresh()->whatsapp_toko);
+        $this->assertSame('081234567890', $setting->fresh()->store_phone);
+    }
+
+    public function test_kode_pesanan_has_a_unique_index(): void
+    {
+        $this->assertTrue(Schema::hasIndex('orders', ['kode_pesanan'], 'unique'));
+    }
+
+    public function test_order_items_have_expected_foreign_keys_and_nullable_product(): void
+    {
+        $foreignKeys = collect(Schema::getForeignKeys('order_items'));
+
+        $order = $foreignKeys->first(fn (array $foreignKey): bool => $foreignKey['columns'] === ['order_id']);
+        $product = $foreignKeys->first(fn (array $foreignKey): bool => $foreignKey['columns'] === ['product_id']);
+
+        $this->assertNotNull($order);
+        $this->assertSame('orders', $order['foreign_table']);
+        $this->assertSame('cascade', $order['on_delete']);
+
+        $this->assertNotNull($product);
+        $this->assertSame('products', $product['foreign_table']);
+        $this->assertSame('set null', $product['on_delete']);
+
+        $columns = collect(Schema::getColumns('order_items'))->keyBy('name');
+        $this->assertTrue($columns['product_id']['nullable']);
+    }
+
+    public function test_order_item_casts_addons_to_array(): void
+    {
+        $item = OrderItem::factory()->create(['addons' => ['lilin', 'topper']]);
+
+        $this->assertSame(['lilin', 'topper'], $item->fresh()->addons);
     }
 }

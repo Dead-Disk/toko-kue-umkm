@@ -107,6 +107,86 @@ class CustomerProductTest extends TestCase
         $response->assertSee('name="metode_pembayaran"', false);
     }
 
+    public function test_product_page_limits_quantity_inputs_to_the_product_maximum(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3]);
+
+        $response = $this->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSee('max="3"', false);
+        $response->assertSee('data-max-per-order="3"', false);
+        $response->assertSee('data-max-order-message="Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi."', false);
+    }
+
+    public function test_product_page_renders_flash_error_as_toast(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3]);
+
+        $response = $this->withSession([
+            'error' => 'Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi.',
+        ])->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSee(
+            'data-toast-message="Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi."',
+            false
+        );
+    }
+
+    public function test_order_review_rejects_quantity_above_the_product_limit(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3, 'stok' => 10]);
+
+        $response = $this->from(route('customer.produk.show', $product))
+            ->postReview($product, ['jumlah' => 4]);
+
+        $response->assertRedirect(route('customer.produk.show', $product));
+        $response->assertSessionHasErrors('jumlah');
+        $response->assertSessionHas('error', 'Produk ini hanya dapat dipesan maksimal 3 pcs per transaksi.');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_items', 0);
+    }
+
+    public function test_order_review_accepts_quantity_at_the_product_limit(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 3, 'stok' => 10]);
+
+        $response = $this->postReview($product, ['jumlah' => 3]);
+
+        $response->assertOk();
+        $response->assertSee('Ringkasan Pesanan');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_order_review_uses_five_as_the_default_limit(): void
+    {
+        $product = Product::factory()->create(['stok' => 10]);
+
+        $response = $this->postReview($product, ['jumlah' => 6]);
+
+        $response->assertSessionHasErrors('jumlah');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_rejects_a_draft_that_exceeds_the_current_limit(): void
+    {
+        $product = Product::factory()->create(['max_per_order' => 5, 'stok' => 10]);
+
+        $this->postReview($product, ['jumlah' => 5]);
+
+        $product->update(['max_per_order' => 2]);
+
+        $response = $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => $this->paymentProof(),
+        ]);
+
+        $response->assertRedirect(route('customer.produk.show', $product));
+        $response->assertSessionHasErrors('jumlah');
+        $response->assertSessionHas('error', 'Produk ini hanya dapat dipesan maksimal 2 pcs per transaksi.');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
     public function test_checkout_saves_order_and_item_then_redirects_to_success_page(): void
     {
         $product = Product::factory()->create([
@@ -458,9 +538,11 @@ class CustomerProductTest extends TestCase
         $response->assertSee('name="bukti_pembayaran"', false);
         $response->assertSee('Unggah Bukti Pembayaran (JPG/PNG)');
         $response->assertSee('required', false);
+        $response->assertSee('Silakan lakukan pembayaran sesuai nominal di atas, lalu unggah bukti transfer di bawah ini.');
+        $response->assertDontSee('Pembayaran dilakukan secara tunai (Cash) saat pengambilan / pengantaran pesanan.');
     }
 
-    public function test_review_page_makes_payment_proof_optional_for_cash(): void
+    public function test_review_page_hides_payment_proof_for_cash(): void
     {
         $product = Product::factory()->create();
 
@@ -469,8 +551,11 @@ class CustomerProductTest extends TestCase
         ]);
 
         $response->assertOk();
-        $response->assertSee('Unggah Bukti Pembayaran (opsional)');
-        $response->assertDontSee('Unggah Bukti Pembayaran (JPG/PNG)');
+        $response->assertDontSee('name="bukti_pembayaran"', false);
+        $response->assertDontSee('Unggah Bukti Pembayaran');
+        $response->assertSee('Pembayaran dilakukan secara tunai (Cash) saat pengambilan / pengantaran pesanan.');
+        $response->assertDontSee('Pembayaran tunai dilakukan secara langsung di toko / saat penerimaan kue.');
+        $response->assertDontSee('Silakan lakukan pembayaran sesuai nominal di atas, lalu unggah bukti transfer di bawah ini.');
     }
 
     public function test_checkout_requires_payment_proof_for_transfer_bank(): void
@@ -527,6 +612,24 @@ class CustomerProductTest extends TestCase
         ]);
 
         $response = $this->post(route('customer.pesanan.checkout'));
+
+        $order = Order::firstOrFail();
+
+        $response->assertRedirect(route('customer.pesanan.sukses', $order->kode_pesanan));
+        $this->assertNull($order->bukti_pembayaran);
+    }
+
+    public function test_cash_checkout_ignores_a_stray_payment_proof_upload(): void
+    {
+        $product = Product::factory()->create();
+
+        $this->postReview($product, [
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ]);
+
+        $response = $this->post(route('customer.pesanan.checkout'), [
+            'bukti_pembayaran' => UploadedFile::fake()->create('catatan.txt', 10, 'text/plain'),
+        ]);
 
         $order = Order::firstOrFail();
 

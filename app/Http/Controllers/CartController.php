@@ -36,9 +36,18 @@ class CartController extends Controller
         $jumlah = max(1, (int) $request->input('quantity', 1));
 
         $jumlahBaru = ($cart[$product->id]['quantity'] ?? 0) + $jumlah;
+        $maxPerOrder = $product->max_per_order ?? 5;
 
         if ($jumlahBaru > $product->stok) {
             return back()->withErrors(['cart' => 'Stok '.$product->nama_kue.' tidak mencukupi. Sisa stok '.$product->stok.'.']);
+        }
+
+        if ($jumlahBaru > $maxPerOrder) {
+            $message = 'Produk ini hanya dapat dipesan maksimal '.$maxPerOrder.' pcs per transaksi.';
+
+            return back()
+                ->with('error', $message)
+                ->withErrors(['cart' => $message]);
         }
 
         $cart[$product->id] = [
@@ -74,6 +83,16 @@ class CartController extends Controller
 
         if (! isset($cart[$product->id])) {
             return back()->withErrors(['cart' => 'Produk tidak ada di keranjang.']);
+        }
+
+        $maxPerOrder = $product->max_per_order ?? 5;
+
+        if ((int) $data['quantity'] > $maxPerOrder) {
+            $message = 'Produk ini hanya dapat dipesan maksimal '.$maxPerOrder.' pcs per transaksi.';
+
+            return back()
+                ->with('error', $message)
+                ->withErrors(['cart' => $message]);
         }
 
         $cart[$product->id]['quantity'] = (int) $data['quantity'];

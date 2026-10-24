@@ -41,6 +41,7 @@ class AdminProductController extends Controller
     {
         $data = $request->validate($this->rules());
 
+        $data['max_per_order'] = $data['max_per_order'] ?? 5;
         $data['slug'] = $this->uniqueSlug($data['nama_kue']);
 
         if ($request->hasFile('foto')) {
@@ -70,6 +71,8 @@ class AdminProductController extends Controller
     public function update(Request $request, Product $product): RedirectResponse
     {
         $data = $request->validate($this->rules());
+
+        $data['max_per_order'] = $data['max_per_order'] ?? 5;
 
         if ($data['nama_kue'] !== $product->nama_kue) {
             $data['slug'] = $this->uniqueSlug($data['nama_kue'], $product->id);
@@ -112,6 +115,7 @@ class AdminProductController extends Controller
             'deskripsi' => ['nullable', 'string'],
             'harga' => ['required', 'integer', 'min:0'],
             'stok' => ['required', 'integer', 'min:0'],
+            'max_per_order' => ['nullable', 'integer', 'min:1'],
             'status_stok' => ['required', Rule::enum(StatusStok::class)],
             'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
