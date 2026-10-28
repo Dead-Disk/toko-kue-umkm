@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\AdminStoreSettingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CashierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -94,6 +95,10 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
         // Lihat status stok/inventory (read-only untuk staff)
         Route::get('produk', [AdminProductController::class, 'index'])->name('produk.index');
+
+        // Kasir / POS offline: penjualan tunai langsung di toko.
+        Route::get('kasir', [CashierController::class, 'index'])->name('kasir.index');
+        Route::post('kasir/store', [CashierController::class, 'store'])->name('kasir.store');
 
         // File sensitif dari private storage: bukti pembayaran & foto custom cake.
         Route::get('pesanan/{order}/bukti-pembayaran', [AdminOrderController::class, 'viewBuktiPembayaran'])

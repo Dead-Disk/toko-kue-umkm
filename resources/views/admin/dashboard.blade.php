@@ -13,6 +13,7 @@
     <ul>
         <li><a href="{{ route('admin.produk.index') }}">Kelola Produk</a></li>
         <li><a href="{{ route('admin.pesanan.index') }}">Pesanan Masuk</a></li>
+        <li><a href="{{ route('admin.kasir.index') }}">Kasir / POS Offline</a></li>
         @if (auth()->user()->isAdmin())
             <li><a href="{{ route('admin.settings.index') }}">Pengaturan Toko</a></li>
             <li><a href="{{ route('admin.pengaturan.index') }}">Pengaturan Custom Cake</a></li>
