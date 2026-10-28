@@ -32,6 +32,10 @@ class CartController extends Controller
             return back()->withErrors(['cart' => 'Maaf, produk ini sedang habis.']);
         }
 
+        $data = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:1000'],
+        ]);
+
         $cart = session('cart', []);
         $jumlah = max(1, (int) $request->input('quantity', 1));
 
@@ -50,6 +54,8 @@ class CartController extends Controller
                 ->withErrors(['cart' => $message]);
         }
 
+        $catatan = trim((string) ($data['catatan'] ?? ''));
+
         $cart[$product->id] = [
             'id' => $product->id,
             'name' => $product->nama_kue,
@@ -57,15 +63,10 @@ class CartController extends Controller
             'quantity' => $jumlahBaru,
             'image_url' => $product->foto ? asset('storage/'.$product->foto) : null,
             'options' => $cart[$product->id]['options'] ?? [],
+            'catatan' => $catatan !== '' ? $catatan : ($cart[$product->id]['catatan'] ?? null),
         ];
 
         session(['cart' => $cart]);
-
-        $catatan = $request->input('catatan');
-
-        if (is_string($catatan) && trim($catatan) !== '') {
-            session(['cart_note' => trim($catatan)]);
-        }
 
         return back()->with('success', $product->nama_kue.' ditambahkan ke keranjang.');
     }
@@ -76,7 +77,8 @@ class CartController extends Controller
     public function update(Request $request, Product $product): RedirectResponse
     {
         $data = $request->validate([
-            'quantity' => ['required', 'integer', 'min:1'],
+            'quantity' => ['sometimes', 'required', 'integer', 'min:1'],
+            'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $cart = session('cart', []);
@@ -85,9 +87,10 @@ class CartController extends Controller
             return back()->withErrors(['cart' => 'Produk tidak ada di keranjang.']);
         }
 
+        $quantity = (int) ($data['quantity'] ?? $cart[$product->id]['quantity']);
         $maxPerOrder = $product->max_per_order ?? 5;
 
-        if ((int) $data['quantity'] > $maxPerOrder) {
+        if ($quantity > $maxPerOrder) {
             $message = 'Produk ini hanya dapat dipesan maksimal '.$maxPerOrder.' pcs per transaksi.';
 
             return back()
@@ -95,11 +98,21 @@ class CartController extends Controller
                 ->withErrors(['cart' => $message]);
         }
 
-        $cart[$product->id]['quantity'] = (int) $data['quantity'];
+        $cart[$product->id]['quantity'] = $quantity;
+
+        if ($request->has('catatan')) {
+            $catatan = trim((string) $request->input('catatan', ''));
+
+            $cart[$product->id]['catatan'] = $catatan !== '' ? $catatan : null;
+        }
 
         session(['cart' => $cart]);
 
-        return back()->with('success', 'Jumlah '.$cart[$product->id]['name'].' diperbarui.');
+        $message = $request->has('catatan')
+            ? 'Catatan '.$cart[$product->id]['name'].' diperbarui.'
+            : 'Jumlah '.$cart[$product->id]['name'].' diperbarui.';
+
+        return back()->with('success', $message);
     }
 
     /**

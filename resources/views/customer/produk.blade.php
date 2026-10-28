@@ -125,8 +125,8 @@
                 </p>
 
                 <p>
-                    <label for="cart_catatan">Catatan Khusus (opsional)</label><br>
-                    <textarea id="cart_catatan" name="catatan" rows="3" cols="40" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan') }}</textarea>
+                    <label for="cart_catatan">Catatan untuk Kue Ini (opsional)</label><br>
+                    <textarea id="cart_catatan" name="catatan" rows="3" cols="40" maxlength="1000" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan') }}</textarea>
                 </p>
 
                 <p>
@@ -222,7 +222,7 @@
 
                 <p>
                     <label for="catatan">Catatan Khusus (opsional)</label><br>
-                    <textarea id="catatan" name="catatan" rows="3" cols="40" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan', $draft['catatan'] ?? '') }}</textarea>
+                    <textarea id="catatan" name="catatan" rows="3" cols="40" maxlength="1000" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan', $draft['catatan'] ?? '') }}</textarea>
                 </p>
 
                 <p>

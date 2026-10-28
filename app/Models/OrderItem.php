@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'product_id',
     'jumlah',
     'subtotal',
+    'catatan',
     'deskripsi_custom',
     'foto_referensi',
     'ukuran_kue',

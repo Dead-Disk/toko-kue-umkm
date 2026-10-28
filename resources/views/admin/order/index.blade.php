@@ -117,6 +117,9 @@
                                 <li>
                                     {{ $item->jumlah }}x
                                     {{ $item->product?->nama_kue ?? ($item->deskripsi_custom ? \Illuminate\Support\Str::limit($item->deskripsi_custom, 40) : 'Custom Cake') }}
+                                    @if ($item->catatan)
+                                        <div><strong>Catatan item:</strong> {{ $item->catatan }}</div>
+                                    @endif
                                 </li>
                             @endforeach
                         </ul>

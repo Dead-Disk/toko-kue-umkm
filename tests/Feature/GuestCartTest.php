@@ -45,6 +45,7 @@ class GuestCartTest extends TestCase
                 'quantity' => 1,
                 'image_url' => null,
                 'options' => [],
+                'catatan' => null,
             ],
         ], session('cart'));
     }
@@ -174,7 +175,7 @@ class GuestCartTest extends TestCase
         $response->assertSessionHas('warning', 'Keranjang belanja Anda masih kosong.');
     }
 
-    public function test_cart_note_is_carried_to_review_and_saved_on_the_order(): void
+    public function test_cart_note_is_carried_to_review_and_saved_on_the_order_item(): void
     {
         $product = Product::factory()->create(['nama_kue' => 'Tart Cokelat', 'harga' => 75_000]);
 
@@ -182,6 +183,11 @@ class GuestCartTest extends TestCase
             'quantity' => 1,
             'catatan' => 'Tolong tulis "Selamat Ulang Tahun"',
         ]);
+
+        $this->assertSame(
+            'Tolong tulis "Selamat Ulang Tahun"',
+            session('cart.'.$product->id.'.catatan')
+        );
 
         $this->get(route('cart.index'))->assertOk()->assertSee('Tolong tulis &quot;Selamat Ulang Tahun&quot;', false);
 
@@ -201,18 +207,84 @@ class GuestCartTest extends TestCase
         ]);
 
         $order = Order::firstOrFail();
+        $item = $order->items()->firstOrFail();
 
+        $this->assertSame('Tolong tulis "Selamat Ulang Tahun"', $item->catatan);
         $this->assertSame('Tolong tulis "Selamat Ulang Tahun", potong 8 bagian', $order->catatan);
-        $this->assertNull(session('cart_note'));
     }
 
-    public function test_clearing_the_cart_also_clears_the_cart_note(): void
+    public function test_each_cart_item_keeps_its_own_note(): void
+    {
+        $tart = Product::factory()->create(['nama_kue' => 'Tart Cokelat', 'harga' => 75_000]);
+        $bolu = Product::factory()->create(['nama_kue' => 'Bolu Pandan', 'harga' => 50_000]);
+        $lapis = Product::factory()->create(['nama_kue' => 'Lapis Legit', 'harga' => 90_000]);
+
+        $this->post(route('cart.add', $tart), ['catatan' => 'Tulisan: Selamat Ulang Tahun']);
+        $this->post(route('cart.add', $bolu), ['catatan' => 'Potong 8 bagian']);
+        $this->post(route('cart.add', $lapis), ['catatan' => 'Tanpa kismis']);
+
+        $this->assertSame('Tulisan: Selamat Ulang Tahun', session('cart.'.$tart->id.'.catatan'));
+        $this->assertSame('Potong 8 bagian', session('cart.'.$bolu->id.'.catatan'));
+        $this->assertSame('Tanpa kismis', session('cart.'.$lapis->id.'.catatan'));
+
+        $this->get(route('cart.index'))
+            ->assertOk()
+            ->assertSee('Tulisan: Selamat Ulang Tahun')
+            ->assertSee('Potong 8 bagian')
+            ->assertSee('Tanpa kismis');
+
+        $this->get(route('customer.pesanan.review-cart'))
+            ->assertOk()
+            ->assertSee('Tulisan: Selamat Ulang Tahun')
+            ->assertSee('Potong 8 bagian')
+            ->assertSee('Tanpa kismis');
+
+        $this->post(route('customer.pesanan.checkout'), [
+            'checkout_mode' => 'cart',
+            'nama_pemesan' => 'Budi',
+            'alamat_lengkap' => 'Jl. Merdeka No. 1',
+            'nomor_wa' => '08123456789',
+            'opsi_pengiriman' => 'kurir_toko',
+            'metode_pembayaran' => 'cash',
+        ]);
+
+        $items = Order::firstOrFail()->items()->get()->keyBy('product_id');
+
+        $this->assertSame('Tulisan: Selamat Ulang Tahun', $items[$tart->id]->catatan);
+        $this->assertSame('Potong 8 bagian', $items[$bolu->id]->catatan);
+        $this->assertSame('Tanpa kismis', $items[$lapis->id]->catatan);
+    }
+
+    public function test_cart_item_note_can_be_updated_without_changing_quantity(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product), ['quantity' => 2, 'catatan' => 'Catatan lama']);
+
+        $this->patch(route('cart.update', $product), ['catatan' => 'Catatan baru'])->assertRedirect();
+
+        $this->assertSame('Catatan baru', session('cart.'.$product->id.'.catatan'));
+        $this->assertSame(2, session('cart.'.$product->id.'.quantity'));
+    }
+
+    public function test_updating_cart_quantity_keeps_the_item_note(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product), ['catatan' => 'Lilin angka 18']);
+
+        $this->patch(route('cart.update', $product), ['quantity' => 3])->assertRedirect();
+
+        $this->assertSame('Lilin angka 18', session('cart.'.$product->id.'.catatan'));
+        $this->assertSame(3, session('cart.'.$product->id.'.quantity'));
+    }
+
+    public function test_clearing_the_cart_removes_all_item_notes(): void
     {
         $product = Product::factory()->create();
 
         $this->post(route('cart.add', $product), ['catatan' => 'Lilin angka 18']);
         $this->delete(route('cart.clear'))->assertRedirect();
 
+        $this->assertEmpty(session('cart', []));
         $this->assertNull(session('cart_note'));
     }
 

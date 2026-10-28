@@ -24,6 +24,7 @@ class OrderItemFactory extends Factory
             'product_id' => Product::factory(),
             'jumlah' => fake()->numberBetween(1, 5),
             'subtotal' => fake()->numberBetween(15_000, 500_000),
+            'catatan' => null,
             'deskripsi_custom' => null,
             'foto_referensi' => null,
             'ukuran_kue' => null,

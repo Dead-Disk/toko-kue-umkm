@@ -284,7 +284,7 @@ class OrderController extends Controller
 
                     $subtotal = $product->harga * $item['quantity'];
                     $total += $subtotal;
-                    $baris[] = [$product, $item['quantity'], $subtotal];
+                    $baris[] = [$product, $item['quantity'], $subtotal, $item['catatan'] ?? null];
                 }
 
                 $order = Order::create([
@@ -301,11 +301,12 @@ class OrderController extends Controller
                     'bukti_pembayaran' => $buktiPembayaran,
                 ]);
 
-                foreach ($baris as [$product, $jumlah, $subtotal]) {
+                foreach ($baris as [$product, $jumlah, $subtotal, $catatan]) {
                     $order->items()->create([
                         'product_id' => $product->id,
                         'jumlah' => $jumlah,
                         'subtotal' => $subtotal,
+                        'catatan' => $catatan,
                     ]);
                 }
 

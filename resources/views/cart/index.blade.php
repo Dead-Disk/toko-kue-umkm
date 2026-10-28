@@ -43,6 +43,7 @@
                 <tr>
                     <th>No</th>
                     <th>Nama Kue</th>
+                    <th>Catatan per Kue</th>
                     <th>Harga Satuan</th>
                     <th>Jumlah</th>
                     <th>Subtotal</th>
@@ -59,6 +60,16 @@
                             @else
                                 {{ $item['name'] }}
                             @endif
+                        </td>
+                        <td>
+                            <form action="{{ route('cart.update', $item['id']) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="quantity" value="{{ $item['quantity'] }}">
+                                <textarea name="catatan" rows="2" cols="24" maxlength="1000" aria-label="Catatan untuk {{ $item['name'] }}" placeholder="Catatan untuk {{ $item['name'] }}">{{ $item['catatan'] ?? '' }}</textarea>
+                                <br>
+                                <button type="submit">Simpan Catatan</button>
+                            </form>
                         </td>
                         <td>Rp{{ number_format($item['price'], 0, ',', '.') }}</td>
                         <td>
@@ -81,7 +92,7 @@
                     </tr>
                 @endforeach
                 <tr>
-                    <th colspan="4" align="right">Grand Total</th>
+                    <th colspan="5" align="right">Grand Total</th>
                     <td colspan="2">Rp{{ number_format($total, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
@@ -90,10 +101,6 @@
         <p>
             <a href="{{ route('customer.pesanan.review-cart') }}">Lanjut ke Review Pesanan</a>
         </p>
-
-        @if (session('cart_note'))
-            <p><strong>Catatan pesanan:</strong> {{ session('cart_note') }}</p>
-        @endif
 
         <p><a href="{{ route('customer.produk.index') }}">Kembali Belanja</a></p>
 

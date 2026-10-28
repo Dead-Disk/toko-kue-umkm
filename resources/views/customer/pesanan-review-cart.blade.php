@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>Nama Kue</th>
+                <th>Catatan</th>
                 <th>Harga Satuan</th>
                 <th>Kuantitas</th>
                 <th>Subtotal</th>
@@ -24,13 +25,14 @@
             @foreach ($cart as $item)
                 <tr>
                     <td>{{ $item['name'] }}</td>
+                    <td>{{ $item['catatan'] ?? '-' }}</td>
                     <td>Rp{{ number_format($item['price'], 0, ',', '.') }}</td>
                     <td>{{ $item['quantity'] }}</td>
                     <td>Rp{{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</td>
                 </tr>
             @endforeach
             <tr>
-                <th colspan="3" align="right">Total Harga</th>
+                <th colspan="4" align="right">Total Harga</th>
                 <td>Rp{{ number_format($total, 0, ',', '.') }}</td>
             </tr>
         </tbody>
@@ -143,8 +145,8 @@
         </div>
 
         <p>
-            <label for="catatan">Catatan Khusus (opsional)</label><br>
-            <textarea id="catatan" name="catatan" rows="3" cols="40" placeholder="Catatan khusus (misal: tulisan ucapan, ucapan di dus, lilin, dll)">{{ old('catatan', session('cart_note')) }}</textarea>
+            <label for="catatan">Catatan Tambahan untuk Seluruh Pesanan (opsional)</label><br>
+            <textarea id="catatan" name="catatan" rows="3" cols="40" maxlength="1000" placeholder="Misal: instruksi pengiriman atau permintaan khusus untuk seluruh pesanan">{{ old('catatan') }}</textarea>
         </p>
 
         <p>

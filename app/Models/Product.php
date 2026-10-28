@@ -87,7 +87,7 @@ class Product extends Model
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class, 'order_items')
-            ->withPivot(['jumlah', 'subtotal', 'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue'])
+            ->withPivot(['jumlah', 'subtotal', 'catatan', 'deskripsi_custom', 'foto_referensi', 'ukuran_kue', 'rasa_kue'])
             ->withTimestamps();
     }
 }

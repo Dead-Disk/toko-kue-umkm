@@ -53,6 +53,7 @@
             <tr>
                 <th>No</th>
                 <th>Nama Kue</th>
+                <th>Catatan</th>
                 <th>Jumlah</th>
                 <th>Subtotal</th>
                 <th>Foto Referensi</th>
@@ -63,6 +64,7 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $item->product?->nama_kue ?? 'Kue Custom' }}</td>
+                    <td>{{ $item->catatan ?? '-' }}</td>
                     <td>{{ $item->jumlah }}</td>
                     <td>Rp{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                     <td>
@@ -75,7 +77,7 @@
                 </tr>
             @endforeach
             <tr>
-                <th colspan="4" align="right">Total Harga</th>
+                <th colspan="5" align="right">Total Harga</th>
                 <td>Rp{{ number_format($order->total_harga, 0, ',', '.') }}</td>
             </tr>
         </tbody>
