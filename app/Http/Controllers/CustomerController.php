@@ -7,8 +7,10 @@ use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
 use App\Models\CakeOption;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\StoreSetting;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,14 +31,20 @@ class CustomerController extends Controller
      */
     public function index(): View
     {
-        return view('customer.index', [
-            'topProducts' => $this->topProducts(),
+        $categories = Category::all();
+        $produks = $this->topProducts();
+
+        return view('customer.beranda.index', [
+            'categories' => $categories,
+            'produks' => $produks,
+            'topProducts' => $produks,
+            'storeSetting' => StoreSetting::current(),
         ]);
     }
 
     /**
-     * 10 produk terlaris berdasarkan akumulasi jumlah di order_items.
-     * Bila belum ada transaksi sama sekali, ambil 10 produk terbaru.
+     * Produk rekomendasi / terlaris dari order_items.
+     * Bila belum ada transaksi sama sekali, ambil produk terbaru.
      *
      * @return Collection<int, Product>
      */
@@ -47,7 +55,7 @@ class CustomerController extends Controller
             ->withSum('orderItems as total_terjual', 'jumlah')
             ->orderByDesc('total_terjual')
             ->orderBy('nama_kue')
-            ->limit(10)
+            ->limit(4)
             ->get()
             ->filter(fn (Product $product): bool => ($product->total_terjual ?? 0) > 0)
             ->values();
@@ -56,7 +64,7 @@ class CustomerController extends Controller
             $topProducts = Product::query()
                 ->with('category')
                 ->latest()
-                ->limit(10)
+                ->limit(4)
                 ->get();
         }
 
@@ -74,10 +82,13 @@ class CustomerController extends Controller
         $view = "customer.pages.{$slug}";
 
         if (! view()->exists($view)) {
-            return view('customer.placeholder', ['slug' => $slug]);
+            return view('customer.pages.placeholder', ['slug' => $slug]);
         }
 
-        return view($view, ['slug' => $slug]);
+        return view($view, [
+            'slug' => $slug,
+            'storeSetting' => StoreSetting::current(),
+        ]);
     }
 
     /**
@@ -98,7 +109,7 @@ class CustomerController extends Controller
         $cakeOption = $cakeOptionId ? $cakeOptions->firstWhere('id', (int) $cakeOptionId) : null;
         $hargaAcuan = $baseProduct?->harga ?? $cakeOption?->harga_dasar ?? 0;
 
-        return view('customer.custom', [
+        return view('customer.custom.index', [
             'cakeOptions' => $cakeOptions,
             'products' => $products,
             'draft' => $draft,
@@ -165,7 +176,7 @@ class CustomerController extends Controller
             : null;
         $hargaAcuan = $baseProduct?->harga ?? $cakeOption->harga_dasar;
 
-        return view('customer.custom_review', [
+        return view('customer.custom.review', [
             'draft' => $draft,
             'cakeOption' => $cakeOption,
             'baseProduct' => $baseProduct,

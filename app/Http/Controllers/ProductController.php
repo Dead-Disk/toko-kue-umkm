@@ -14,9 +14,11 @@ class ProductController extends Controller
 {
     /**
      * Katalog produk pembeli: produk ready di atas, habis di bawah (A-Z).
+     * Dapat difilter berdasarkan slug kategori jika parameter query ada.
      */
     public function index(Request $request): View
     {
+<<<<<<< HEAD
         $search = $request->query('search');
         $categoryId = $request->query('category');
         $readyOnly = $request->boolean('ready_only');
@@ -29,6 +31,13 @@ class ProductController extends Controller
             'search' => $search,
             'readyOnly' => $readyOnly,
             'priceRange' => $priceRange,
+=======
+        $categorySlug = $request->query('kategori') ?? $request->query('category');
+
+        return view('customer.produk.index', [
+            'products' => $this->sortedProducts($categorySlug),
+            'selectedCategory' => $categorySlug,
+>>>>>>> afecada (feat: implementasi backend dan view beranda pembeli)
         ]);
     }
 
@@ -41,7 +50,7 @@ class ProductController extends Controller
     {
         $draft = session('order_draft', []);
 
-        return view('customer.produk', [
+        return view('customer.produk.index', [
             'products' => $this->sortedProducts(),
             'categories' => Category::orderBy('nama_kategori')->get(),
             'product' => $product,
@@ -57,6 +66,7 @@ class ProductController extends Controller
      *
      * @return Collection<int, Product>
      */
+<<<<<<< HEAD
     private function sortedProducts(?string $search = null, ?int $categoryId = null, bool $readyOnly = false, ?string $priceRange = null): Collection
     {
         return Product::query()
@@ -78,6 +88,17 @@ class ProductController extends Controller
             })
             ->when($priceRange === 'above_50k', function ($query): void {
                 $query->where('harga', '>', 50000);
+=======
+    private function sortedProducts(?string $categorySlug = null): Collection
+    {
+        return Product::query()
+            ->with('category')
+            ->when($categorySlug, function ($query, $slug) {
+                $query->whereHas('category', function ($q) use ($slug) {
+                    $q->where('slug', $slug)
+                        ->orWhere('nama_kategori', $slug);
+                });
+>>>>>>> afecada (feat: implementasi backend dan view beranda pembeli)
             })
             ->orderByRaw('status_stok = ? desc', [StatusStok::Ready->value])
             ->orderBy('nama_kue')

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang Kami - {{ $storeSetting->store_name ?? 'Nak Mbarep' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="bg-[#FAF2EE] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
+
+    {{-- Top Navigation Bar --}}
+    <header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-sm">
+        <div class="max-w-xl md:max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+            <a href="{{ route('customer.index') }}" class="flex items-center gap-2.5 group">
+                <img src="{{ asset('images/logo-nav.png') }}" alt="Logo Nak Mbarep" class="w-8 h-8 rounded-full object-cover border border-white/30 shadow-xs">
+                <span class="font-serif font-bold text-base sm:text-lg text-white tracking-wide group-hover:text-amber-100 transition">
+                    {{ $storeSetting->store_name ?? 'Nak Mbarep' }}
+                </span>
+            </a>
+
+            <nav class="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
+                <a href="{{ route('customer.index') }}" class="text-white/80 hover:text-white font-medium transition">
+                    Beranda
+                </a>
+                <a href="{{ route('customer.produk.index') }}" class="text-white/80 hover:text-white font-medium transition">
+                    Katalog Kue
+                </a>
+                <a href="{{ route('customer.page', 'tentang-kami') }}" class="text-white font-semibold border-b-2 border-white pb-0.5">
+                    Tentang Kami
+                </a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="{{ route('customer.produk.index') }}" class="text-white/90 hover:text-white p-1.5 transition" title="Cari Kue">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </a>
+                @php
+                    $cartCount = array_sum(array_column(session('cart', []), 'quantity'));
+                @endphp
+                <a href="{{ route('cart.index') }}" class="relative p-1.5 text-white/90 hover:text-amber-200 transition" aria-label="Keranjang Belanja">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                    @if ($cartCount > 0)
+                        <span class="absolute -top-1 -right-1 bg-[#6B0F1A] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
+                            {{ $cartCount }}
+                        </span>
+                    @endif
+                </a>
+            </div>
+        </div>
+    </header>
+
+    {{-- Main Content --}}
+    <main class="max-w-xl md:max-w-3xl mx-auto px-4 py-8 w-full flex-1 space-y-6">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-[#F4E1D9] shadow-xs space-y-6">
+            <div class="text-center space-y-2">
+                <img src="{{ asset('images/logo-footer.png') }}" alt="Logo Nak Mbarep" class="w-20 h-20 mx-auto rounded-full object-cover border-2 border-rose-200 shadow-xs">
+                <h1 class="text-2xl sm:text-3xl font-serif font-bold text-[#540F18]">
+                    Tentang {{ $storeSetting->store_name ?? 'Nak Mbarep' }}
+                </h1>
+                <p class="text-xs sm:text-sm text-[#7A2832] italic font-serif">
+                    "Kue Lezat, Momen Lebih Manis ♡"
+                </p>
+            </div>
+
+            <div class="prose text-gray-700 text-sm sm:text-base leading-relaxed space-y-4 border-t border-b border-gray-100 py-6">
+                <p>
+                    Selamat datang di <strong>{{ $storeSetting->store_name ?? 'Nak Mbarep' }}</strong>! Kami adalah toko kue UMKM yang berdedikasi menghadirkan aneka kue lezat dan berkualitas tinggi untuk menyempurnakan setiap momen bahagia Anda.
+                </p>
+                <p>
+                    <em>"Dari dapur kecil, untuk kebahagiaan besar ♡"</em> — Kami percaya bahwa setiap kebahagiaan layak dirayakan dengan kue terbaik. Setiap produk dibuat dari bahan-bahan pilihan dengan penuh cinta dan ketelitian oleh tenaga terampil kami.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div class="bg-[#FAF2EE] p-4 rounded-2xl text-center">
+                        <span class="text-2xl mb-1 block">🎂</span>
+                        <h3 class="font-serif font-bold text-[#540F18] text-sm">Bahan Berkualitas</h3>
+                        <p class="text-xs text-gray-600 mt-1">Menggunakan bahan alami dan premium tanpa pengawet berbahaya.</p>
+                    </div>
+                    <div class="bg-[#FAF2EE] p-4 rounded-2xl text-center">
+                        <span class="text-2xl mb-1 block">✨</span>
+                        <h3 class="font-serif font-bold text-[#540F18] text-sm">Custom Cake</h3>
+                        <p class="text-xs text-gray-600 mt-1">Desain kue impian Anda bisa kami wujudkan sesuai pesanan.</p>
+                    </div>
+                    <div class="bg-[#FAF2EE] p-4 rounded-2xl text-center">
+                        <span class="text-2xl mb-1 block">❤️</span>
+                        <h3 class="font-serif font-bold text-[#540F18] text-sm">Penuh Rasa Cinta</h3>
+                        <p class="text-xs text-gray-600 mt-1">Dibuat secara higienis, fresh setiap hari untuk pelanggan.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-[#FAF0EB] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="space-y-1 text-center sm:text-left">
+                    <h4 class="font-serif font-bold text-[#540F18] text-sm sm:text-base">Kunjungi Toko Kami</h4>
+                    <p class="text-xs text-gray-600">
+                        {{ $storeSetting->store_address ?? 'Jl. Letjend Suprapto Gang 1 No. 4, Kepatihan, Tulungagung, Jawa Timur' }}
+                    </p>
+                </div>
+                <a href="{{ route('customer.produk.index') }}" class="bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition shadow-xs whitespace-nowrap">
+                    Lihat Katalog Kue →
+                </a>
+            </div>
+        </div>
+    </main>
+
+    {{-- Footer --}}
+    <footer class="bg-[#4D626C] text-white mt-10">
+        <div class="max-w-xl md:max-w-3xl mx-auto px-4 py-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-xs">
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <img src="{{ asset('images/logo-footer.png') }}" alt="Nak Mbarep Logo" class="w-9 h-9 rounded-full object-cover border border-white/20">
+                    <h3 class="font-serif font-bold text-base text-white tracking-wide">
+                        {{ $storeSetting->store_name ?? 'Nak Mbarep' }}
+                    </h3>
+                </div>
+                <p class="text-slate-200 text-[11px] leading-relaxed">
+                    {{ $storeSetting->store_description ?? 'Kue Lezat, Momen Lebih Manis' }}
+                </p>
+            </div>
+            <div class="space-y-2">
+                <h4 class="font-semibold text-sm text-white">Navigasi</h4>
+                <ul class="space-y-1.5 text-slate-200 text-xs">
+                    <li><a href="{{ route('customer.index') }}" class="hover:text-amber-100 transition">Beranda</a></li>
+                    <li><a href="{{ route('customer.produk.index') }}" class="hover:text-amber-100 transition">Katalog Kue</a></li>
+                    <li><a href="{{ route('customer.page', 'tentang-kami') }}" class="hover:text-amber-100 transition">Tentang Kami</a></li>
+                    <li><a href="{{ route('customer.custom.create') }}" class="hover:text-amber-100 transition">Pesan Custom Cake</a></li>
+                </ul>
+            </div>
+            <div class="space-y-2">
+                <h4 class="font-semibold text-sm text-white">Kontak Kami</h4>
+                <div class="flex items-center gap-3 pt-1">
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="text-white hover:text-amber-200 transition" aria-label="Instagram">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    </a>
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="text-white hover:text-amber-200 transition" aria-label="Facebook">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </a>
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $storeSetting->store_phone ?? '628123456789') }}" target="_blank" rel="noopener noreferrer" class="text-white hover:text-amber-200 transition" aria-label="WhatsApp">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    </a>
+                    <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" class="text-white hover:text-amber-200 transition" aria-label="TikTok">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                    </a>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <h4 class="font-semibold text-sm text-white">Informasi</h4>
+                <div class="flex items-start gap-2 text-slate-200 text-xs">
+                    <svg class="w-4 h-4 shrink-0 mt-0.5 text-rose-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
+                    <span>{{ $storeSetting->store_address ?? 'Jl. Letjend Suprapto Gang 1 No. 4, Kepatihan, Tulungagung, Jawa Timur' }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/10 py-3 text-center text-[11px] text-slate-300">
+            &copy; {{ date('Y') }} {{ $storeSetting->store_name ?? 'Nak Mbarep' }}. Semua Hak Dilindungi.
+        </div>
+    </footer>
+
+</body>
+</html>
+
