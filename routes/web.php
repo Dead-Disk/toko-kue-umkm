@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\AdminStoreSettingController;
 use App\Http\Controllers\Auth\LoginController;
@@ -131,6 +132,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
                 ->parameters(['kategori' => 'category'])
                 ->except(['show']);
         });
+
+        // Laporan penjualan (khusus admin).
+        Route::get('laporan', [AdminReportController::class, 'index'])->name('reports.index');
 
         // Kelola akun admin/staf (khusus admin).
         Route::resource('users', UserController::class)->except(['show']);
