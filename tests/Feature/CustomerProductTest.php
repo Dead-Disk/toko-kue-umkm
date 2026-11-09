@@ -6,6 +6,7 @@ use App\Enums\MetodePembayaran;
 use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
@@ -644,5 +645,32 @@ class CustomerProductTest extends TestCase
         $response->assertRedirect(route('customer.produk.index'));
         $response->assertSessionHasErrors('order');
         $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_catalog_can_be_filtered_by_search_keyword(): void
+    {
+        Product::factory()->create(['nama_kue' => 'Tart Pink']);
+        Product::factory()->create(['nama_kue' => 'Rainbow Cake']);
+
+        $response = $this->get(route('customer.produk.index', ['search' => 'Pink']));
+
+        $response->assertOk();
+        $response->assertSee('Tart Pink');
+        $response->assertDontSee('Rainbow Cake');
+    }
+
+    public function test_catalog_can_be_filtered_by_category(): void
+    {
+        $catTart = Category::factory()->create(['nama_kategori' => 'Kue Tart']);
+        $catBolu = Category::factory()->create(['nama_kategori' => 'Bolu']);
+
+        Product::factory()->create(['nama_kue' => 'Tart Cokelat', 'category_id' => $catTart->id]);
+        Product::factory()->create(['nama_kue' => 'Bolu Gulung', 'category_id' => $catBolu->id]);
+
+        $response = $this->get(route('customer.produk.index', ['category' => $catTart->id]));
+
+        $response->assertOk();
+        $response->assertSee('Tart Cokelat');
+        $response->assertDontSee('Bolu Gulung');
     }
 }
