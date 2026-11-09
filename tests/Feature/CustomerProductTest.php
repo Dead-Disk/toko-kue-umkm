@@ -673,4 +673,41 @@ class CustomerProductTest extends TestCase
         $response->assertSee('Tart Cokelat');
         $response->assertDontSee('Bolu Gulung');
     }
+
+    public function test_catalog_can_be_filtered_by_ready_only(): void
+    {
+        Product::factory()->create(['nama_kue' => 'Kue Siap']);
+        Product::factory()->habis()->create(['nama_kue' => 'Kue Habis']);
+
+        $response = $this->get(route('customer.produk.index', ['ready_only' => 1]));
+
+        $response->assertOk();
+        $response->assertSee('Kue Siap');
+        $response->assertDontSee('Kue Habis');
+    }
+
+    public function test_catalog_can_be_filtered_by_price_range(): void
+    {
+        Product::factory()->create(['nama_kue' => 'Kue Murah', 'harga' => 15000]);
+        Product::factory()->create(['nama_kue' => 'Kue Sedang', 'harga' => 35000]);
+        Product::factory()->create(['nama_kue' => 'Kue Premium', 'harga' => 80000]);
+
+        $responseUnder25k = $this->get(route('customer.produk.index', ['price_range' => 'under_25k']));
+        $responseUnder25k->assertOk();
+        $responseUnder25k->assertSee('Kue Murah');
+        $responseUnder25k->assertDontSee('Kue Sedang');
+        $responseUnder25k->assertDontSee('Kue Premium');
+
+        $response25k50k = $this->get(route('customer.produk.index', ['price_range' => '25k_50k']));
+        $response25k50k->assertOk();
+        $response25k50k->assertSee('Kue Sedang');
+        $response25k50k->assertDontSee('Kue Murah');
+        $response25k50k->assertDontSee('Kue Premium');
+
+        $responseAbove50k = $this->get(route('customer.produk.index', ['price_range' => 'above_50k']));
+        $responseAbove50k->assertOk();
+        $responseAbove50k->assertSee('Kue Premium');
+        $responseAbove50k->assertDontSee('Kue Murah');
+        $responseAbove50k->assertDontSee('Kue Sedang');
+    }
 }
