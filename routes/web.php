@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\AdminSettingController;
@@ -86,7 +87,7 @@ Route::post('logout', [LoginController::class, 'destroy'])
 | Khusus admin: CRUD produk, pesanan (hapus), pengaturan, dan kategori.
 */
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
-    Route::get('/', fn () => view('admin.dashboard'))->name('dashboard');
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('role:admin,staff')->group(function () {
         // Pesanan masuk & ubah status
