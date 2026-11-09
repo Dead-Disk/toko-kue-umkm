@@ -11,17 +11,61 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminProductController extends Controller
 {
     /**
      * Daftar semua produk kue.
      */
-    public function index(): View
+    public function index(Request $request): View|StreamedResponse
     {
-        $products = Product::with('category')->latest()->get();
+        if ($request->get('export') === 'csv') {
+            $filename = 'produk-nak-mbarep-'.date('Y-m-d').'.csv';
 
-        return view('admin.product.index', ['products' => $products]);
+            return response()->streamDownload(function (): void {
+                $handle = fopen('php://output', 'w');
+                if ($handle === false) {
+                    return;
+                }
+                fputcsv($handle, ['No', 'Nama Produk', 'Kategori', 'Harga', 'Stok', 'Status Stok']);
+                $all = Product::with('category')->get();
+                foreach ($all as $index => $p) {
+                    fputcsv($handle, [
+                        $index + 1,
+                        $p->nama_kue,
+                        $p->category?->nama_kategori ?? '-',
+                        $p->harga,
+                        $p->stok,
+                        $p->status_stok->value ?? 'ready',
+                    ]);
+                }
+                fclose($handle);
+            }, $filename, ['Content-Type' => 'text/csv']);
+        }
+
+        $query = Product::with('category')->latest();
+
+        if ($request->filled('search')) {
+            $search = (string) $request->input('search');
+            $query->where(function ($q) use ($search): void {
+                $q->where('nama_kue', 'like', "%{$search}%")
+                    ->orWhere('deskripsi', 'like', "%{$search}%")
+                    ->orWhere('harga', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($cq) use ($search): void {
+                        $cq->where('nama_kategori', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        $products = $query->paginate(8)->withQueryString();
+        $categories = Category::withCount('products')->get();
+
+        return view('admin.product.index', compact('products', 'categories'));
     }
 
     /**
