@@ -7,33 +7,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-[#FDF2EE] text-gray-800 min-h-screen antialiased">
-    {{-- Header Top Bar (matching mockup header tone) --}}
-    <header class="bg-[#4D626C] text-white sticky top-0 z-40 shadow-xs">
-        <div class="max-w-md md:max-w-2xl mx-auto px-4 h-12 flex items-center justify-between">
-            <a href="{{ route('customer.index') }}" class="flex items-center gap-2 text-white font-semibold text-sm hover:opacity-90 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <span>Toko Kue</span>
-            </a>
-
-            <nav class="flex items-center gap-3 text-xs">
-                <a href="{{ route('customer.produk.index') }}" class="text-white font-medium hover:underline">Katalog</a>
-                <a href="{{ route('customer.custom.create') }}" class="text-white/80 hover:text-white transition">Custom Cake</a>
-                <a href="{{ route('customer.page', 'tentang-kami') }}" class="text-white/80 hover:text-white transition">Tentang</a>
-                
-                @php
-                    $cartCount = array_sum(array_column(session('cart', []), 'quantity'));
-                @endphp
-                <a href="{{ route('cart.index') }}" class="relative p-1.5 text-white hover:text-amber-200 transition" aria-label="Keranjang">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    @if ($cartCount > 0)
-                        <span class="absolute -top-1 -right-1 bg-[#6B0F1A] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                            {{ $cartCount }}
-                        </span>
-                    @endif
-                </a>
-            </nav>
-        </div>
-    </header>
+    {{-- Header Top Bar (matching beranda navbar) --}}
+    @include('customer.partials.navbar')
 
     <main class="max-w-md md:max-w-2xl mx-auto px-4 pt-4 pb-12">
         {{-- Flash messages & Toasts --}}

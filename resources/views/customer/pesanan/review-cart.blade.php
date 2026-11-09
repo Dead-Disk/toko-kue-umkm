@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Pesanan - Toko Kue</title>
-    @vite('resources/js/app.js')
+    <title>Review Pesanan - {{ \App\Models\StoreSetting::current()?->store_name ?? 'Nak Mbarep' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
-    <h1>Review Pesanan</h1>
+<body class="bg-[#FAF2EE] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
+    {{-- Top Navigation Bar --}}
+    @include('customer.partials.navbar')
+
+    <div class="max-w-md md:max-w-2xl mx-auto px-4 py-6 w-full flex-1">
+        <h1 class="text-xl sm:text-2xl font-serif font-bold text-[#6B0F1A] mb-2">Review Pesanan</h1>
 
     <p>Periksa kembali isi keranjang dan lengkapi data pengiriman sebelum mengirim pesanan.</p>
 
@@ -155,5 +159,6 @@
     </form>
 
     <p><a href="{{ route('cart.index') }}">Kembali ke Keranjang</a></p>
+    </div>
 </body>
 </html>

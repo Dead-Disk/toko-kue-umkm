@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesanan Berhasil - Toko Kue</title>
+    <title>Pesanan Berhasil - {{ \App\Models\StoreSetting::current()?->store_name ?? 'Nak Mbarep' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
-    <h1>Pesanan Berhasil Dikirim</h1>
+<body class="bg-[#FAF2EE] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
+    {{-- Top Navigation Bar --}}
+    @include('customer.partials.navbar')
+
+    <div class="max-w-md md:max-w-2xl mx-auto px-4 py-6 w-full flex-1">
+        <h1 class="text-xl sm:text-2xl font-serif font-bold text-[#6B0F1A] mb-2">Pesanan Berhasil Dikirim</h1>
 
     <p>
         Terima kasih, {{ $order->nama_pemesan }}! Pesanan kamu sudah kami terima
@@ -86,5 +91,6 @@
     <p>
         <a href="{{ route('customer.produk.index') }}">Kembali ke Katalog Produk</a>
     </p>
+    </div>
 </body>
 </html>
