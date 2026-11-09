@@ -9,49 +9,7 @@
 <body class="bg-[#FAF2EE] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
 
     {{-- Top Navigation Bar --}}
-    <header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-sm">
-        <div class="max-w-xl md:max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-            <a href="{{ route('customer.index') }}" class="flex items-center gap-2.5 group">
-                <img src="{{ asset('images/logo-nav.png') }}" alt="Logo Nak Mbarep" class="w-8 h-8 rounded-full object-cover border border-white/30 shadow-xs">
-                <span class="font-serif font-bold text-base sm:text-lg text-white tracking-wide group-hover:text-amber-100 transition">
-                    {{ $storeSetting->store_name ?? 'Nak Mbarep' }}
-                </span>
-            </a>
-
-            <nav class="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm">
-                <a href="{{ route('customer.index') }}" class="text-white/80 hover:text-white font-medium transition">
-                    Beranda
-                </a>
-                <a href="{{ route('customer.produk.index') }}" class="text-white/80 hover:text-white font-medium transition">
-                    Katalog Kue
-                </a>
-                <a href="{{ route('customer.page', 'tentang-kami') }}" class="text-white font-semibold border-b-2 border-white pb-0.5">
-                    Tentang Kami
-                </a>
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <a href="{{ route('customer.produk.index') }}" class="text-white/90 hover:text-white p-1.5 transition" title="Cari Kue">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                </a>
-                @php
-                    $cartCount = array_sum(array_column(session('cart', []), 'quantity'));
-                @endphp
-                <a href="{{ route('cart.index') }}" class="relative p-1.5 text-white/90 hover:text-amber-200 transition" aria-label="Keranjang Belanja">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                    </svg>
-                    @if ($cartCount > 0)
-                        <span class="absolute -top-1 -right-1 bg-[#6B0F1A] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-white">
-                            {{ $cartCount }}
-                        </span>
-                    @endif
-                </a>
-            </div>
-        </div>
-    </header>
+    @include('customer.partials.navbar')
 
     {{-- Main Content --}}
     <main class="max-w-xl md:max-w-3xl mx-auto px-4 py-8 w-full flex-1 space-y-6">

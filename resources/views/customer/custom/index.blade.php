@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesan Custom Cake - Toko Kue</title>
+    <title>Pesan Custom Cake - {{ \App\Models\StoreSetting::current()?->store_name ?? 'Nak Mbarep' }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
-    <h1>Pesan Custom Cake</h1>
+<body class="bg-[#FAF2EE] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
+    {{-- Top Navigation Bar --}}
+    @include('customer.partials.navbar')
 
-    <p><a href="{{ route('customer.index') }}">Kembali ke Beranda</a></p>
+    <div class="max-w-md md:max-w-2xl mx-auto px-4 py-6 w-full flex-1">
+        <h1 class="text-xl sm:text-2xl font-serif font-bold text-[#6B0F1A] mb-3">Pesan Custom Cake</h1>
+
+        <p class="mb-4"><a href="{{ route('customer.index') }}" class="text-xs text-[#6B0F1A] hover:underline font-semibold">← Kembali ke Beranda</a></p>
 
     <form action="{{ route('customer.custom.review') }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -198,5 +203,6 @@
             handleQuantityChange();
         })();
     </script>
+    </div>
 </body>
 </html>
