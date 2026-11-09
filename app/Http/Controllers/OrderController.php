@@ -34,7 +34,7 @@ class OrderController extends Controller
                 ->with('warning', 'Keranjang belanja Anda masih kosong.');
         }
 
-        return view('customer.pesanan-review-cart', [
+        return view('customer.pesanan.review-cart', [
             'cart' => $cart,
             'total' => collect($cart)->sum(fn (array $item): int => $item['price'] * $item['quantity']),
             'storeSetting' => StoreSetting::current(),
@@ -105,7 +105,7 @@ class OrderController extends Controller
 
         session(['order_draft' => $draft]);
 
-        return view('customer.pesanan-review', [
+        return view('customer.pesanan.review', [
             'draft' => $draft,
             'product' => $product,
             'subtotal' => $product->harga * $draft['jumlah'],
@@ -367,6 +367,6 @@ class OrderController extends Controller
             ->where('kode_pesanan', $kode_pesanan)
             ->firstOrFail();
 
-        return view('customer.pesanan-sukses', ['order' => $order]);
+        return view('customer.pesanan.sukses', ['order' => $order]);
     }
 }
