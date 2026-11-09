@@ -19,12 +19,16 @@ class ProductController extends Controller
     {
         $search = $request->query('search');
         $categoryId = $request->query('category');
+        $readyOnly = $request->boolean('ready_only');
+        $priceRange = $request->query('price_range', 'all');
 
         return view('customer.produk', [
-            'products' => $this->sortedProducts($search, $categoryId ? (int) $categoryId : null),
+            'products' => $this->sortedProducts($search, $categoryId ? (int) $categoryId : null, $readyOnly, $priceRange),
             'categories' => Category::orderBy('nama_kategori')->get(),
             'currentCategory' => $categoryId ? (int) $categoryId : null,
             'search' => $search,
+            'readyOnly' => $readyOnly,
+            'priceRange' => $priceRange,
         ]);
     }
 
@@ -43,6 +47,8 @@ class ProductController extends Controller
             'product' => $product,
             'draft' => ($draft['product_id'] ?? null) === $product->id ? $draft : [],
             'storeSetting' => StoreSetting::current(),
+            'readyOnly' => false,
+            'priceRange' => 'all',
         ]);
     }
 
@@ -51,7 +57,7 @@ class ProductController extends Controller
      *
      * @return Collection<int, Product>
      */
-    private function sortedProducts(?string $search = null, ?int $categoryId = null): Collection
+    private function sortedProducts(?string $search = null, ?int $categoryId = null, bool $readyOnly = false, ?string $priceRange = null): Collection
     {
         return Product::query()
             ->with('category')
@@ -60,6 +66,18 @@ class ProductController extends Controller
             })
             ->when($categoryId, function ($query, $categoryId): void {
                 $query->where('category_id', $categoryId);
+            })
+            ->when($readyOnly, function ($query): void {
+                $query->where('status_stok', StatusStok::Ready->value);
+            })
+            ->when($priceRange === 'under_25k', function ($query): void {
+                $query->where('harga', '<', 25000);
+            })
+            ->when($priceRange === '25k_50k', function ($query): void {
+                $query->whereBetween('harga', [25000, 50000]);
+            })
+            ->when($priceRange === 'above_50k', function ($query): void {
+                $query->where('harga', '>', 50000);
             })
             ->orderByRaw('status_stok = ? desc', [StatusStok::Ready->value])
             ->orderBy('nama_kue')

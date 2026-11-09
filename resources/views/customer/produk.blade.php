@@ -250,27 +250,48 @@
             </section>
         @endisset
 
-        {{-- Search Input (Matching Mockup with rounded white pill and pinkish border) --}}
-        <div class="relative bg-white rounded-2xl border border-[#E8B8AE] shadow-xs px-3.5 py-2.5 flex items-center gap-2.5 focus-within:ring-2 focus-within:ring-[#6B0F1A]/20 focus-within:border-[#6B0F1A] transition">
-            <svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="7"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"/>
-            </svg>
-            <input
-                type="text"
-                id="catalog-search"
-                value="{{ $search ?? '' }}"
-                placeholder="Cari kue favoritmu..."
-                autocomplete="off"
-                class="w-full bg-transparent border-0 p-0 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
+        {{-- Search & Filter Toggle Bar --}}
+        <div class="flex items-center gap-2.5">
+            {{-- Search Input (Matching Mockup with rounded white pill and pinkish border) --}}
+            <div class="flex-1 relative bg-white rounded-2xl border border-[#E8B8AE] shadow-xs px-3.5 py-2.5 flex items-center gap-2.5 focus-within:ring-2 focus-within:ring-[#6B0F1A]/20 focus-within:border-[#6B0F1A] transition">
+                <svg class="w-5 h-5 text-gray-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"/>
+                </svg>
+                <input
+                    type="text"
+                    id="catalog-search"
+                    value="{{ $search ?? '' }}"
+                    placeholder="Cari kue favoritmu..."
+                    autocomplete="off"
+                    class="w-full bg-transparent border-0 p-0 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
+                >
+                <button type="button" id="search-clear-btn" class="hidden text-gray-400 hover:text-gray-600 p-0.5" aria-label="Hapus pencarian">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {{-- Filter Toggle Button (opens Sidebar Drawer) --}}
+            <button
+                type="button"
+                id="filter-toggle-btn"
+                title="Buka Filter Katalog"
+                aria-label="Filter Katalog"
+                class="relative p-2.5 sm:p-3 bg-white hover:bg-rose-50 border border-[#E8B8AE] text-[#6B0F1A] rounded-2xl shadow-xs transition flex items-center justify-center cursor-pointer shrink-0"
             >
-            <button type="button" id="search-clear-btn" class="hidden text-gray-400 hover:text-gray-600 p-0.5" aria-label="Hapus pencarian">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M3 12h18M3 20h18M7 2v4M17 10v4M11 18v4" />
+                </svg>
+                {{-- Active filter indicator dot --}}
+                <span id="filter-active-dot" class="hidden absolute top-2 right-2 w-2 h-2 rounded-full bg-[#6B0F1A]"></span>
             </button>
         </div>
 
+        {{-- Heading "Katalog Kue" (as shown in the sidebar mockup preview) --}}
+        <h1 class="text-2xl font-bold text-[#6B0F1A] mt-3.5">Katalog Kue</h1>
+
         {{-- Tagline (Matching Mockup in tone and typography) --}}
-        <p class="text-[#6B0F1A] font-semibold text-xs sm:text-sm mt-4 mb-3 tracking-wide">
+        <p class="text-[#6B0F1A] font-medium text-xs sm:text-sm mt-0.5 mb-3 tracking-wide">
             Maniskan harimu dengan pilihan kue istimewa!
         </p>
 
@@ -305,6 +326,8 @@
                     class="product-card bg-white rounded-3xl p-3 shadow-xs border border-[#F4E1D9] hover:shadow-md transition-all flex flex-col justify-between"
                     data-product-name="{{ strtolower($item->nama_kue) }}"
                     data-category-id="{{ $item->category_id ?? '' }}"
+                    data-status-stok="{{ $isReady ? 'ready' : 'habis' }}"
+                    data-harga="{{ (int) $item->harga }}"
                 >
                     <div>
                         {{-- Cake Image Container (Rounded-2xl as seen in mockup) --}}
@@ -387,24 +410,229 @@
             @endforelse
         </div>
 
-        {{-- No results message when filtering via search or category --}}
+        {{-- No results message when filtering via search, category, or sidebar --}}
         <div id="no-search-results" class="hidden text-center py-12 bg-white rounded-3xl border border-[#F4E1D9] p-6 mt-3">
             <svg class="w-12 h-12 mx-auto text-rose-200 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"/></svg>
             <p class="text-sm font-semibold text-gray-700">Kue favoritmu tidak ditemukan</p>
-            <p class="text-xs text-gray-400 mt-1">Coba kata kunci lain atau pilih kategori Semua.</p>
+            <p class="text-xs text-gray-400 mt-1">Coba sesuaikan kata kunci atau atur ulang filter katalog.</p>
         </div>
     </main>
 
-    {{-- Client-side instant filter script for interactive responsiveness --}}
+    {{-- Filter Sidebar Drawer & Backdrop --}}
+    <div
+        id="filter-backdrop"
+        class="fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 opacity-0 pointer-events-none"
+    ></div>
+
+    <aside
+        id="filter-drawer"
+        class="fixed top-0 right-0 bottom-0 w-80 sm:w-96 max-w-[85vw] bg-white z-50 shadow-2xl rounded-l-3xl flex flex-col justify-between transform transition-transform duration-300 ease-in-out translate-x-full"
+        aria-label="Filter Katalog"
+    >
+        {{-- Drawer Top & Content --}}
+        <div>
+            {{-- Header --}}
+            <div class="flex items-center justify-between p-5 pb-4 border-b border-gray-200">
+                <div class="flex items-center gap-2.5 text-[#6B0F1A]">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h18M3 12h18M3 20h18M7 2v4M17 10v4M11 18v4" />
+                    </svg>
+                    <h2 class="text-lg font-bold">Filter Katalog</h2>
+                </div>
+                <button
+                    type="button"
+                    id="filter-close-btn"
+                    class="text-gray-400 hover:text-gray-700 p-1.5 rounded-xl transition cursor-pointer"
+                    aria-label="Tutup filter"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Body --}}
+            <div class="p-5 space-y-6 overflow-y-auto max-h-[calc(100vh-170px)]">
+                {{-- Section 1: Ketersediaan --}}
+                <div>
+                    <div class="flex items-center gap-2 text-[#6B0F1A] font-bold text-sm mb-3">
+                        <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <span>Ketersediaan</span>
+                    </div>
+
+                    {{-- Toggle Ready Only (Matching image: dark maroon pill with checkmark) --}}
+                    <button
+                        type="button"
+                        id="toggle-ready-only"
+                        data-active="{{ $readyOnly ? 'true' : 'false' }}"
+                        class="w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2.5 transition cursor-pointer select-none {{ $readyOnly ? 'bg-[#6B0F1A] text-white shadow-xs' : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200' }}"
+                    >
+                        <span id="ready-checkbox-box" class="w-4 h-4 rounded flex items-center justify-center shrink-0 {{ $readyOnly ? 'bg-white text-[#6B0F1A]' : 'border-2 border-gray-400 bg-white' }}">
+                            <svg id="ready-check-svg" class="w-3 h-3 {{ $readyOnly ? '' : 'hidden' }}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </span>
+                        <span>Tampilkan kue yang ready di toko</span>
+                    </button>
+                </div>
+
+                <hr class="border-gray-200">
+
+                {{-- Section 2: Rentang Harga --}}
+                <div>
+                    <div class="flex items-center gap-2 text-[#6B0F1A] font-bold text-sm mb-3">
+                        <svg class="w-4.5 h-4.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/>
+                        </svg>
+                        <span>Rentang Harga</span>
+                    </div>
+
+                    <div class="space-y-3.5 text-sm" id="price-radio-group">
+                        @php
+                            $activePrice = $priceRange ?? 'all';
+                        @endphp
+                        <label class="flex items-center gap-3 cursor-pointer select-none text-gray-800 font-medium">
+                            <input type="radio" name="filter_price_range" value="all" @checked($activePrice === 'all') class="w-4 h-4 text-[#6B0F1A] border-gray-400 focus:ring-[#6B0F1A]">
+                            <span>Semua harga</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer select-none text-gray-800 font-medium">
+                            <input type="radio" name="filter_price_range" value="under_25k" @checked($activePrice === 'under_25k') class="w-4 h-4 text-[#6B0F1A] border-gray-400 focus:ring-[#6B0F1A]">
+                            <span>Di bawah Rp25.000</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer select-none text-gray-800 font-medium">
+                            <input type="radio" name="filter_price_range" value="25k_50k" @checked($activePrice === '25k_50k') class="w-4 h-4 text-[#6B0F1A] border-gray-400 focus:ring-[#6B0F1A]">
+                            <span>Rp25.000 - Rp50.000</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer select-none text-gray-800 font-medium">
+                            <input type="radio" name="filter_price_range" value="above_50k" @checked($activePrice === 'above_50k') class="w-4 h-4 text-[#6B0F1A] border-gray-400 focus:ring-[#6B0F1A]">
+                            <span>Di atas Rp50.000</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Drawer Footer: Reset & Terapkan buttons --}}
+        <div class="p-5 border-t border-gray-200 flex items-center gap-3 bg-white">
+            <button
+                type="button"
+                id="filter-reset-btn"
+                class="flex-1 py-2.5 px-4 bg-white border-2 border-[#6B0F1A] text-[#6B0F1A] font-bold text-sm rounded-xl hover:bg-rose-50 transition cursor-pointer text-center"
+            >
+                Reset
+            </button>
+            <button
+                type="button"
+                id="filter-apply-btn"
+                class="flex-1 py-2.5 px-4 bg-[#6B0F1A] hover:bg-[#520B10] text-white font-bold text-sm rounded-xl transition cursor-pointer shadow-sm text-center"
+            >
+                Terapkan
+            </button>
+        </div>
+    </aside>
+
+    {{-- Interactive Client-side script for Instant Filtering & Sidebar Drawer --}}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Elements
             const searchInput = document.getElementById('catalog-search');
             const clearBtn = document.getElementById('search-clear-btn');
             const pills = document.querySelectorAll('.category-pill');
             const cards = document.querySelectorAll('.product-card');
             const noResults = document.getElementById('no-search-results');
 
+            // Drawer elements
+            const toggleDrawerBtn = document.getElementById('filter-toggle-btn');
+            const closeDrawerBtn = document.getElementById('filter-close-btn');
+            const drawer = document.getElementById('filter-drawer');
+            const backdrop = document.getElementById('filter-backdrop');
+            const activeDot = document.getElementById('filter-active-dot');
+
+            // Filter state elements
+            const toggleReadyBtn = document.getElementById('toggle-ready-only');
+            const readyCheckboxBox = document.getElementById('ready-checkbox-box');
+            const readyCheckSvg = document.getElementById('ready-check-svg');
+            const priceRadios = document.querySelectorAll('input[name="filter_price_range"]');
+            const resetBtn = document.getElementById('filter-reset-btn');
+            const applyBtn = document.getElementById('filter-apply-btn');
+
             let activeCategory = 'all';
+            let isReadyOnly = toggleReadyBtn ? toggleReadyBtn.getAttribute('data-active') === 'true' : false;
+            let activePriceRange = 'all';
+
+            // Check if any initial price radio is checked
+            priceRadios.forEach(r => {
+                if (r.checked) {
+                    activePriceRange = r.value;
+                }
+            });
+
+            function openDrawer() {
+                if (!drawer || !backdrop) return;
+                backdrop.classList.remove('opacity-0', 'pointer-events-none');
+                backdrop.classList.add('opacity-100', 'pointer-events-auto');
+                drawer.classList.remove('translate-x-full');
+                drawer.classList.add('translate-x-0');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDrawer() {
+                if (!drawer || !backdrop) return;
+                backdrop.classList.remove('opacity-100', 'pointer-events-auto');
+                backdrop.classList.add('opacity-0', 'pointer-events-none');
+                drawer.classList.remove('translate-x-0');
+                drawer.classList.add('translate-x-full');
+                document.body.style.overflow = '';
+            }
+
+            if (toggleDrawerBtn) {
+                toggleDrawerBtn.addEventListener('click', openDrawer);
+            }
+
+            if (closeDrawerBtn) {
+                closeDrawerBtn.addEventListener('click', closeDrawer);
+            }
+
+            if (backdrop) {
+                backdrop.addEventListener('click', closeDrawer);
+            }
+
+            // Toggle Ready Only state
+            if (toggleReadyBtn) {
+                toggleReadyBtn.addEventListener('click', function () {
+                    isReadyOnly = !isReadyOnly;
+                    this.setAttribute('data-active', isReadyOnly ? 'true' : 'false');
+
+                    if (isReadyOnly) {
+                        this.classList.remove('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'hover:bg-gray-200');
+                        this.classList.add('bg-[#6B0F1A]', 'text-white', 'shadow-xs');
+                        readyCheckboxBox.classList.remove('border-2', 'border-gray-400', 'bg-white');
+                        readyCheckboxBox.classList.add('bg-white', 'text-[#6B0F1A]');
+                        readyCheckSvg.classList.remove('hidden');
+                    } else {
+                        this.classList.remove('bg-[#6B0F1A]', 'text-white', 'shadow-xs');
+                        this.classList.add('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'hover:bg-gray-200');
+                        readyCheckboxBox.classList.remove('bg-white', 'text-[#6B0F1A]');
+                        readyCheckboxBox.classList.add('border-2', 'border-gray-400', 'bg-white');
+                        readyCheckSvg.classList.add('hidden');
+                    }
+                });
+            }
+
+            function updateActiveDot() {
+                if (!activeDot) return;
+                const hasActiveFilter = isReadyOnly || activePriceRange !== 'all';
+                if (hasActiveFilter) {
+                    activeDot.classList.remove('hidden');
+                } else {
+                    activeDot.classList.add('hidden');
+                }
+            }
 
             function filterProducts() {
                 const query = (searchInput ? searchInput.value : '').trim().toLowerCase();
@@ -421,11 +649,29 @@
                 cards.forEach(card => {
                     const name = card.getAttribute('data-product-name') || '';
                     const categoryId = card.getAttribute('data-category-id') || '';
+                    const statusStok = card.getAttribute('data-status-stok') || '';
+                    const harga = parseInt(card.getAttribute('data-harga') || '0', 10);
 
+                    // 1. Search Query
                     const matchesQuery = query === '' || name.includes(query);
+
+                    // 2. Category
                     const matchesCategory = activeCategory === 'all' || categoryId === activeCategory;
 
-                    if (matchesQuery && matchesCategory) {
+                    // 3. Ready Only
+                    const matchesReady = !isReadyOnly || statusStok === 'ready';
+
+                    // 4. Price Range
+                    let matchesPrice = true;
+                    if (activePriceRange === 'under_25k') {
+                        matchesPrice = harga < 25000;
+                    } else if (activePriceRange === '25k_50k') {
+                        matchesPrice = harga >= 25000 && harga <= 50000;
+                    } else if (activePriceRange === 'above_50k') {
+                        matchesPrice = harga > 50000;
+                    }
+
+                    if (matchesQuery && matchesCategory && matchesReady && matchesPrice) {
                         card.style.display = '';
                         visibleCount++;
                     } else {
@@ -440,6 +686,8 @@
                         noResults.classList.add('hidden');
                     }
                 }
+
+                updateActiveDot();
             }
 
             if (searchInput) {
@@ -469,6 +717,46 @@
                     filterProducts();
                 });
             });
+
+            if (applyBtn) {
+                applyBtn.addEventListener('click', function () {
+                    priceRadios.forEach(r => {
+                        if (r.checked) {
+                            activePriceRange = r.value;
+                        }
+                    });
+
+                    filterProducts();
+                    closeDrawer();
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    // Reset ready only
+                    isReadyOnly = false;
+                    if (toggleReadyBtn) {
+                        toggleReadyBtn.setAttribute('data-active', 'false');
+                        toggleReadyBtn.classList.remove('bg-[#6B0F1A]', 'text-white', 'shadow-xs');
+                        toggleReadyBtn.classList.add('bg-gray-100', 'text-gray-700', 'border', 'border-gray-200', 'hover:bg-gray-200');
+                        readyCheckboxBox.classList.remove('bg-white', 'text-[#6B0F1A]');
+                        readyCheckboxBox.classList.add('border-2', 'border-gray-400', 'bg-white');
+                        readyCheckSvg.classList.add('hidden');
+                    }
+
+                    // Reset price radio
+                    activePriceRange = 'all';
+                    priceRadios.forEach(r => {
+                        r.checked = r.value === 'all';
+                    });
+
+                    filterProducts();
+                    closeDrawer();
+                });
+            }
+
+            // Run initial filter check (e.g., in case page loaded with query parameters)
+            filterProducts();
         });
     </script>
 </body>
