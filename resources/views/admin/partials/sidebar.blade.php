@@ -38,15 +38,16 @@
 
         <!-- User info and Logout -->
         <div class="flex items-center justify-between pt-1">
-            <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-full bg-stone-700/80 border border-white/20 flex items-center justify-center font-bold text-white text-xs shrink-0">
+            <a href="{{ route('admin.profile.edit') }}" title="Lihat & Edit Profil Akun"
+               class="flex items-center gap-2.5 min-w-0 p-1.5 -ml-1.5 rounded-xl hover:bg-white/10 transition-colors group flex-1 mr-1">
+                <div class="w-8 h-8 rounded-full bg-stone-700/80 border border-white/20 group-hover:border-white/50 flex items-center justify-center font-bold text-white text-xs shrink-0 transition-colors">
                     {{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}
                 </div>
-                <div class="min-w-0 truncate">
-                    <p class="text-xs font-semibold text-white truncate">{{ $user->name ?? 'Admin' }}</p>
+                <div class="min-w-0 truncate text-left">
+                    <p class="text-xs font-semibold text-white truncate group-hover:text-amber-200 transition-colors">{{ $user->name ?? 'Admin' }}</p>
                     <p class="text-[10px] text-stone-400 capitalize truncate">{{ $user->role ?? 'admin' }}</p>
                 </div>
-            </div>
+            </a>
 
             <form action="{{ route('logout') }}" method="POST" class="shrink-0">
                 @csrf

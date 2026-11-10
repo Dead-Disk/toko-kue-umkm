@@ -31,12 +31,12 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <span class="text-xs text-stone-200">Admin</span>
+        <a href="{{ route('admin.profile.edit') }}" title="Lihat Profil" class="flex items-center gap-2 hover:opacity-85 transition-opacity">
+            <span class="text-xs text-stone-200 capitalize">{{ auth()->user()->role ?? 'Admin' }}</span>
             <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs text-white">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-        </div>
+        </a>
     </header>
 
     <!-- Mobile Sidebar Drawer Backdrop -->

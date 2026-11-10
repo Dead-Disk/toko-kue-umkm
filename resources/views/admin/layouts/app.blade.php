@@ -33,12 +33,12 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
+        <a href="{{ route('admin.profile.edit') }}" title="Lihat & Edit Profil" class="flex items-center gap-2 hover:opacity-85 transition-opacity">
             <span class="text-xs text-stone-200 capitalize">{{ auth()->user()->role ?? 'admin' }}</span>
             <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs text-white">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-        </div>
+        </a>
     </header>
 
     <!-- Mobile Sidebar Drawer Backdrop -->
@@ -64,6 +64,20 @@
             </div>
 
             <div class="p-4 border-t border-white/10 space-y-2">
+                <a href="{{ route('admin.profile.edit') }}"
+                   class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-200 text-xs font-medium transition-colors">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-7 h-7 rounded-full bg-stone-700/80 border border-white/20 flex items-center justify-center font-bold text-white text-xs shrink-0">
+                            {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                        </div>
+                        <div class="min-w-0 truncate text-left">
+                            <p class="text-xs font-semibold text-white truncate">{{ auth()->user()->name ?? 'Admin' }}</p>
+                            <p class="text-[10px] text-stone-400 capitalize truncate">{{ auth()->user()->role ?? 'admin' }}</p>
+                        </div>
+                    </div>
+                    <span class="text-stone-400 text-xs">Profil →</span>
+                </a>
+
                 <a href="{{ route('customer.index') }}" target="_blank"
                    class="block text-center py-2 text-xs text-stone-200 bg-white/10 rounded-lg">
                     Lihat Web Toko ↗
