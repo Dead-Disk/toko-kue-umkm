@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\StoreSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -96,5 +97,63 @@ class TokoKueViewsTest extends TestCase
     public function test_customer_page_rejects_slug_outside_allowed_characters(): void
     {
         $this->get('/p/produk_kue')->assertNotFound();
+    }
+
+    public function test_landing_page_does_not_render_social_icons_when_links_are_empty(): void
+    {
+        StoreSetting::factory()->create([
+            'instagram_url' => null,
+            'facebook_url' => null,
+            'tiktok_url' => null,
+            'store_phone' => null,
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertDontSee('aria-label="Instagram"');
+        $response->assertDontSee('aria-label="Facebook"');
+        $response->assertDontSee('aria-label="TikTok"');
+        $response->assertDontSee('aria-label="WhatsApp"');
+    }
+
+    public function test_landing_page_renders_only_configured_social_icons(): void
+    {
+        StoreSetting::factory()->create([
+            'instagram_url' => 'https://instagram.com/mybakery',
+            'facebook_url' => null,
+            'tiktok_url' => null,
+            'store_phone' => '081234567890',
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee('aria-label="Instagram"', false);
+        $response->assertSee('https://instagram.com/mybakery', false);
+        $response->assertSee('aria-label="WhatsApp"', false);
+        $response->assertSee('https://wa.me/081234567890', false);
+        $response->assertDontSee('aria-label="Facebook"');
+        $response->assertDontSee('aria-label="TikTok"');
+    }
+
+    public function test_tentang_kami_page_renders_only_configured_social_icons(): void
+    {
+        StoreSetting::factory()->create([
+            'instagram_url' => null,
+            'facebook_url' => 'https://facebook.com/mybakery',
+            'tiktok_url' => 'https://tiktok.com/@mybakery',
+            'store_phone' => null,
+        ]);
+
+        $response = $this->get(route('customer.page', 'tentang-kami'));
+
+        $response->assertOk();
+        $response->assertDontSee('aria-label="Instagram"');
+        $response->assertDontSee('aria-label="WhatsApp"');
+        $response->assertSee('aria-label="Facebook"', false);
+        $response->assertSee('https://facebook.com/mybakery', false);
+        $response->assertSee('aria-label="TikTok"', false);
+        $response->assertSee('https://tiktok.com/@mybakery', false);
     }
 }
