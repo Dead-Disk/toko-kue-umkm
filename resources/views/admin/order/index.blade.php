@@ -108,7 +108,12 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 xl:p-10 overflow-y-auto">
-
+        <div class="flex items-center gap-2 text-xs text-stone-500 mb-1">
+                <a href="{{ route('admin.dashboard') }}" class="hover:text-[#6B0F1A] transition-colors">Beranda</a>
+                <span>/</span>
+                <span class="text-stone-800 font-semibold">Pesanan</span>
+        </div>
+        
         <!-- Header -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
