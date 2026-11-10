@@ -25,6 +25,8 @@ class AdminStoreSettingTest extends TestCase
         $response->assertSee('Nomor Rekening');
         $response->assertSee('Nama Pemilik Rekening');
         $response->assertSee('Gambar QRIS');
+        $response->assertSee('Kontak & Akun Media Sosial', false);
+        $response->assertSee('Link Akun Instagram');
         $response->assertSee('enctype="multipart/form-data"', false);
         $response->assertSee('name="qris_image"', false);
     }
@@ -38,6 +40,10 @@ class AdminStoreSettingTest extends TestCase
             'store_description' => 'Kue rumahan sejak 2010.',
             'store_address' => 'Jl. Mawar No. 5',
             'store_phone' => '081200001111',
+            'store_email' => 'nyonya@tokokue.test',
+            'instagram_url' => 'https://instagram.com/kuenyonya',
+            'facebook_url' => 'https://facebook.com/kuenyonya',
+            'tiktok_url' => 'https://tiktok.com/@kuenyonya',
             'bank_name' => 'BCA',
             'bank_account_number' => '9876543210',
             'bank_account_holder' => 'Nyonya Lim',
@@ -49,6 +55,10 @@ class AdminStoreSettingTest extends TestCase
 
         $this->assertSame('Kue Nyonya', $setting->store_name);
         $this->assertSame('Kue rumahan sejak 2010.', $setting->store_description);
+        $this->assertSame('nyonya@tokokue.test', $setting->store_email);
+        $this->assertSame('https://instagram.com/kuenyonya', $setting->instagram_url);
+        $this->assertSame('https://facebook.com/kuenyonya', $setting->facebook_url);
+        $this->assertSame('https://tiktok.com/@kuenyonya', $setting->tiktok_url);
         $this->assertSame('BCA', $setting->bank_name);
         $this->assertSame('9876543210', $setting->bank_account_number);
         $this->assertSame('Nyonya Lim', $setting->bank_account_holder);
