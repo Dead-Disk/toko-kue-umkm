@@ -233,20 +233,54 @@
                     </div>
                 </div>
 
-                {{-- Metode Pembayaran --}}
+                {{-- Metode Pembayaran (Radio Card) --}}
                 <div>
-                    <label for="metode_pembayaran" class="block text-xs font-bold text-stone-700 mb-1.5">
+                    <span class="block text-xs font-bold text-stone-700 mb-1.5">
                         Metode Pembayaran <span class="text-rose-500">*</span>
-                    </label>
-                    <select id="metode_pembayaran"
-                            name="metode_pembayaran"
-                            required
-                            class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/30 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] focus:bg-white transition">
-                        <option value="">-- Pilih Metode --</option>
-                        <option value="transfer_bank" @selected(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'transfer_bank')>Transfer Bank</option>
-                        <option value="qris" @selected(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'qris')>QRIS</option>
-                        <option value="cash" @selected(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'cash')>Tunai / Bayar di Toko</option>
-                    </select>
+                    </span>
+                    <div class="space-y-2.5">
+                        {{-- Transfer Bank --}}
+                        <label class="flex items-start gap-3 p-3.5 border border-stone-200 rounded-xl cursor-pointer transition-all hover:border-[#6B0F1A]/40 hover:bg-[#FAF2EE]/40 has-[:checked]:border-[#6B0F1A] has-[:checked]:bg-[#FAF2EE]/80 has-[:checked]:shadow-xs">
+                            <input type="radio"
+                                   name="metode_pembayaran"
+                                   value="transfer_bank"
+                                   class="mt-1 w-4 h-4 text-[#6B0F1A] focus:ring-[#6B0F1A] accent-[#6B0F1A]"
+                                   @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? 'transfer_bank') === 'transfer_bank')
+                                   required>
+                            <div class="flex-1">
+                                <span class="text-xs sm:text-sm font-bold text-stone-800 block">Transfer Bank</span>
+                                <p class="text-[11px] text-stone-500 mt-0.5">Bayar melalui BCA, BNI, BRI, Mandiri, dan lainnya</p>
+                            </div>
+                        </label>
+
+                        {{-- E-Wallet --}}
+                        <label class="flex items-start gap-3 p-3.5 border border-stone-200 rounded-xl cursor-pointer transition-all hover:border-[#6B0F1A]/40 hover:bg-[#FAF2EE]/40 has-[:checked]:border-[#6B0F1A] has-[:checked]:bg-[#FAF2EE]/80 has-[:checked]:shadow-xs">
+                            <input type="radio"
+                                   name="metode_pembayaran"
+                                   value="qris"
+                                   class="mt-1 w-4 h-4 text-[#6B0F1A] focus:ring-[#6B0F1A] accent-[#6B0F1A]"
+                                   @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'qris')
+                                   required>
+                            <div class="flex-1">
+                                <span class="text-xs sm:text-sm font-bold text-stone-800 block">E-Wallet</span>
+                                <p class="text-[11px] text-stone-500 mt-0.5">GoPay, OVO, DANA, ShopeePay, dan lainnya</p>
+                            </div>
+                        </label>
+
+                        {{-- COD / Bayar di Toko --}}
+                        <label class="flex items-start gap-3 p-3.5 border border-stone-200 rounded-xl cursor-pointer transition-all hover:border-[#6B0F1A]/40 hover:bg-[#FAF2EE]/40 has-[:checked]:border-[#6B0F1A] has-[:checked]:bg-[#FAF2EE]/80 has-[:checked]:shadow-xs">
+                            <input type="radio"
+                                   name="metode_pembayaran"
+                                   value="cash"
+                                   class="mt-1 w-4 h-4 text-[#6B0F1A] focus:ring-[#6B0F1A] accent-[#6B0F1A]"
+                                   @checked(old('metode_pembayaran', $draft['metode_pembayaran'] ?? '') === 'cash')
+                                   required>
+                            <div class="flex-1">
+                                <span class="text-xs sm:text-sm font-bold text-stone-800 block">COD / Bayar di Toko</span>
+                                <p class="text-[11px] text-stone-500 mt-0.5">Bayar saat pesanan tiba / ambil di toko</p>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 {{-- Foto Referensi Desain --}}
