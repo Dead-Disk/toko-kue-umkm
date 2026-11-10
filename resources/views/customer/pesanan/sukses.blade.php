@@ -6,91 +6,191 @@
     <title>Pesanan Berhasil - {{ \App\Models\StoreSetting::current()?->store_name ?? 'Nak Mbarep' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#FAF2EE] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
+<body class="bg-[#3A0A0F] text-gray-800 min-h-screen antialiased flex flex-col font-sans">
+
     {{-- Top Navigation Bar --}}
     @include('customer.partials.navbar')
 
-    <div class="max-w-md md:max-w-2xl mx-auto px-4 py-6 w-full flex-1">
-        <h1 class="text-xl sm:text-2xl font-serif font-bold text-[#6B0F1A] mb-2">Pesanan Berhasil Dikirim</h1>
+    {{-- Outer dark maroon background + white card container --}}
+    <main class="flex-1 flex items-start justify-center px-3 py-6 sm:px-4 sm:py-8">
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
 
-    <p>
-        Terima kasih, {{ $order->nama_pemesan }}! Pesanan kamu sudah kami terima
-        dan saat ini <strong>sedang menunggu konfirmasi penjual</strong>.
-    </p>
+            {{-- Scrollable inner content --}}
+            <div class="max-h-[85vh] overflow-y-auto px-5 py-6 sm:px-6 sm:py-8 space-y-6">
 
-    <h2>Ringkasan Pesanan</h2>
+                {{-- ============================================================ --}}
+                {{-- Success Banner --}}
+                {{-- ============================================================ --}}
+                <div class="text-center space-y-2 pt-2">
+                    {{-- Check circle icon --}}
+                    <div class="mx-auto w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <svg class="w-9 h-9 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
 
-    <table border="1" cellpadding="6" cellspacing="0">
-        <tr>
-            <th align="left">Kode Pesanan</th>
-            <td>{{ $order->kode_pesanan }}</td>
-        </tr>
-        <tr>
-            <th align="left">Nama Pemesan</th>
-            <td>{{ $order->nama_pemesan }}</td>
-        </tr>
-        <tr>
-            <th align="left">No HP / WA</th>
-            <td>{{ $order->nomor_wa }}</td>
-        </tr>
-        <tr>
-            <th align="left">Alamat Lengkap</th>
-            <td>{{ $order->alamat_lengkap }}</td>
-        </tr>
-        <tr>
-            <th align="left">Opsi Pengiriman</th>
-            <td>{{ $order->opsi_pengiriman === \App\Enums\OpsiPengiriman::KurirToko ? 'Diantar Kurir' : 'Ambil Sendiri' }}</td>
-        </tr>
-        <tr>
-            <th align="left">Metode Pembayaran</th>
-            <td>{{ $order->metode_pembayaran->label() }}</td>
-        </tr>
-        <tr>
-            <th align="left">Status</th>
-            <td>{{ $order->status->value }}</td>
-        </tr>
-    </table>
+                    <h1 class="text-xl font-serif font-bold text-[#6B0F1A]">Pesanan Berhasil Dikirim</h1>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Terima kasih, <span class="font-semibold text-gray-700">{{ $order->nama_pemesan }}</span>!
+                        Pesanan kamu sudah kami terima dan saat ini
+                        <strong class="text-[#6B0F1A]">sedang menunggu konfirmasi penjual</strong>.
+                    </p>
+                </div>
 
-    <h2>Rincian Item</h2>
+                {{-- ============================================================ --}}
+                {{-- Ringkasan Pesanan --}}
+                {{-- ============================================================ --}}
+                <section class="space-y-3">
+                    <h2 class="flex items-center gap-2 text-sm font-bold text-gray-800">
+                        <span class="w-6 h-6 rounded-full bg-[#6B0F1A] text-white flex items-center justify-center text-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        </span>
+                        Ringkasan Pesanan
+                    </h2>
 
-    <table border="1" cellpadding="6" cellspacing="0">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Nama Kue</th>
-                <th>Catatan</th>
-                <th>Jumlah</th>
-                <th>Subtotal</th>
-                <th>Foto Referensi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($order->items as $item)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->product?->nama_kue ?? 'Kue Custom' }}</td>
-                    <td>{{ $item->catatan ?? '-' }}</td>
-                    <td>{{ $item->jumlah }}</td>
-                    <td>Rp{{ number_format($item->subtotal, 0, ',', '.') }}</td>
-                    <td>
-                        @if ($item->foto_referensi)
-                            <span>Sudah diunggah</span>
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-            <tr>
-                <th colspan="5" align="right">Total Harga</th>
-                <td>Rp{{ number_format($order->total_harga, 0, ',', '.') }}</td>
-            </tr>
-        </tbody>
-    </table>
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-2.5 text-sm">
+                        {{-- Kode Pesanan --}}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 text-xs">Kode Pesanan</span>
+                            <span class="font-bold text-[#6B0F1A] text-xs tracking-wide">{{ $order->kode_pesanan }}</span>
+                        </div>
 
-    <p>
-        <a href="{{ route('customer.produk.index') }}">Kembali ke Katalog Produk</a>
-    </p>
-    </div>
+                        <div class="border-t border-gray-200"></div>
+
+                        {{-- Nama Pemesan --}}
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 text-xs">Nama Pemesan</span>
+                            <span class="text-xs font-medium text-gray-800">{{ $order->nama_pemesan }}</span>
+                        </div>
+
+                        {{-- No HP / WA --}}
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 text-xs">No HP / WA</span>
+                            <span class="text-xs font-medium text-gray-800">{{ $order->nomor_wa }}</span>
+                        </div>
+
+                        {{-- Alamat Lengkap --}}
+                        <div class="flex justify-between gap-4">
+                            <span class="text-gray-500 text-xs shrink-0">Alamat</span>
+                            <span class="text-xs font-medium text-gray-800 text-right">{{ $order->alamat_lengkap }}</span>
+                        </div>
+
+                        <div class="border-t border-gray-200"></div>
+
+                        {{-- Opsi Pengiriman --}}
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 text-xs">Opsi Pengiriman</span>
+                            <span class="text-xs font-medium text-gray-800">
+                                {{ $order->opsi_pengiriman === \App\Enums\OpsiPengiriman::KurirToko ? 'Diantar Kurir' : 'Ambil Sendiri' }}
+                            </span>
+                        </div>
+
+                        {{-- Metode Pembayaran --}}
+                        <div class="flex justify-between">
+                            <span class="text-gray-500 text-xs">Metode Pembayaran</span>
+                            <span class="text-xs font-medium text-gray-800">{{ $order->metode_pembayaran->label() }}</span>
+                        </div>
+
+                        <div class="border-t border-gray-200"></div>
+
+                        {{-- Status Pesanan --}}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500 text-xs">Status</span>
+                            @php
+                                $statusColor = match($order->status) {
+                                    \App\Enums\StatusPesanan::Pending => 'bg-amber-100 text-amber-700',
+                                    \App\Enums\StatusPesanan::Proses  => 'bg-blue-100 text-blue-700',
+                                    \App\Enums\StatusPesanan::Selesai => 'bg-emerald-100 text-emerald-700',
+                                    \App\Enums\StatusPesanan::Ditolak => 'bg-red-100 text-red-700',
+                                    \App\Enums\StatusPesanan::Batal   => 'bg-gray-200 text-gray-600',
+                                };
+                                $statusLabel = match($order->status) {
+                                    \App\Enums\StatusPesanan::Pending => 'Menunggu Konfirmasi',
+                                    \App\Enums\StatusPesanan::Proses  => 'Sedang Diproses',
+                                    \App\Enums\StatusPesanan::Selesai => 'Selesai',
+                                    \App\Enums\StatusPesanan::Ditolak => 'Ditolak',
+                                    \App\Enums\StatusPesanan::Batal   => 'Dibatalkan',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $statusColor }}">
+                                {{ $statusLabel }}
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                {{-- ============================================================ --}}
+                {{-- Rincian Item --}}
+                {{-- ============================================================ --}}
+                <section class="space-y-3">
+                    <h2 class="flex items-center gap-2 text-sm font-bold text-gray-800">
+                        <span class="w-6 h-6 rounded-full bg-[#6B0F1A] text-white flex items-center justify-center text-xs">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        </span>
+                        Rincian Item
+                    </h2>
+
+                    <div class="space-y-3">
+                        @foreach ($order->items as $item)
+                            <div class="flex items-center gap-3">
+                                {{-- Thumbnail --}}
+                                <div class="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                                    @if ($item->product?->foto)
+                                        <img src="{{ asset('storage/' . $item->product->foto) }}"
+                                             alt="{{ $item->product->nama_kue }}"
+                                             class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- Item info --}}
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-800 truncate">{{ $item->product?->nama_kue ?? 'Kue Custom' }}</p>
+                                    @if ($item->catatan)
+                                        <p class="text-xs text-amber-700 italic truncate">{{ $item->catatan }}</p>
+                                    @endif
+                                </div>
+
+                                {{-- Qty --}}
+                                <div class="text-center shrink-0">
+                                    <span class="text-xs text-gray-500">x{{ $item->jumlah }}</span>
+                                </div>
+
+                                {{-- Subtotal --}}
+                                <div class="text-right shrink-0">
+                                    <p class="text-sm font-semibold text-gray-800">Rp{{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Total --}}
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                        <span class="text-sm font-bold text-gray-800">Total Harga</span>
+                        <span class="text-lg font-extrabold text-[#6B0F1A]">Rp{{ number_format($order->total_harga, 0, ',', '.') }}</span>
+                    </div>
+                </section>
+
+                {{-- ============================================================ --}}
+                {{-- CTA Button --}}
+                {{-- ============================================================ --}}
+                <a href="{{ route('customer.produk.index') }}"
+                   class="block w-full py-3.5 bg-[#6B0F1A] hover:bg-[#540F18] active:bg-[#3A0A0F] text-white font-bold text-base text-center rounded-full shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#6B0F1A]/30">
+                    Kembali ke Katalog Produk
+                </a>
+
+                <div class="text-center pb-2">
+                    <a href="{{ route('customer.index') }}" class="text-xs text-gray-500 hover:text-[#6B0F1A] underline underline-offset-2 transition">
+                        ← Kembali ke Beranda
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
 </body>
 </html>
