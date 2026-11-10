@@ -33,7 +33,7 @@ class CashierTest extends TestCase
             $response->assertOk();
             $response->assertSee('Kasir / POS Offline');
             $response->assertSee($product->nama_kue);
-            $response->assertSee('+ Tambah Produk');
+            $response->assertSee('Tambah Produk');
             $response->assertSee('Total Belanja');
             $response->assertSee('Proses Pembayaran Tunai');
         }
