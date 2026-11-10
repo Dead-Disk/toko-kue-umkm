@@ -21,11 +21,29 @@ class UserController extends Controller
     /**
      * Daftar semua akun admin/staf.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $users = User::latest()->get();
+        $query = User::query()->latest();
 
-        return view('admin.users.index', ['users' => $users]);
+        if ($request->filled('search')) {
+            $search = (string) $request->input('search');
+            $query->where(function ($q) use ($search): void {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('username', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->input('role'));
+        }
+
+        $users = $query->get();
+        $totalUsers = User::count();
+        $totalAdmin = User::where('role', 'admin')->count();
+        $totalStaff = User::where('role', 'staff')->count();
+
+        return view('admin.users.index', compact('users', 'totalUsers', 'totalAdmin', 'totalStaff'));
     }
 
     /**
