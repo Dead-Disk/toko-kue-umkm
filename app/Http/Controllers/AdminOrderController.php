@@ -32,7 +32,7 @@ class AdminOrderController extends Controller
     ];
 
     /**
-     * Daftar pesanan masuk dari pembeli, bisa difilter lewat ?status=, ?type=, dan ?start_date=/&end_date=.
+     * Daftar pesanan masuk dari pembeli, bisa difilter lewat ?status=, ?type=, ?search=, ?metode_pembayaran=, dan ?start_date=/&end_date=.
      */
     public function index(Request $request): View
     {
@@ -44,6 +44,17 @@ class AdminOrderController extends Controller
 
         $orders = Order::with(['items.product'])
             ->withCount('items')
+            ->when($request->filled('search'), function ($query) use ($request): void {
+                $search = (string) $request->input('search');
+                $query->where(function ($q) use ($search): void {
+                    $q->where('nama_pemesan', 'like', "%{$search}%")
+                        ->orWhere('kode_pesanan', 'like', "%{$search}%")
+                        ->orWhere('nomor_wa', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('metode_pembayaran'), function ($query) use ($request): void {
+                $query->where('metode_pembayaran', $request->input('metode_pembayaran'));
+            })
             ->when($request->start_date, fn ($query) => $query->whereDate('created_at', '>=', $request->start_date))
             ->when($request->end_date, fn ($query) => $query->whereDate('created_at', '<=', $request->end_date));
 
@@ -55,10 +66,19 @@ class AdminOrderController extends Controller
             $orders->where('tipe_pesanan', $filterTipe);
         }
 
+        $totalPesanan = Order::count();
+        $pesananBaru = Order::where('status', StatusPesanan::Pending)->count();
+        $pesananProses = Order::where('status', StatusPesanan::Proses)->count();
+        $pesananSelesai = Order::where('status', StatusPesanan::Selesai)->count();
+
         return view('admin.order.index', [
             'orders' => $orders->latest()->get(),
             'filter' => $filter,
             'filterTipe' => $filterTipe,
+            'totalPesanan' => $totalPesanan,
+            'pesananBaru' => $pesananBaru,
+            'pesananProses' => $pesananProses,
+            'pesananSelesai' => $pesananSelesai,
         ]);
     }
 
