@@ -221,7 +221,7 @@
 
                     {{-- Bear Mascot Note --}}
                     <div class="flex items-center gap-1.5 pt-0.5">
-                        <img src="{{ asset('images/mascot-bear-new.png') }}" alt="Maskot Nak Mbarep" class="h-8 sm:h-9 w-auto object-contain">
+                        <img src="{{ asset('images/mascot-bear-new.png') }}" alt="Maskot Nak Mbarep" class="h-10 sm:h-12 w-auto object-contain">
                         <span class="text-[9px] sm:text-[10px] text-[#521C2F] font-medium">
                             Jangan ragu untuk bertanya ya! ♡
                         </span>

@@ -191,10 +191,7 @@
                     <label for="jumlah" class="block text-xs font-bold text-stone-700 mb-1.5">
                         Jumlah Beli (Pcs / Biji) <span class="text-rose-500">*</span>
                     </label>
-                    <input type="number"
-                           id="jumlah"
-                           name="jumlah"
-                           value="{{ $jumlah }}"
+                    <input type="number" id="jumlah" name="jumlah" value="{{ $jumlah }}"
                            min="1"
                            max="{{ $maxQuantity }}"
                            step="1"
