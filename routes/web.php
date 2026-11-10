@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminSettingController;
 use App\Http\Controllers\AdminStoreSettingController;
@@ -89,6 +90,10 @@ Route::post('logout', [LoginController::class, 'destroy'])
 */
 Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Profil akun pengguna yang sedang login (admin & staff)
+    Route::get('profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
     Route::middleware('role:admin,staff')->group(function () {
         // Pesanan masuk & ubah status
