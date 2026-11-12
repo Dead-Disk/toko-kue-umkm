@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class AdminProductController extends Controller
+class AdminProductController extends PanelController
 {
     /**
      * Daftar semua produk kue.
@@ -66,7 +66,7 @@ class AdminProductController extends Controller
         $products = $query->paginate(8)->withQueryString();
         $categories = Category::withCount('products')->get();
 
-        return view('admin.product.index', compact('products', 'categories'));
+        return $this->panelView('product.index', compact('products', 'categories'));
     }
 
     /**
@@ -97,8 +97,7 @@ class AdminProductController extends Controller
 
         ActivityLog::record('tambah', 'Menambahkan produk baru: '.$product->nama_kue.' (Stok: '.$product->stok.')', $product);
 
-        return redirect()
-            ->route('admin.produk.index')
+        return $this->panelRedirect('produk.index')
             ->with('success', 'Produk berhasil ditambahkan.');
     }
 
@@ -134,8 +133,7 @@ class AdminProductController extends Controller
 
         ActivityLog::record('ubah', 'Memperbarui produk: '.$product->nama_kue, $product);
 
-        return redirect()
-            ->route('admin.produk.index')
+        return $this->panelRedirect('produk.index')
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
@@ -148,8 +146,7 @@ class AdminProductController extends Controller
 
         $product->delete();
 
-        return redirect()
-            ->route('admin.produk.index')
+        return $this->panelRedirect('produk.index')
             ->with('success', 'Produk berhasil dihapus.');
     }
 

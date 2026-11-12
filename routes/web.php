@@ -15,6 +15,13 @@ use App\Http\Controllers\CashierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\StaffCashierController;
+use App\Http\Controllers\StaffCategoryController;
+use App\Http\Controllers\StaffDashboardController;
+use App\Http\Controllers\StaffOrderController;
+use App\Http\Controllers\StaffProductController;
+use App\Http\Controllers\StaffProductStockController;
+use App\Http\Controllers\StaffProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -148,4 +155,38 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         // Kelola akun admin/staf (khusus admin).
         Route::resource('users', UserController::class)->except(['show']);
     });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Web Staf (wajib login, khusus role staff)
+|--------------------------------------------------------------------------
+| Panel terpisah dari admin. Hanya memuat menu operasional harian:
+| beranda, pesanan, produk (stok & status), kategori (read-only), dan kasir.
+*/
+Route::prefix('staff')->name('staff.')->middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/', [StaffDashboardController::class, 'index'])->name('dashboard');
+
+    // Profil akun staf yang sedang login.
+    Route::get('profile', [StaffProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('profile', [StaffProfileController::class, 'update'])->name('profile.update');
+
+    // Pesanan masuk & ubah status.
+    Route::get('pesanan', [StaffOrderController::class, 'index'])->name('pesanan.index');
+    Route::patch('pesanan/{order}/status', [StaffOrderController::class, 'updateStatus'])->name('pesanan.update-status');
+
+    // File sensitif dari private storage: bukti pembayaran & foto custom cake.
+    Route::get('pesanan/{order}/bukti-pembayaran', [StaffOrderController::class, 'viewBuktiPembayaran'])
+        ->name('orders.bukti');
+    Route::get('pesanan/{order}/custom-photo', [StaffOrderController::class, 'viewCustomPhoto'])
+        ->name('orders.custom_photo');
+
+    // Stok produk (termasuk aksi cepat stok & status) dan daftar kategori (read-only).
+    Route::get('produk', [StaffProductController::class, 'index'])->name('produk.index');
+    Route::patch('produk/{product}/stok', [StaffProductStockController::class, 'update'])->name('produk.stock.update');
+    Route::get('kategori', [StaffCategoryController::class, 'index'])->name('kategori.index');
+
+    // Kasir / POS offline: penjualan tunai langsung di toko.
+    Route::get('kasir', [StaffCashierController::class, 'index'])->name('kasir.index');
+    Route::post('kasir/store', [StaffCashierController::class, 'store'])->name('kasir.store');
 });

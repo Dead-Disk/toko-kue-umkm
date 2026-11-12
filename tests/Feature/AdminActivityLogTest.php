@@ -78,7 +78,7 @@ class AdminActivityLogTest extends TestCase
             'password' => 'secret123',
         ]);
 
-        $loginResponse->assertRedirect(route('admin.dashboard'));
+        $loginResponse->assertRedirect(route('staff.dashboard'));
 
         $this->assertDatabaseHas('activity_logs', [
             'user_id' => $user->id,

@@ -43,7 +43,9 @@ class LoginController extends Controller
             ActivityLog::record('login', 'Masuk ke sistem (login)', $user, user: $user);
         }
 
-        return redirect()->intended(route('admin.dashboard'));
+        return redirect()->intended(
+            route($user?->isStaff() ? 'staff.dashboard' : 'admin.dashboard')
+        );
     }
 
     /**

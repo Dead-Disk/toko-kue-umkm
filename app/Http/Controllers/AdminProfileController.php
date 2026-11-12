@@ -9,14 +9,14 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
-class AdminProfileController extends Controller
+class AdminProfileController extends PanelController
 {
     /**
      * Tampilkan halaman profil akun admin/staf yang sedang login.
      */
     public function edit(Request $request): View
     {
-        return view('admin.profile.edit', [
+        return $this->panelView('profile.edit', [
             'user' => $request->user(),
         ]);
     }
@@ -60,8 +60,7 @@ class AdminProfileController extends Controller
 
         ActivityLog::record('ubah', 'Memperbarui profil akun ('.$user->name.')', $user);
 
-        return redirect()
-            ->route('admin.profile.edit')
+        return $this->panelRedirect('profile.edit')
             ->with('success', 'Profil akun berhasil diperbarui.');
     }
 }
