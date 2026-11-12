@@ -37,40 +37,40 @@
 
         {{-- 1. Hero Promo Banner --}}
         <section class="relative overflow-hidden rounded-[24px] lg:rounded-[32px] bg-[#FAF0EB] border border-[#F4DDD5] shadow-xs">
-            <div class="p-3.5 sm:p-5 lg:p-10 xl:p-14 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-10 items-center relative z-10">
+            <div class="p-3.5 sm:p-5 lg:p-6 xl:p-8 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center relative z-10">
                 {{-- Left Text Info --}}
-                <div class="col-span-7 lg:col-span-6 space-y-2 sm:space-y-3 lg:space-y-5 xl:space-y-6">
+                <div class="col-span-7 lg:col-span-6 space-y-2 sm:space-y-3 lg:space-y-4 xl:space-y-5">
                     {{-- Mini Brand Tag --}}
                     <div class="inline-flex items-center gap-1.5 lg:gap-2 text-[#6B0F1A]">
-                        <img src="{{ asset('images/logo-nav.png') }}" alt="" class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-7 lg:h-7 rounded-full object-cover">
-                        <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-base tracking-tight">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
-                        <span class="text-[9px] sm:text-[10px] lg:text-sm text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
+                        <img src="{{ asset('images/logo-nav.png') }}" alt="" class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 rounded-full object-cover">
+                        <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm tracking-tight">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
+                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
                     </div>
 
                     {{-- Main Headline --}}
-                    <h2 class="text-base sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-serif font-bold text-[#540F18] leading-tight">
+                    <h2 class="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif font-bold text-[#540F18] leading-tight">
                         Kue Spesial untuk<br>Setiap Momen Berharga
                     </h2>
 
                     {{-- Quote Badge --}}
-                    <div class="inline-block bg-white/70 border border-dashed border-[#DE9DA7] text-[#6B0F1A] text-[10px] sm:text-xs lg:text-base px-2.5 py-0.5 lg:px-5 lg:py-1.5 rounded-full font-medium shadow-2xs">
+                    <div class="inline-block bg-white/70 border border-dashed border-[#DE9DA7] text-[#6B0F1A] text-[10px] sm:text-xs lg:text-sm px-2.5 py-0.5 lg:px-4 lg:py-1 rounded-full font-medium shadow-2xs">
                         Karena setiap kebahagiaan layak dirayakan dengan kue terbaik ♡
                     </div>
 
                     {{-- Cute Chef Mascot --}}
-                    <div class="pt-0.5 lg:pt-2 flex items-center gap-1.5 lg:gap-3">
-                        <img src="{{ asset('images/hero-mascot.png') }}" alt="Maskot Nak Mbarep" class="h-11 sm:h-13 lg:h-20 xl:h-24 w-auto object-contain">
-                        <span class="text-[10px] sm:text-xs lg:text-base text-[#7A2832] italic">Dari dapur kecil, untuk kebahagiaan besar ♡</span>
+                    <div class="pt-0.5 lg:pt-1 flex items-center gap-1.5 lg:gap-2.5">
+                        <img src="{{ asset('images/hero-mascot.png') }}" alt="Maskot Nak Mbarep" class="h-11 sm:h-13 lg:h-16 xl:h-18 w-auto object-contain">
+                        <span class="text-[10px] sm:text-xs lg:text-sm text-[#7A2832] italic">Dari dapur kecil, untuk kebahagiaan besar ♡</span>
                     </div>
                 </div>
 
                 {{-- Right Hero Cake Image with Floating Badges --}}
                 <div class="col-span-5 lg:col-span-6 relative flex items-center justify-center">
-                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-none xl:max-w-[480px] aspect-square rounded-2xl lg:rounded-3xl overflow-hidden shadow-xs lg:shadow-md bg-white/50 p-0.5 lg:p-2">
+                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-[320px] xl:max-w-[380px] aspect-square rounded-2xl lg:rounded-3xl overflow-hidden shadow-xs lg:shadow-md bg-white/50 p-0.5 lg:p-1.5">
                         <img src="{{ asset('images/hero-strawberry-cake.png') }}" alt="Strawberry Cake Spesial Nak Mbarep" class="w-full h-full object-cover rounded-xl lg:rounded-2xl">
 
                         {{-- Floating Badge Top Right --}}
-                        <div class="absolute -top-1 -right-1 lg:top-3 lg:right-3 bg-white/95 border border-[#DE9DA7] text-[#6B0F1A] text-[8px] sm:text-[9px] lg:text-sm px-1.5 py-0.5 lg:px-4 lg:py-1.5 rounded-full font-semibold shadow-2xs lg:shadow-sm">
+                        <div class="absolute -top-1 -right-1 lg:top-2 lg:right-2 bg-white/95 border border-[#DE9DA7] text-[#6B0F1A] text-[8px] sm:text-[9px] lg:text-xs px-1.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-semibold shadow-2xs lg:shadow-sm">
                             Rasa Lezat Kualitas Terbaik Selalu ♡
                         </div>
                     </div>
@@ -196,33 +196,33 @@
         </section>
 
         {{-- 4. Section: Custom Cake Banner ("Punya Desain Kue Impian?") --}}
-        <section class="rounded-[24px] lg:rounded-[32px] bg-gradient-to-r from-[#DFD3E3] via-[#E7DBE6] to-[#EFE4E8] border border-[#DACCDC] p-3.5 sm:p-5 lg:p-10 xl:p-14 shadow-xs relative overflow-hidden">
-            <div class="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-10 items-center">
+        <section class="rounded-[24px] lg:rounded-[32px] bg-gradient-to-r from-[#DFD3E3] via-[#E7DBE6] to-[#EFE4E8] border border-[#DACCDC] p-3.5 sm:p-5 lg:p-6 xl:p-8 shadow-xs relative overflow-hidden">
+            <div class="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center">
                 {{-- Left Text & Buttons --}}
-                <div class="col-span-8 lg:col-span-7 space-y-2 sm:space-y-3 lg:space-y-5">
+                <div class="col-span-8 lg:col-span-7 space-y-2 sm:space-y-3 lg:space-y-4">
                     <div>
-                        <h2 class="text-base sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-serif font-bold text-[#3B1422] leading-tight">
+                        <h2 class="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif font-bold text-[#3B1422] leading-tight">
                             Punya Desain Kue Impian?
                         </h2>
-                        <p class="font-serif italic text-[11px] sm:text-xs lg:text-base text-[#5C2335] mt-0.5 sm:mt-1 lg:mt-2">
+                        <p class="font-serif italic text-[11px] sm:text-xs lg:text-sm text-[#5C2335] mt-0.5 sm:mt-1">
                             Kami Wujudkan dengan Desain Terbaik
                         </p>
-                        <p class="font-serif font-bold text-[11px] sm:text-xs lg:text-base text-[#3B1422] mt-0.5 lg:mt-1">
+                        <p class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm text-[#3B1422] mt-0.5">
                             Dibuat dengan Rasa Cinta &amp; Bahan Berkualitas
                         </p>
                     </div>
 
                     {{-- Call-to-Action Buttons --}}
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2.5 pt-0.5">
-                        <a href="{{ route('customer.custom.create') }}" class="bg-white hover:bg-rose-50 text-[#540F18] font-semibold text-[10px] sm:text-xs lg:text-base px-3 py-1.5 sm:px-4 sm:py-2 lg:px-6 lg:py-3 rounded-full border border-[#D5C2CF] shadow-xs transition">
+                        <a href="{{ route('customer.custom.create') }}" class="bg-white hover:bg-rose-50 text-[#540F18] font-semibold text-[10px] sm:text-xs lg:text-sm px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5 lg:py-2.5 rounded-full border border-[#D5C2CF] shadow-xs transition">
                             Custom Cake
                         </a>
                     </div>
 
                     {{-- Bear Mascot Note --}}
-                    <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-3 pt-0.5 lg:pt-2">
-                        <img src="{{ asset('images/mascot-bear-new.png') }}" alt="Maskot Nak Mbarep" class="h-10 sm:h-12 lg:h-16 xl:h-20 w-auto object-contain">
-                        <span class="text-[9px] sm:text-[10px] lg:text-sm xl:text-base text-[#521C2F] font-medium">
+                    <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 pt-0.5">
+                        <img src="{{ asset('images/mascot-bear-new.png') }}" alt="Maskot Nak Mbarep" class="h-10 sm:h-12 lg:h-14 xl:h-16 w-auto object-contain">
+                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-[#521C2F] font-medium">
                             Jangan ragu untuk bertanya ya! ♡
                         </span>
                     </div>
@@ -230,7 +230,7 @@
 
                 {{-- Right Card Photo Frame --}}
                 <div class="col-span-4 lg:col-span-5 flex justify-end">
-                    <div class="bg-white p-1 lg:p-2 xl:p-2.5 rounded-2xl lg:rounded-3xl shadow-sm lg:shadow-md border border-white/80 w-full max-w-[120px] sm:max-w-[140px] lg:max-w-[280px] xl:max-w-[340px]">
+                    <div class="bg-white p-1 lg:p-1.5 xl:p-2 rounded-2xl lg:rounded-3xl shadow-sm border border-white/80 w-full max-w-[120px] sm:max-w-[140px] lg:max-w-[220px] xl:max-w-[260px]">
                         <div class="aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-gray-100">
                             <img src="{{ asset('images/custom-card-new.png') }}" alt="Kue Custom Nak Mbarep" class="w-full h-full object-cover">
                         </div>
