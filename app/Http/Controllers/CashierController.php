@@ -18,7 +18,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
-class CashierController extends Controller
+class CashierController extends PanelController
 {
     /**
      * Tampilkan halaman kasir offline: produk ready yang stoknya masih ada,
@@ -39,7 +39,7 @@ class CashierController extends Controller
             ? null
             : Order::with(['items.product'])->find($receipt['order_id'] ?? null);
 
-        return view('admin.kasir.index', [
+        return $this->panelView('kasir.index', [
             'products' => $products,
             'storeSetting' => StoreSetting::current(),
             'receipt' => $receipt,
@@ -163,8 +163,7 @@ class CashierController extends Controller
             $order
         );
 
-        return redirect()
-            ->route('admin.kasir.index')
+        return $this->panelRedirect('kasir.index')
             ->with('success', 'Transaksi tunai '.$order->kode_pesanan.' berhasil disimpan.')
             ->with('receipt', [
                 'order_id' => $order->id,

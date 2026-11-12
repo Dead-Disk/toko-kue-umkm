@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 
-class AdminDashboardController extends Controller
+class AdminDashboardController extends PanelController
 {
     /**
      * Tampilkan halaman dashboard/beranda admin.
@@ -38,7 +38,7 @@ class AdminDashboardController extends Controller
         $bestSellers = $this->bestSellerProducts();
         $pesananTerbaru = Order::latest()->take(5)->get();
 
-        return view('admin.dashboard', compact(
+        return $this->panelView('dashboard', compact(
             'totalProduk',
             'pesananMasuk',
             'pelangganAktif',

@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class AdminOrderController extends Controller
+class AdminOrderController extends PanelController
 {
     /**
      * Filter tab di atas tabel: parameter ?status= => nilai status yang ditampilkan.
@@ -72,7 +72,7 @@ class AdminOrderController extends Controller
         $pesananProses = Order::where('status', StatusPesanan::Proses)->count();
         $pesananSelesai = Order::where('status', StatusPesanan::Selesai)->count();
 
-        return view('admin.order.index', [
+        return $this->panelView('order.index', [
             'orders' => $orders->latest()->get(),
             'filter' => $filter,
             'filterTipe' => $filterTipe,
@@ -112,8 +112,7 @@ class AdminOrderController extends Controller
         });
 
         if ($pesanError !== null) {
-            return redirect()
-                ->route('admin.pesanan.index', array_filter($request->only(['status', 'start_date', 'end_date'])))
+            return $this->panelRedirect('pesanan.index', array_filter($request->only(['status', 'start_date', 'end_date'])))
                 ->withErrors(['status' => $pesanError]);
         }
 
@@ -123,8 +122,7 @@ class AdminOrderController extends Controller
             $order
         );
 
-        return redirect()
-            ->route('admin.pesanan.index')
+        return $this->panelRedirect('pesanan.index')
             ->with('success', 'Status pesanan '.$order->kode_pesanan.' berhasil diperbarui.');
     }
 
@@ -141,8 +139,7 @@ class AdminOrderController extends Controller
 
         $order->delete();
 
-        return redirect()
-            ->route('admin.pesanan.index', array_filter($request->only(['status', 'start_date', 'end_date'])))
+        return $this->panelRedirect('pesanan.index', array_filter($request->only(['status', 'start_date', 'end_date'])))
             ->with('success', 'Pesanan '.$order->kode_pesanan.' berhasil dihapus.');
     }
 
