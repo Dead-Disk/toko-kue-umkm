@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -56,6 +57,8 @@ class AdminProfileController extends Controller
         }
 
         $user->update($updateData);
+
+        ActivityLog::record('ubah', 'Memperbarui profil akun ('.$user->name.')', $user);
 
         return redirect()
             ->route('admin.profile.edit')

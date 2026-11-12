@@ -82,12 +82,20 @@
                    class="block text-center py-2 text-xs text-stone-200 bg-white/10 rounded-lg">
                     Lihat Web Toko ↗
                 </a>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="w-full py-2 text-xs text-rose-300 hover:bg-rose-950/30 rounded-lg text-center font-medium">
-                        Keluar (Logout)
-                    </button>
-                </form>
+                <div class="flex items-center gap-2">
+                    @if (auth()->user()?->isAdmin())
+                        <a href="{{ route('admin.logs.index') }}"
+                           class="flex-1 py-2 text-xs text-amber-200 hover:bg-white/10 rounded-lg text-center font-medium border border-amber-300/20">
+                            Log Aktivitas
+                        </a>
+                    @endif
+                    <form action="{{ route('logout') }}" method="POST" class="{{ auth()->user()?->isAdmin() ? 'flex-1' : 'w-full' }}">
+                        @csrf
+                        <button type="submit" class="w-full py-2 text-xs text-rose-300 hover:bg-rose-950/30 rounded-lg text-center font-medium">
+                            Keluar (Logout)
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

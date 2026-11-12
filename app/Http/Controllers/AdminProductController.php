@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusStok;
+use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
@@ -92,7 +93,9 @@ class AdminProductController extends Controller
             $data['foto'] = $request->file('foto')->store('products', 'public');
         }
 
-        Product::create($data);
+        $product = Product::create($data);
+
+        ActivityLog::record('tambah', 'Menambahkan produk baru: '.$product->nama_kue.' (Stok: '.$product->stok.')', $product);
 
         return redirect()
             ->route('admin.produk.index')
@@ -129,6 +132,8 @@ class AdminProductController extends Controller
 
         $product->update($data);
 
+        ActivityLog::record('ubah', 'Memperbarui produk: '.$product->nama_kue, $product);
+
         return redirect()
             ->route('admin.produk.index')
             ->with('success', 'Produk berhasil diperbarui.');
@@ -139,6 +144,8 @@ class AdminProductController extends Controller
      */
     public function destroy(Product $product): RedirectResponse
     {
+        ActivityLog::record('hapus', 'Menghapus produk: '.$product->nama_kue, $product);
+
         $product->delete();
 
         return redirect()

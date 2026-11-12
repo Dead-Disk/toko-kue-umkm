@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BentukKue;
+use App\Models\ActivityLog;
 use App\Models\CakeOption;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
@@ -38,7 +39,9 @@ class AdminSettingController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        CakeOption::create($request->validate($this->rules()));
+        $cakeOption = CakeOption::create($request->validate($this->rules()));
+
+        ActivityLog::record('tambah', 'Menambahkan opsi custom cake: '.$cakeOption->nama_opsi, $cakeOption);
 
         return redirect()
             ->route('admin.pengaturan.index')
@@ -62,6 +65,8 @@ class AdminSettingController extends Controller
     {
         $cakeOption->update($request->validate($this->rules()));
 
+        ActivityLog::record('ubah', 'Memperbarui opsi custom cake: '.$cakeOption->nama_opsi, $cakeOption);
+
         return redirect()
             ->route('admin.pengaturan.index')
             ->with('success', 'Opsi custom cake berhasil diperbarui.');
@@ -72,6 +77,8 @@ class AdminSettingController extends Controller
      */
     public function destroy(CakeOption $cakeOption): RedirectResponse
     {
+        ActivityLog::record('hapus', 'Menghapus opsi custom cake: '.$cakeOption->nama_opsi, $cakeOption);
+
         $cakeOption->delete();
 
         return redirect()

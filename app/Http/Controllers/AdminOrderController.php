@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -116,6 +117,12 @@ class AdminOrderController extends Controller
                 ->withErrors(['status' => $pesanError]);
         }
 
+        ActivityLog::record(
+            'ubah',
+            'Mengubah status pesanan #'.$order->kode_pesanan.' ('.$order->nama_pemesan.') menjadi '.$statusBaru->label(),
+            $order
+        );
+
         return redirect()
             ->route('admin.pesanan.index')
             ->with('success', 'Status pesanan '.$order->kode_pesanan.' berhasil diperbarui.');
@@ -126,6 +133,12 @@ class AdminOrderController extends Controller
      */
     public function destroy(Request $request, Order $order): RedirectResponse
     {
+        ActivityLog::record(
+            'hapus',
+            'Menghapus pesanan #'.$order->kode_pesanan.' ('.$order->nama_pemesan.')',
+            $order
+        );
+
         $order->delete();
 
         return redirect()
