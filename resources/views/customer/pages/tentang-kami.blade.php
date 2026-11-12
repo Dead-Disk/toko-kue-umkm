@@ -33,17 +33,29 @@
                 </p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-8 pt-2 lg:pt-4">
                     <div class="bg-[#FAF2EE] p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-3xl text-center border border-[#F4E1D9]/50 shadow-2xs">
-                        <span class="text-2xl sm:text-3xl lg:text-5xl mb-2 lg:mb-3 block">🎂</span>
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2.5 lg:mb-3.5 rounded-2xl bg-white border border-[#F4E1D9] flex items-center justify-center text-[#6B0F1A] shadow-2xs">
+                            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M2 21h20M7 8v2M12 8v2M17 8v2M7 4h.01M12 4h.01M17 4h.01"/>
+                            </svg>
+                        </div>
                         <h3 class="font-serif font-bold text-[#540F18] text-sm sm:text-base lg:text-xl">Bahan Berkualitas</h3>
                         <p class="text-xs sm:text-sm lg:text-base text-gray-600 mt-1 lg:mt-2">Menggunakan bahan alami dan premium tanpa pengawet berbahaya.</p>
                     </div>
                     <div class="bg-[#FAF2EE] p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-3xl text-center border border-[#F4E1D9]/50 shadow-2xs">
-                        <span class="text-2xl sm:text-3xl lg:text-5xl mb-2 lg:mb-3 block">✨</span>
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2.5 lg:mb-3.5 rounded-2xl bg-white border border-[#F4E1D9] flex items-center justify-center text-[#6B0F1A] shadow-2xs">
+                            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
+                            </svg>
+                        </div>
                         <h3 class="font-serif font-bold text-[#540F18] text-sm sm:text-base lg:text-xl">Custom Cake</h3>
                         <p class="text-xs sm:text-sm lg:text-base text-gray-600 mt-1 lg:mt-2">Desain kue impian Anda bisa kami wujudkan sesuai pesanan.</p>
                     </div>
                     <div class="bg-[#FAF2EE] p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-3xl text-center border border-[#F4E1D9]/50 shadow-2xs">
-                        <span class="text-2xl sm:text-3xl lg:text-5xl mb-2 lg:mb-3 block">❤️</span>
+                        <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2.5 lg:mb-3.5 rounded-2xl bg-white border border-[#F4E1D9] flex items-center justify-center text-[#6B0F1A] shadow-2xs">
+                            <svg class="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+                            </svg>
+                        </div>
                         <h3 class="font-serif font-bold text-[#540F18] text-sm sm:text-base lg:text-xl">Penuh Rasa Cinta</h3>
                         <p class="text-xs sm:text-sm lg:text-base text-gray-600 mt-1 lg:mt-2">Dibuat secara higienis, fresh setiap hari untuk pelanggan.</p>
                     </div>
