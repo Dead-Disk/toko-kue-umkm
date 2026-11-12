@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\StoreSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,8 @@ class AdminStoreSettingController extends Controller
         unset($data['qris_image'], $data['hapus_qris']);
 
         $setting->fill($data)->save();
+
+        ActivityLog::record('ubah', 'Memperbarui informasi & pengaturan toko', $setting);
 
         return redirect()
             ->route('admin.settings.index')

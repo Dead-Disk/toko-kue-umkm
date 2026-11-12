@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminOrderController;
@@ -140,6 +141,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
 
         // Laporan penjualan (khusus admin).
         Route::get('laporan', [AdminReportController::class, 'index'])->name('reports.index');
+
+        // Log Aktivitas Pengguna (khusus owner/admin).
+        Route::get('logs', [AdminActivityLogController::class, 'index'])->name('logs.index');
 
         // Kelola akun admin/staf (khusus admin).
         Route::resource('users', UserController::class)->except(['show']);

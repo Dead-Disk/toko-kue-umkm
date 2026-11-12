@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,10 +40,12 @@ class AdminCategoryController extends Controller
         $nama = (string) ($request->input('nama_kategori') ?: $request->input('name'));
         $slug = $this->uniqueSlug($nama);
 
-        Category::create([
+        $category = Category::create([
             'nama_kategori' => $nama,
             'slug' => $slug,
         ]);
+
+        ActivityLog::record('tambah', 'Menambahkan kategori kue: '.$category->nama_kategori, $category);
 
         return redirect()
             ->route('admin.pengaturan.index')
@@ -76,6 +79,8 @@ class AdminCategoryController extends Controller
 
         $category->save();
 
+        ActivityLog::record('ubah', 'Memperbarui kategori kue: '.$category->nama_kategori, $category);
+
         return redirect()
             ->route('admin.pengaturan.index')
             ->with('success', 'Kategori kue berhasil diperbarui.');
@@ -91,6 +96,8 @@ class AdminCategoryController extends Controller
                 ->route('admin.pengaturan.index')
                 ->withErrors(['kategori' => 'Kategori "'.$category->nama_kategori.'" masih dipakai produk. Pindahkan produknya dulu sebelum menghapus.']);
         }
+
+        ActivityLog::record('hapus', 'Menghapus kategori kue: '.$category->nama_kategori, $category);
 
         $category->delete();
 

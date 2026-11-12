@@ -7,6 +7,7 @@ use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\StatusStok;
 use App\Enums\TipePesanan;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
@@ -155,6 +156,12 @@ class CashierController extends Controller
         }
 
         $total = $order->total_harga;
+
+        ActivityLog::record(
+            'kasir',
+            'Transaksi kasir tunai #'.$order->kode_pesanan.' senilai Rp '.number_format($order->total_harga, 0, ',', '.'),
+            $order
+        );
 
         return redirect()
             ->route('admin.kasir.index')

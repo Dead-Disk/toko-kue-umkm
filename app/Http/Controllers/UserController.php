@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -67,7 +68,13 @@ class UserController extends Controller
             'role' => ['required', Rule::in(self::ROLES)],
         ]);
 
-        User::create($data);
+        $user = User::create($data);
+
+        ActivityLog::record(
+            'tambah',
+            'Menambahkan akun pengguna baru: '.$user->name.' ('.$user->username.', Role: '.$user->role.')',
+            $user
+        );
 
         return redirect()
             ->route('admin.users.index')
@@ -101,6 +108,12 @@ class UserController extends Controller
 
         $user->update($data);
 
+        ActivityLog::record(
+            'ubah',
+            'Mengubah data pengguna: '.$user->name.' ('.$user->username.', Role: '.$user->role.')',
+            $user
+        );
+
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'User berhasil diperbarui.');
@@ -116,6 +129,12 @@ class UserController extends Controller
                 ->route('admin.users.index')
                 ->withErrors(['user' => 'Tidak bisa menghapus akun yang sedang login.']);
         }
+
+        ActivityLog::record(
+            'hapus',
+            'Menghapus akun pengguna: '.$user->name.' ('.$user->username.')',
+            $user
+        );
 
         $user->delete();
 
