@@ -5,7 +5,7 @@
 
 {{-- Top Navigation Bar --}}
 <header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-xs">
-    <div class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-2 sm:gap-4">
+    <div class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-2 sm:gap-4">
         {{-- Brand / Logo (Kiri) --}}
         <a href="{{ route('customer.index') }}" class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0 min-w-0 group" title="{{ $storeName }}">
             <img src="{{ asset('images/logo-nav.png') }}" alt="Logo {{ $storeName }}" class="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full object-cover border border-white/30 shadow-xs shrink-0">

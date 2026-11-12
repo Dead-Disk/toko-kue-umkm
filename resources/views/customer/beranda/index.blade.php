@@ -12,7 +12,7 @@
     @include('customer.partials.navbar')
 
     {{-- Main Content Container --}}
-    <main class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 lg:px-8 py-3.5 sm:py-5 lg:py-8 w-full flex-1 space-y-4 sm:space-y-6 lg:space-y-8">
+    <main class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 lg:px-8 py-3.5 sm:py-5 lg:py-8 w-full flex-1 space-y-4 sm:space-y-6 lg:space-y-10">
 
         {{-- Hidden semantic heading for SEO & test compatibility --}}
         <h1 class="sr-only">Selamat Datang di Toko Kue {{ $storeSetting->store_name ?? 'Nak Mbarep' }}</h1>
@@ -37,40 +37,40 @@
 
         {{-- 1. Hero Promo Banner --}}
         <section class="relative overflow-hidden rounded-[24px] lg:rounded-[32px] bg-[#FAF0EB] border border-[#F4DDD5] shadow-xs">
-            <div class="p-3.5 sm:p-5 lg:p-8 xl:p-10 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center relative z-10">
+            <div class="p-3.5 sm:p-5 lg:p-10 xl:p-14 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-10 items-center relative z-10">
                 {{-- Left Text Info --}}
-                <div class="col-span-7 space-y-2 sm:space-y-3 lg:space-y-4">
+                <div class="col-span-7 lg:col-span-6 space-y-2 sm:space-y-3 lg:space-y-5 xl:space-y-6">
                     {{-- Mini Brand Tag --}}
-                    <div class="inline-flex items-center gap-1.5 text-[#6B0F1A]">
-                        <img src="{{ asset('images/logo-nav.png') }}" alt="" class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 rounded-full object-cover">
-                        <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm tracking-tight">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
-                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
+                    <div class="inline-flex items-center gap-1.5 lg:gap-2 text-[#6B0F1A]">
+                        <img src="{{ asset('images/logo-nav.png') }}" alt="" class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-7 lg:h-7 rounded-full object-cover">
+                        <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-base tracking-tight">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
+                        <span class="text-[9px] sm:text-[10px] lg:text-sm text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
                     </div>
 
                     {{-- Main Headline --}}
-                    <h2 class="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif font-bold text-[#540F18] leading-tight">
+                    <h2 class="text-base sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-serif font-bold text-[#540F18] leading-tight">
                         Kue Spesial untuk<br>Setiap Momen Berharga
                     </h2>
 
                     {{-- Quote Badge --}}
-                    <div class="inline-block bg-white/70 border border-dashed border-[#DE9DA7] text-[#6B0F1A] text-[10px] sm:text-xs lg:text-sm px-2.5 py-0.5 lg:px-4 lg:py-1 rounded-full font-medium shadow-2xs">
+                    <div class="inline-block bg-white/70 border border-dashed border-[#DE9DA7] text-[#6B0F1A] text-[10px] sm:text-xs lg:text-base px-2.5 py-0.5 lg:px-5 lg:py-1.5 rounded-full font-medium shadow-2xs">
                         Karena setiap kebahagiaan layak dirayakan dengan kue terbaik ♡
                     </div>
 
                     {{-- Cute Chef Mascot --}}
-                    <div class="pt-0.5 flex items-center gap-1.5 lg:gap-2.5">
-                        <img src="{{ asset('images/hero-mascot.png') }}" alt="Maskot Nak Mbarep" class="h-11 sm:h-13 lg:h-16 xl:h-20 w-auto object-contain">
-                        <span class="text-[10px] sm:text-xs lg:text-sm text-[#7A2832] italic">Dari dapur kecil, untuk kebahagiaan besar ♡</span>
+                    <div class="pt-0.5 lg:pt-2 flex items-center gap-1.5 lg:gap-3">
+                        <img src="{{ asset('images/hero-mascot.png') }}" alt="Maskot Nak Mbarep" class="h-11 sm:h-13 lg:h-20 xl:h-24 w-auto object-contain">
+                        <span class="text-[10px] sm:text-xs lg:text-base text-[#7A2832] italic">Dari dapur kecil, untuk kebahagiaan besar ♡</span>
                     </div>
                 </div>
 
                 {{-- Right Hero Cake Image with Floating Badges --}}
-                <div class="col-span-5 relative flex items-center justify-center">
-                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-[300px] xl:max-w-[340px] aspect-square rounded-2xl lg:rounded-3xl overflow-hidden shadow-xs bg-white/50 p-0.5 lg:p-1.5">
+                <div class="col-span-5 lg:col-span-6 relative flex items-center justify-center">
+                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-none xl:max-w-[480px] aspect-square rounded-2xl lg:rounded-3xl overflow-hidden shadow-xs lg:shadow-md bg-white/50 p-0.5 lg:p-2">
                         <img src="{{ asset('images/hero-strawberry-cake.png') }}" alt="Strawberry Cake Spesial Nak Mbarep" class="w-full h-full object-cover rounded-xl lg:rounded-2xl">
 
                         {{-- Floating Badge Top Right --}}
-                        <div class="absolute -top-1 -right-1 bg-white/95 border border-[#DE9DA7] text-[#6B0F1A] text-[8px] sm:text-[9px] lg:text-xs px-1.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-semibold shadow-2xs">
+                        <div class="absolute -top-1 -right-1 lg:top-3 lg:right-3 bg-white/95 border border-[#DE9DA7] text-[#6B0F1A] text-[8px] sm:text-[9px] lg:text-sm px-1.5 py-0.5 lg:px-4 lg:py-1.5 rounded-full font-semibold shadow-2xs lg:shadow-sm">
                             Rasa Lezat Kualitas Terbaik Selalu ♡
                         </div>
                     </div>
@@ -79,22 +79,22 @@
         </section>
 
         {{-- 2. Section: Katalog Kue (Data Murni dari $categories) --}}
-        <section class="space-y-2.5 sm:space-y-3.5 lg:space-y-4">
+        <section class="space-y-2.5 sm:space-y-3.5 lg:space-y-5">
             <div class="flex items-center justify-between">
-                <h2 class="text-sm sm:text-base md:text-lg lg:text-xl font-serif font-bold text-[#540F18]">
+                <h2 class="text-sm sm:text-base md:text-lg lg:text-2xl font-serif font-bold text-[#540F18]">
                     Katalog Kue
                 </h2>
-                <a href="{{ route('customer.produk.index') }}" class="inline-flex items-center gap-1 bg-[#6B0F1A] hover:bg-[#520912] text-white text-[11px] sm:text-xs lg:text-sm font-semibold px-3 py-1 sm:px-4 sm:py-1.5 rounded-full transition shadow-xs">
+                <a href="{{ route('customer.produk.index') }}" class="inline-flex items-center gap-1 lg:gap-1.5 bg-[#6B0F1A] hover:bg-[#520912] text-white text-[11px] sm:text-xs lg:text-sm font-semibold px-3 py-1 sm:px-4 sm:py-1.5 lg:px-5 lg:py-2 rounded-full transition shadow-xs">
                     <span>Lihat Semua</span>
-                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
             </div>
 
-            {{-- Category 4-Column Grid --}}
-            <div class="grid grid-cols-4 gap-2 sm:gap-3 lg:gap-5">
+            {{-- Category Grid: 4 cols mobile, 6 cols on lg+ --}}
+            <div class="grid grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-5 xl:gap-6">
                 @forelse ($categories as $cat)
                     <a href="{{ route('customer.produk.index', ['kategori' => $cat->slug]) }}" class="group flex flex-col items-center">
-                        <div class="w-full aspect-[4/3] rounded-xl lg:rounded-2xl overflow-hidden bg-white shadow-xs border border-[#F4E1D9] mb-1 lg:mb-2 flex items-center justify-center">
+                        <div class="w-full aspect-[4/3] lg:aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-white shadow-xs lg:shadow-sm border border-[#F4E1D9] mb-1 lg:mb-2.5 flex items-center justify-center">
                             @if ($cat->products->first()?->foto)
                                 <img src="{{ asset('storage/' . $cat->products->first()->foto) }}" alt="{{ $cat->nama_kategori }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             @else
@@ -103,12 +103,12 @@
                                 </div>
                             @endif
                         </div>
-                        <span class="text-[11px] sm:text-xs lg:text-sm font-semibold text-gray-800 group-hover:text-[#6B0F1A] transition text-center line-clamp-1">
+                        <span class="text-[11px] sm:text-xs lg:text-sm xl:text-base font-semibold text-gray-800 group-hover:text-[#6B0F1A] transition text-center line-clamp-1">
                             {{ $cat->nama_kategori }}
                         </span>
                     </a>
                 @empty
-                    <div class="col-span-4 text-center py-4 text-xs sm:text-sm text-gray-400">
+                    <div class="col-span-4 lg:col-span-6 text-center py-4 lg:py-8 text-xs sm:text-sm lg:text-base text-gray-400">
                         Belum ada kategori kue.
                     </div>
                 @endforelse
@@ -116,24 +116,24 @@
         </section>
 
         {{-- 3. Section: Rekomendasi (Data Murni dari $produks) --}}
-        <section class="space-y-2.5 sm:space-y-3.5 lg:space-y-4">
+        <section class="space-y-2.5 sm:space-y-3.5 lg:space-y-5">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-sm sm:text-base md:text-lg lg:text-xl font-serif font-bold text-[#540F18] inline-flex items-center gap-1.5">
+                    <h2 class="text-sm sm:text-base md:text-lg lg:text-2xl font-serif font-bold text-[#540F18] inline-flex items-center gap-1.5">
                         <span>Rekomendasi</span>
                         <span class="sr-only">Kue Terlaris / Favorit</span>
                     </h2>
                 </div>
-                <a href="{{ route('customer.produk.index') }}" class="inline-flex items-center gap-1 bg-[#6B0F1A] hover:bg-[#520912] text-white text-[11px] sm:text-xs lg:text-sm font-semibold px-3 py-1 sm:px-4 sm:py-1.5 rounded-full transition shadow-xs">
+                <a href="{{ route('customer.produk.index') }}" class="inline-flex items-center gap-1 lg:gap-1.5 bg-[#6B0F1A] hover:bg-[#520912] text-white text-[11px] sm:text-xs lg:text-sm font-semibold px-3 py-1 sm:px-4 sm:py-1.5 lg:px-5 lg:py-2 rounded-full transition shadow-xs">
                     <span>Pesan Sekarang</span>
-                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </a>
             </div>
 
-            {{-- Product Grid: 4 items dari $produks --}}
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-5 xl:gap-6">
+            {{-- Product Grid: responsive columns --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-5 xl:gap-6">
                 @forelse ($produks as $produk)
-                    <div class="bg-white rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-4 border border-[#F3E1DC] shadow-2xs hover:shadow-md transition flex flex-col justify-between group">
+                    <div class="bg-white rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-4 xl:p-5 border border-[#F3E1DC] shadow-2xs hover:shadow-md transition flex flex-col justify-between group">
                         <div>
                             <a href="{{ route('customer.produk.show', $produk) }}" class="block aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] mb-1.5 sm:mb-2.5 lg:mb-3 relative">
                                 @if ($produk->foto)
@@ -188,7 +188,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="col-span-2 sm:col-span-4 text-center py-6 text-xs sm:text-sm text-gray-400">
+                    <div class="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5 text-center py-6 lg:py-10 text-xs sm:text-sm lg:text-base text-gray-400">
                         Belum ada produk rekomendasi saat ini.
                     </div>
                 @endforelse
@@ -196,41 +196,41 @@
         </section>
 
         {{-- 4. Section: Custom Cake Banner ("Punya Desain Kue Impian?") --}}
-        <section class="rounded-[24px] lg:rounded-[32px] bg-gradient-to-r from-[#DFD3E3] via-[#E7DBE6] to-[#EFE4E8] border border-[#DACCDC] p-3.5 sm:p-5 lg:p-8 xl:p-10 shadow-xs relative overflow-hidden">
-            <div class="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center">
+        <section class="rounded-[24px] lg:rounded-[32px] bg-gradient-to-r from-[#DFD3E3] via-[#E7DBE6] to-[#EFE4E8] border border-[#DACCDC] p-3.5 sm:p-5 lg:p-10 xl:p-14 shadow-xs relative overflow-hidden">
+            <div class="grid grid-cols-12 gap-3 sm:gap-6 lg:gap-10 items-center">
                 {{-- Left Text & Buttons --}}
-                <div class="col-span-8 space-y-2 sm:space-y-3 lg:space-y-4">
+                <div class="col-span-8 lg:col-span-7 space-y-2 sm:space-y-3 lg:space-y-5">
                     <div>
-                        <h2 class="text-base sm:text-xl md:text-2xl lg:text-3xl font-serif font-bold text-[#3B1422] leading-tight">
+                        <h2 class="text-base sm:text-xl md:text-2xl lg:text-4xl xl:text-5xl font-serif font-bold text-[#3B1422] leading-tight">
                             Punya Desain Kue Impian?
                         </h2>
-                        <p class="font-serif italic text-[11px] sm:text-xs lg:text-sm text-[#5C2335] mt-0.5 sm:mt-1">
+                        <p class="font-serif italic text-[11px] sm:text-xs lg:text-base text-[#5C2335] mt-0.5 sm:mt-1 lg:mt-2">
                             Kami Wujudkan dengan Desain Terbaik
                         </p>
-                        <p class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm text-[#3B1422] mt-0.5">
+                        <p class="font-serif font-bold text-[11px] sm:text-xs lg:text-base text-[#3B1422] mt-0.5 lg:mt-1">
                             Dibuat dengan Rasa Cinta &amp; Bahan Berkualitas
                         </p>
                     </div>
 
                     {{-- Call-to-Action Buttons --}}
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2.5 pt-0.5">
-                        <a href="{{ route('customer.custom.create') }}" class="bg-white hover:bg-rose-50 text-[#540F18] font-semibold text-[10px] sm:text-xs lg:text-sm px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5 lg:py-2.5 rounded-full border border-[#D5C2CF] shadow-xs transition">
+                        <a href="{{ route('customer.custom.create') }}" class="bg-white hover:bg-rose-50 text-[#540F18] font-semibold text-[10px] sm:text-xs lg:text-base px-3 py-1.5 sm:px-4 sm:py-2 lg:px-6 lg:py-3 rounded-full border border-[#D5C2CF] shadow-xs transition">
                             Custom Cake
                         </a>
                     </div>
 
                     {{-- Bear Mascot Note --}}
-                    <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 pt-0.5">
-                        <img src="{{ asset('images/mascot-bear-new.png') }}" alt="Maskot Nak Mbarep" class="h-10 sm:h-12 lg:h-14 xl:h-16 w-auto object-contain">
-                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-[#521C2F] font-medium">
+                    <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-3 pt-0.5 lg:pt-2">
+                        <img src="{{ asset('images/mascot-bear-new.png') }}" alt="Maskot Nak Mbarep" class="h-10 sm:h-12 lg:h-16 xl:h-20 w-auto object-contain">
+                        <span class="text-[9px] sm:text-[10px] lg:text-sm xl:text-base text-[#521C2F] font-medium">
                             Jangan ragu untuk bertanya ya! ♡
                         </span>
                     </div>
                 </div>
 
                 {{-- Right Card Photo Frame --}}
-                <div class="col-span-4 flex justify-end">
-                    <div class="bg-white p-1 lg:p-1.5 rounded-2xl lg:rounded-3xl shadow-sm border border-white/80 w-full max-w-[120px] sm:max-w-[140px] lg:max-w-[200px] xl:max-w-[220px]">
+                <div class="col-span-4 lg:col-span-5 flex justify-end">
+                    <div class="bg-white p-1 lg:p-2 xl:p-2.5 rounded-2xl lg:rounded-3xl shadow-sm lg:shadow-md border border-white/80 w-full max-w-[120px] sm:max-w-[140px] lg:max-w-[280px] xl:max-w-[340px]">
                         <div class="aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-gray-100">
                             <img src="{{ asset('images/custom-card-new.png') }}" alt="Kue Custom Nak Mbarep" class="w-full h-full object-cover">
                         </div>
@@ -243,28 +243,33 @@
 
     {{-- Footer --}}
     <footer class="bg-[#4D626C] text-white mt-8 lg:mt-12">
-        <div class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 lg:px-8 py-6 lg:py-10 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 text-xs items-start">
-            {{-- Brand Column (3 cols) --}}
-            <div class="col-span-4 sm:col-span-3 flex items-center gap-2 lg:gap-3">
-                <img src="{{ asset('images/logo-footer.png') }}" alt="Nak Mbarep Logo" class="w-8 h-8 sm:w-9 sm:h-9 lg:w-11 lg:h-11 rounded-full object-cover border border-white/20 shrink-0">
-                <p class="text-slate-100 text-[10px] sm:text-xs lg:text-sm leading-tight font-medium">
-                    Kue Lezat,<br>Momen Lebih Manis
-                </p>
+        <div class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-4 lg:px-8 py-6 lg:py-10 xl:py-12 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 text-xs items-start">
+            {{-- Brand Column --}}
+            <div class="col-span-4 sm:col-span-3 flex items-center gap-2 lg:gap-4">
+                <img src="{{ asset('images/logo-footer.png') }}" alt="Nak Mbarep Logo" class="w-8 h-8 sm:w-9 sm:h-9 lg:w-12 lg:h-12 rounded-full object-cover border border-white/20 shrink-0">
+                <div>
+                    <p class="text-slate-100 text-[10px] sm:text-xs lg:text-base leading-tight font-medium">
+                        Kue Lezat,<br>Momen Lebih Manis
+                    </p>
+                    <p class="text-slate-300 text-[9px] sm:text-[10px] lg:text-xs mt-1 hidden lg:block">
+                        Dari dapur kecil, untuk kebahagiaan besar ♡
+                    </p>
+                </div>
             </div>
 
-            {{-- Navigasi Column (3 cols) --}}
-            <div class="col-span-3 sm:col-span-3 border-l border-white/20 pl-2.5 sm:pl-3 lg:pl-5 space-y-1 lg:space-y-2">
-                <h4 class="font-semibold text-[11px] sm:text-xs lg:text-sm text-white">Navigasi</h4>
-                <ul class="space-y-1 lg:space-y-1.5 text-slate-200 text-[10px] sm:text-xs">
+            {{-- Navigasi Column --}}
+            <div class="col-span-3 sm:col-span-3 border-l border-white/20 pl-2.5 sm:pl-3 lg:pl-6 space-y-1 lg:space-y-2.5">
+                <h4 class="font-semibold text-[11px] sm:text-xs lg:text-base text-white">Navigasi</h4>
+                <ul class="space-y-1 lg:space-y-2 text-slate-200 text-[10px] sm:text-xs lg:text-sm">
                     <li><a href="{{ route('customer.index') }}" class="hover:text-amber-100 transition">Beranda</a></li>
                     <li><a href="{{ route('customer.produk.index') }}" class="hover:text-amber-100 transition">Katalog Kue</a></li>
                     <li><a href="{{ route('customer.page', 'tentang-kami') }}" class="hover:text-amber-100 transition">Tentang Kami</a></li>
                 </ul>
             </div>
 
-            {{-- Kontak Kami Column (2 cols) --}}
-            <div class="col-span-2 sm:col-span-3 border-l border-white/20 pl-2.5 sm:pl-3 lg:pl-5 space-y-1 lg:space-y-2">
-                <h4 class="font-semibold text-[11px] sm:text-xs lg:text-sm text-white">Kontak Kami</h4>
+            {{-- Kontak Kami Column --}}
+            <div class="col-span-2 sm:col-span-3 border-l border-white/20 pl-2.5 sm:pl-3 lg:pl-6 space-y-1 lg:space-y-2.5">
+                <h4 class="font-semibold text-[11px] sm:text-xs lg:text-base text-white">Kontak Kami</h4>
                 <div class="flex flex-wrap items-center gap-2 lg:gap-3 pt-0.5">
                     @php
                         $cleanPhone = preg_replace('/[^0-9]/', '', (string) ($storeSetting?->store_phone ?? ''));
@@ -308,11 +313,11 @@
                 </div>
             </div>
 
-            {{-- Informasi Column (3 cols) --}}
-            <div class="col-span-3 sm:col-span-3 border-l border-white/20 pl-2.5 sm:pl-3 lg:pl-5 space-y-1 lg:space-y-2">
-                <h4 class="font-semibold text-[11px] sm:text-xs lg:text-sm text-white">Informasi</h4>
-                <div class="flex items-start gap-1 lg:gap-1.5 text-slate-200 text-[10px] sm:text-xs leading-snug">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-4.5 lg:h-4.5 shrink-0 mt-0.5 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
+            {{-- Informasi Column --}}
+            <div class="col-span-3 sm:col-span-3 border-l border-white/20 pl-2.5 sm:pl-3 lg:pl-6 space-y-1 lg:space-y-2.5">
+                <h4 class="font-semibold text-[11px] sm:text-xs lg:text-base text-white">Informasi</h4>
+                <div class="flex items-start gap-1 lg:gap-2 text-slate-200 text-[10px] sm:text-xs lg:text-sm leading-snug">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 shrink-0 mt-0.5 text-rose-300" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                     </svg>
                     <span>
