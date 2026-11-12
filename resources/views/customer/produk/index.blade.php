@@ -278,7 +278,7 @@
             <button
                 type="button"
                 data-category-id="all"
-                class="category-pill shrink-0 px-4 py-1.5 sm:px-5 sm:py-2 lg:px-6 lg:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer {{ empty($currentCategory) ? 'bg-[#6B0F1A] text-white shadow-xs' : 'bg-white text-[#6B0F1A] border border-[#E8B8AE] hover:bg-rose-50' }}"
+                class="category-pill shrink-0 px-4 py-1.5 sm:px-5 sm:py-2 lg:px-6 lg:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer {{ empty($currentCategory) ? 'bg-[#6B0F1A] hover:bg-[#520912] text-white shadow-xs' : 'bg-white hover:bg-rose-50 text-[#6B0F1A] border border-[#E8B8AE]' }}"
             >
                 Semua
             </button>
@@ -287,7 +287,7 @@
                 <button
                     type="button"
                     data-category-id="{{ $cat->id }}"
-                    class="category-pill shrink-0 px-4 py-1.5 sm:px-5 sm:py-2 lg:px-6 lg:py-2.5 rounded-full text-xs sm:text-sm font-medium transition cursor-pointer {{ ($currentCategory ?? null) === $cat->id ? 'bg-[#6B0F1A] text-white shadow-xs' : 'bg-white text-[#6B0F1A] border border-[#E8B8AE] hover:bg-rose-50' }}"
+                    class="category-pill shrink-0 px-4 py-1.5 sm:px-5 sm:py-2 lg:px-6 lg:py-2.5 rounded-full text-xs sm:text-sm font-medium transition cursor-pointer {{ ($currentCategory ?? null) === $cat->id ? 'bg-[#6B0F1A] hover:bg-[#520912] text-white shadow-xs' : 'bg-white hover:bg-rose-50 text-[#6B0F1A] border border-[#E8B8AE]' }}"
                 >
                     {{ $cat->nama_kategori }}
                 </button>
@@ -777,12 +777,12 @@
                     activeCategory = this.getAttribute('data-category-id') || 'all';
 
                     pills.forEach(p => {
-                        p.classList.remove('bg-[#6B0F1A]', 'text-white', 'shadow-xs');
-                        p.classList.add('bg-white', 'text-[#6B0F1A]', 'border', 'border-[#E8B8AE]');
+                        p.classList.remove('bg-[#6B0F1A]', 'hover:bg-[#520912]', 'text-white', 'shadow-xs');
+                        p.classList.add('bg-white', 'hover:bg-rose-50', 'text-[#6B0F1A]', 'border', 'border-[#E8B8AE]');
                     });
 
-                    this.classList.remove('bg-white', 'text-[#6B0F1A]', 'border', 'border-[#E8B8AE]');
-                    this.classList.add('bg-[#6B0F1A]', 'text-white', 'shadow-xs');
+                    this.classList.remove('bg-white', 'hover:bg-rose-50', 'text-[#6B0F1A]', 'border', 'border-[#E8B8AE]');
+                    this.classList.add('bg-[#6B0F1A]', 'hover:bg-[#520912]', 'text-white', 'shadow-xs');
 
                     filterProducts();
                 });
