@@ -19,7 +19,10 @@ class AdminSettingController extends Controller
     public function index(): View
     {
         $cakeOptions = CakeOption::orderBy('bentuk')->orderBy('ukuran')->get();
-        $categories = Category::withCount('products')->orderBy('nama_kategori')->get();
+        $categories = Category::withCount([
+            'products',
+            'products as trashed_products_count' => fn ($query) => $query->onlyTrashed(),
+        ])->orderBy('nama_kategori')->get();
 
         return view('admin.setting.index', compact('cakeOptions', 'categories'));
     }

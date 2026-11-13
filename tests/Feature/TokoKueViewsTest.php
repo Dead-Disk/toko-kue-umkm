@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\StoreSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,6 +66,19 @@ class TokoKueViewsTest extends TestCase
         $response->assertSee('Selamat Datang di Toko Kue');
         $response->assertSee(route('customer.produk.index'), false);
         $response->assertSee(route('customer.page', 'tentang-kami'), false);
+    }
+
+    public function test_landing_page_hides_categories_without_active_products(): void
+    {
+        $kategoriAktif = Category::factory()->create(['nama_kategori' => 'Kategori Aktif']);
+        Product::factory()->create(['category_id' => $kategoriAktif->id]);
+        Category::factory()->create(['nama_kategori' => 'Kategori Tanpa Produk']);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee('Kategori Aktif');
+        $response->assertDontSee('Kategori Tanpa Produk');
     }
 
     public function test_customer_page_shows_placeholder_when_view_does_not_exist(): void

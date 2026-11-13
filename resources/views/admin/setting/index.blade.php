@@ -292,6 +292,9 @@
                                 </div>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-stone-600 border border-stone-200/80">
                                     {{ $category->products_count }} Produk
+                                    @if ($category->trashed_products_count > 0)
+                                        · {{ $category->trashed_products_count }} Dihapus
+                                    @endif
                                 </span>
                             </div>
 

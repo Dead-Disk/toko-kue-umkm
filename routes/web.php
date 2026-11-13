@@ -123,6 +123,11 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     });
 
     Route::middleware('role:admin')->group(function () {
+        // Pulihkan produk yang di-soft delete.
+        Route::patch('produk/{product}/restore', [AdminProductController::class, 'restore'])
+            ->name('produk.restore')
+            ->withTrashed();
+
         // Produk (CRUD). Parameter URL tetap {product} agar cocok dengan route model binding.
         Route::resource('produk', AdminProductController::class)
             ->parameters(['produk' => 'product'])
