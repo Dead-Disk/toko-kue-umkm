@@ -308,6 +308,70 @@ class CustomerProductTest extends TestCase
         $response->assertSee('Rp150.000');
     }
 
+    public function test_success_page_links_to_seller_whatsapp_with_order_details(): void
+    {
+        StoreSetting::current()->update(['store_phone' => '0812-3456-7890']);
+        $order = Order::factory()->create([
+            'kode_pesanan' => 'ORD-20261014-0002',
+            'nama_pemesan' => 'Siti',
+            'nomor_wa' => '089912345678',
+            'alamat_lengkap' => 'Jl. Melati No. 5',
+            'opsi_pengiriman' => OpsiPengiriman::KurirToko,
+            'metode_pembayaran' => MetodePembayaran::TransferBank,
+            'total_harga' => 170_000,
+        ]);
+        $boluPandan = Product::factory()->create(['nama_kue' => 'Bolu Pandan']);
+        $brownies = Product::factory()->create(['nama_kue' => 'Brownies']);
+        $order->items()->create([
+            'product_id' => $boluPandan->id,
+            'jumlah' => 2,
+            'subtotal' => 150_000,
+            'catatan' => 'Tanpa kacang',
+        ]);
+        $order->items()->create([
+            'product_id' => $brownies->id,
+            'jumlah' => 1,
+            'subtotal' => 20_000,
+        ]);
+
+        $response = $this->get(route('customer.pesanan.sukses', $order->kode_pesanan));
+
+        $expectedMessage = implode("\n", [
+            'Halo, saya sudah membuat pesanan dengan rincian berikut:',
+            '',
+            '*Kode Pesanan:* ORD-20261014-0002',
+            '',
+            '*Nama:* Siti',
+            '*No HP / WA:* 089912345678',
+            '*Alamat:* Jl. Melati No. 5',
+            '*Metode Pembayaran:* Transfer Bank',
+            '*Opsi Pengiriman:* Diantar Kurir',
+            '',
+            '*Item Pesanan:*',
+            '1. Bolu Pandan',
+            '   2 x Rp75.000 = Rp150.000',
+            '   Catatan: Tanpa kacang',
+            '2. Brownies',
+            '   1 x Rp20.000 = Rp20.000',
+            '',
+            '*Total Harga: Rp170.000*',
+        ]);
+        $response->assertOk();
+        $response->assertViewHas('whatsappUrl', 'https://wa.me/6281234567890?text='.rawurlencode($expectedMessage));
+        $response->assertSee('Kirim Pesanan ke WhatsApp Penjual');
+    }
+
+    public function test_success_page_hides_whatsapp_button_when_store_phone_is_not_set(): void
+    {
+        StoreSetting::current()->update(['store_phone' => null]);
+        $order = Order::factory()->create();
+
+        $response = $this->get(route('customer.pesanan.sukses', $order->kode_pesanan));
+
+        $response->assertOk();
+        $response->assertDontSee('Kirim Pesanan ke WhatsApp Penjual');
+    }
+
     public function test_success_page_returns_not_found_for_unknown_order_code(): void
     {
         $this->get(route('customer.pesanan.sukses', 'ORD-20261014-9999'))->assertNotFound();

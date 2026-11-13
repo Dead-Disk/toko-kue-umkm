@@ -74,6 +74,58 @@ class Order extends Model
     }
 
     /**
+     * Teks ringkasan pesanan yang dikirim pembeli ke WhatsApp penjual.
+     */
+    public function whatsappMessage(): string
+    {
+        $rupiah = fn (int $nominal): string => 'Rp'.number_format($nominal, 0, ',', '.');
+
+        $baris = [
+            'Halo, saya sudah membuat pesanan dengan rincian berikut:',
+            '',
+            "*Kode Pesanan:* {$this->kode_pesanan}",
+            '',
+            "*Nama:* {$this->nama_pemesan}",
+            "*No HP / WA:* {$this->nomor_wa}",
+            "*Alamat:* {$this->alamat_lengkap}",
+            "*Metode Pembayaran:* {$this->metode_pembayaran->label()}",
+            "*Opsi Pengiriman:* {$this->opsi_pengiriman->label()}",
+            '',
+            '*Item Pesanan:*',
+        ];
+
+        foreach ($this->items as $nomor => $item) {
+            $hargaSatuan = intdiv($item->subtotal, max($item->jumlah, 1));
+
+            $baris[] = sprintf('%d. %s', $nomor + 1, $item->product?->nama_kue ?? 'Kue Custom');
+            $baris[] = sprintf('   %d x %s = %s', $item->jumlah, $rupiah($hargaSatuan), $rupiah($item->subtotal));
+
+            if (filled($item->catatan)) {
+                $baris[] = "   Catatan: {$item->catatan}";
+            }
+        }
+
+        $baris[] = '';
+        $baris[] = "*Total Harga: {$rupiah($this->total_harga)}*";
+
+        return implode("\n", $baris);
+    }
+
+    /**
+     * Tautan wa.me berisi ringkasan pesanan, atau null bila nomor penjual belum diatur.
+     */
+    public function whatsappUrl(?string $nomorPenjual): ?string
+    {
+        $nomor = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', (string) $nomorPenjual));
+
+        if (blank($nomor)) {
+            return null;
+        }
+
+        return "https://wa.me/{$nomor}?text=".rawurlencode($this->whatsappMessage());
+    }
+
+    /**
      * Produk yang dipesan pada pesanan ini (relasi many-to-many via order_items).
      *
      * @return BelongsToMany<Product, $this>

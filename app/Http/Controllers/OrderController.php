@@ -367,6 +367,9 @@ class OrderController extends Controller
             ->where('kode_pesanan', $kode_pesanan)
             ->firstOrFail();
 
-        return view('customer.pesanan.sukses', ['order' => $order]);
+        return view('customer.pesanan.sukses', [
+            'order' => $order,
+            'whatsappUrl' => $order->whatsappUrl(StoreSetting::current()->store_phone),
+        ]);
     }
 }
