@@ -40,7 +40,7 @@
                 $maxPerOrder = $product->max_per_order ?? 5;
             @endphp
 
-            <section class="mb-8 lg:mb-12 bg-white rounded-3xl lg:rounded-[32px] p-4 sm:p-6 lg:p-8 xl:p-10 shadow-sm border border-[#F4E1D9]">
+            <section class="mb-8 lg:mb-12 bg-white rounded-3xl p-4 sm:p-6 lg:p-8 xl:p-10 shadow-lg border border-[#F4E1D9]">
                 <div class="flex items-center justify-between mb-4 lg:mb-6 pb-3 lg:pb-4 border-b border-gray-100">
                     <div>
                         <a href="{{ route('customer.produk.index') }}" class="inline-flex items-center gap-1 text-xs sm:text-sm text-[#6B0F1A] font-semibold hover:underline mb-1">
@@ -91,32 +91,24 @@
                 </div>
 
                 @if ($product->status_stok === \App\Enums\StatusStok::Ready)
-                    {{-- Form Tambah ke Keranjang --}}
+                    {{-- Form Pesanan Langsung (aksi utama) --}}
                     <div class="pt-5 lg:pt-6 border-t border-gray-100">
-                        <h3 class="text-sm sm:text-base font-bold text-gray-900 mb-2 lg:mb-3">Tambah ke Keranjang</h3>
-                        <form action="{{ route('cart.add', $product) }}" method="POST" class="space-y-3">
-                            @csrf
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div>
-                                    <label for="cart_quantity" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-                                    <input type="number" id="cart_quantity" name="quantity" value="1" min="1" max="{{ $maxPerOrder }}" data-max-per-order="{{ $maxPerOrder }}" data-max-order-message="Produk ini hanya dapat dipesan maksimal {{ $maxPerOrder }} pcs per transaksi." required class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">
-                                </div>
-                                <div class="sm:col-span-2">
-                                    <label for="cart_catatan" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Catatan untuk Kue Ini (opsional)</label>
-                                    <input type="text" id="cart_catatan" name="catatan" value="{{ old('catatan') }}" maxlength="1000" placeholder="Catatan khusus (misal: tulisan ucapan, lilin, dll)" class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">
-                                </div>
+                        <div class="flex items-start justify-between gap-3 mb-3 lg:mb-4">
+                            <div>
+                                <h3 class="flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <span class="w-6 h-6 rounded-full bg-[#6B0F1A] text-white flex items-center justify-center shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    </span>
+                                    Form Pesanan Langsung
+                                </h3>
+                                <p class="text-[11px] sm:text-xs text-gray-500 mt-1 ml-8">Isi data pemesan, lalu lanjut ke ringkasan pesanan.</p>
                             </div>
-                            <button type="submit" class="w-full bg-[#6B0F1A] hover:bg-[#520B10] text-white font-semibold text-xs sm:text-sm lg:text-base py-2.5 lg:py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xs">
-                                <svg class="w-4 h-4 lg:w-5 lg:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                                <span>Tambah ke Keranjang</span>
-                            </button>
-                        </form>
-                    </div>
+                            <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold shrink-0">
+                                Pesan Sekarang
+                            </span>
+                        </div>
 
-                    {{-- Form Pesanan Langsung --}}
-                    <div class="pt-6 mt-6 border-t border-gray-100">
-                        <h3 class="text-sm sm:text-base font-bold text-gray-900 mb-3 lg:mb-4">Form Pesanan Langsung</h3>
-                        <form action="{{ route('customer.pesanan.review') }}" method="POST" class="space-y-3.5 lg:space-y-4">
+                        <form id="direct-order-form" action="{{ route('customer.pesanan.review') }}" method="POST" class="space-y-3.5 lg:space-y-4">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -214,10 +206,48 @@
                                 <textarea id="catatan" name="catatan" rows="2" maxlength="1000" placeholder="Catatan khusus (misal: tulisan ucapan, lilin angka, dll)" class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">{{ old('catatan', $draft['catatan'] ?? '') }}</textarea>
                             </div>
 
-                            <button type="submit" class="w-full bg-[#6B0F1A] hover:bg-[#520B10] text-white font-semibold text-xs sm:text-sm lg:text-base py-3 lg:py-3.5 rounded-xl transition cursor-pointer shadow-sm">
-                                Lanjut ke Ringkasan Pesanan
+                            <button type="submit" class="w-full py-3.5 px-6 bg-[#6B0F1A] hover:bg-[#540F18] active:bg-[#3A0A0F] text-white font-bold text-xs sm:text-sm lg:text-base rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#6B0F1A]/30 cursor-pointer flex items-center justify-center gap-2">
+                                <span>Lanjut ke Ringkasan Pesanan</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                             </button>
                         </form>
+                    </div>
+
+                    {{-- Tambah ke Keranjang (aksi sekunder) --}}
+                    <div class="relative pt-6 mt-6 lg:pt-7 lg:mt-7 border-t border-gray-100">
+                        <span class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-white px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                            atau
+                        </span>
+
+                        <div class="rounded-2xl bg-[#FAF2EE]/60 border border-[#F4E1D9] p-4 sm:p-5">
+                            <div class="mb-3">
+                                <h3 class="flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <span class="w-6 h-6 rounded-full bg-white border border-[#E8B8AE] text-[#6B0F1A] flex items-center justify-center shrink-0">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                                    </span>
+                                    Tambah ke Keranjang
+                                </h3>
+                                <p class="text-[11px] sm:text-xs text-gray-500 mt-1 ml-8">Simpan dulu, lalu pesan bersama kue lainnya nanti.</p>
+                            </div>
+
+                            <form id="cart-form" action="{{ route('cart.add', $product) }}" method="POST" class="space-y-3">
+                                @csrf
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label for="cart_quantity" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+                                        <input type="number" id="cart_quantity" name="quantity" value="1" min="1" max="{{ $maxPerOrder }}" data-max-per-order="{{ $maxPerOrder }}" data-max-order-message="Produk ini hanya dapat dipesan maksimal {{ $maxPerOrder }} pcs per transaksi." required class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label for="cart_catatan" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Catatan untuk Kue Ini (opsional)</label>
+                                        <input type="text" id="cart_catatan" name="catatan" value="{{ old('catatan') }}" maxlength="1000" placeholder="Catatan khusus (misal: tulisan ucapan, lilin, dll)" class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full py-3 px-6 bg-white hover:bg-rose-50 text-[#6B0F1A] font-semibold text-xs sm:text-sm rounded-full border-2 border-[#6B0F1A] transition flex items-center justify-center gap-2 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                                    <span>Tambah ke Keranjang</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 @else
                     <div class="pt-5 border-t border-gray-100 text-center">

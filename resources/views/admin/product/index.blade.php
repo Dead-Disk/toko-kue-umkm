@@ -128,7 +128,9 @@
                     Kelola Produk
                 </h1>
                 <p class="text-stone-500 text-xs sm:text-sm mt-1">
-                    Atur dan kelola semua produk kue di toko Anda.
+                    {{ $showTrashed
+                        ? 'Daftar produk yang telah dihapus. Pulihkan produk jika masih dibutuhkan.'
+                        : 'Atur dan kelola semua produk kue di toko Anda.' }}
                 </p>
             </div>
         </div>
@@ -175,6 +177,10 @@
                     <div class="p-4 sm:p-5 border-b border-stone-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
                         <!-- Search & Category Filter Form -->
                         <form action="{{ route('admin.produk.index') }}" method="GET" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
+                            @if ($showTrashed)
+                                <input type="hidden" name="trashed" value="1">
+                            @endif
+
                             <!-- Search Input -->
                             <div class="relative flex-1">
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
@@ -205,6 +211,21 @@
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-2 shrink-0">
                             @if (auth()->user()->isAdmin())
+                                @if ($showTrashed || $categories->sum('trashed_products_count') > 0)
+                                    <a href="{{ route('admin.produk.index', array_merge(request()->except(['page', 'trashed', 'export']), $showTrashed ? [] : ['trashed' => 1])) }}"
+                                       class="inline-flex items-center justify-center gap-1.5 bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors">
+                                        <svg class="w-4 h-4 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        <span>{{ $showTrashed ? 'Lihat Produk Aktif' : 'Produk Terhapus' }}</span>
+                                        @unless ($showTrashed)
+                                            <span class="inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">
+                                                {{ $categories->sum('trashed_products_count') }}
+                                            </span>
+                                        @endunless
+                                    </a>
+                                @endif
+
                                 <button type="button"
                                         id="openCreateModalBtn"
                                         class="inline-flex items-center justify-center gap-1.5 bg-[#6B0F1A] hover:bg-[#520A13] text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xs transition-colors">
@@ -269,6 +290,12 @@
                                             <span class="block truncate max-w-[180px] sm:max-w-xs" title="{{ $product->nama_kue }}">
                                                 {{ $product->nama_kue }}
                                             </span>
+                                            @if ($showTrashed)
+                                                <span class="inline-block mt-1 px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-semibold"
+                                                      title="Dihapus {{ $product->deleted_at?->format('d M Y H:i') }}">
+                                                    Dihapus
+                                                </span>
+                                            @endif
                                         </td>
 
                                         <!-- Kategori -->
@@ -297,44 +324,62 @@
                                         <!-- Aksi -->
                                         @if (auth()->user()->isAdmin())
                                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                                <div class="inline-flex items-center gap-1.5">
-                                                    <!-- Edit Button (Opens Edit Drawer) -->
-                                                    <button type="button"
-                                                            title="Edit Produk"
-                                                            onclick="openEditModal({{ json_encode([
-                                                                'id' => $product->id,
-                                                                'nama_kue' => $product->nama_kue,
-                                                                'category_id' => $product->category_id,
-                                                                'harga' => $product->harga,
-                                                                'stok' => $product->stok,
-                                                                'max_per_order' => $product->max_per_order,
-                                                                'status_stok' => $product->status_stok->value,
-                                                                'deskripsi' => $product->deskripsi,
-                                                                'foto' => $photoUrl,
-                                                                'update_url' => route('admin.produk.update', $product),
-                                                            ]) }})"
-                                                            class="p-1.5 text-stone-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                                                        </svg>
-                                                    </button>
-
-                                                    <!-- Delete Form -->
-                                                    <form action="{{ route('admin.produk.destroy', $product) }}"
+                                                @if ($showTrashed)
+                                                    <form action="{{ route('admin.produk.restore', $product) }}"
                                                           method="POST"
-                                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk {{ $product->nama_kue }}?')"
+                                                          onsubmit="return confirm('Pulihkan produk {{ $product->nama_kue }}?')"
                                                           class="inline-block">
                                                         @csrf
-                                                        @method('DELETE')
+                                                        @method('PATCH')
                                                         <button type="submit"
-                                                                title="Hapus Produk"
-                                                                class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                                title="Pulihkan Produk"
+                                                                class="inline-flex items-center gap-1 px-2 py-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                                             </svg>
+                                                            <span>Pulihkan</span>
                                                         </button>
                                                     </form>
-                                                </div>
+                                                @else
+                                                    <div class="inline-flex items-center gap-1.5">
+                                                        <!-- Edit Button (Opens Edit Drawer) -->
+                                                        <button type="button"
+                                                                title="Edit Produk"
+                                                                onclick="openEditModal({{ json_encode([
+                                                                    'id' => $product->id,
+                                                                    'nama_kue' => $product->nama_kue,
+                                                                    'category_id' => $product->category_id,
+                                                                    'harga' => $product->harga,
+                                                                    'stok' => $product->stok,
+                                                                    'max_per_order' => $product->max_per_order,
+                                                                    'status_stok' => $product->status_stok->value,
+                                                                    'deskripsi' => $product->deskripsi,
+                                                                    'foto' => $photoUrl,
+                                                                    'update_url' => route('admin.produk.update', $product),
+                                                                ]) }})"
+                                                                class="p-1.5 text-stone-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                                            </svg>
+                                                        </button>
+
+                                                        <!-- Delete Form -->
+                                                        <form action="{{ route('admin.produk.destroy', $product) }}"
+                                                              method="POST"
+                                                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk {{ $product->nama_kue }}?')"
+                                                              class="inline-block">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                    title="Hapus Produk"
+                                                                    class="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                @endif
                                             </td>
                                         @endif
                                     </tr>
@@ -347,8 +392,30 @@
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                                                     </svg>
                                                 </div>
-                                                <p class="text-sm font-semibold text-stone-600">Belum ada produk yang ditemukan</p>
-                                                <p class="text-xs text-stone-400 mt-0.5">Silakan tambahkan produk baru atau ubah kata kunci pencarian.</p>
+                                                <p class="text-sm font-semibold text-stone-600">
+                                                    {{ $showTrashed ? 'Tidak ada produk terhapus' : 'Belum ada produk yang ditemukan' }}
+                                                </p>
+                                                <p class="text-xs text-stone-400 mt-0.5">
+                                                    {{ $showTrashed
+                                                        ? 'Semua produk pada filter ini masih aktif atau belum pernah dihapus.'
+                                                        : 'Silakan tambahkan produk baru atau ubah kata kunci pencarian.' }}
+                                                </p>
+
+                                                @php
+                                                    $filteredCategory = request('category_id')
+                                                        ? $categories->firstWhere('id', (int) request('category_id'))
+                                                        : null;
+                                                @endphp
+
+                                                @if (! $showTrashed && $filteredCategory && $filteredCategory->trashed_products_count > 0)
+                                                    <p class="text-xs text-amber-600 mt-2">
+                                                        {{ $filteredCategory->trashed_products_count }} produk di kategori ini telah dihapus.
+                                                        <a href="{{ route('admin.produk.index', array_merge(request()->except(['page', 'trashed', 'export']), ['trashed' => 1])) }}"
+                                                           class="font-semibold underline hover:text-amber-800">
+                                                            Tampilkan produk terhapus
+                                                        </a>
+                                                    </p>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -400,8 +467,12 @@
                                     default => asset('images/cat-kue-tart.png'),
                                 };
                                 $isActiveCategory = request('category_id') == $category->id;
+                                $categoryQuery = ['category_id' => $category->id];
+                                if ($showTrashed) {
+                                    $categoryQuery['trashed'] = 1;
+                                }
                             @endphp
-                            <a href="{{ $isActiveCategory ? route('admin.produk.index') : route('admin.produk.index', ['category_id' => $category->id]) }}"
+                            <a href="{{ $isActiveCategory ? route('admin.produk.index') : route('admin.produk.index', $categoryQuery) }}"
                                class="flex items-center justify-between p-2.5 rounded-xl border {{ $isActiveCategory ? 'border-[#6B0F1A] bg-rose-50/60 font-semibold' : 'border-stone-100 hover:border-stone-200 hover:bg-stone-50/60' }} transition-all group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-9 h-9 rounded-xl overflow-hidden bg-white p-1 border border-stone-100 shrink-0 flex items-center justify-center">
@@ -413,6 +484,9 @@
                                         </p>
                                         <p class="text-[10px] text-stone-400">
                                             {{ $category->products_count }} produk
+                                            @if ($category->trashed_products_count > 0)
+                                                <span class="text-rose-400">· {{ $category->trashed_products_count }} dihapus</span>
+                                            @endif
                                         </p>
                                     </div>
                                 </div>

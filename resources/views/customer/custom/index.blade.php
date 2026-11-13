@@ -120,8 +120,7 @@
                             class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/30 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] focus:bg-white transition cursor-pointer">
                         <option value="">-- Tanpa Produk Acuan --</option>
                         @foreach ($products as $item)
-                            <option value="{{ $item->id }}"
-                                    @selected((string) old('base_product_id', $draft['base_product_id'] ?? '') === (string) $item->id)
+                            <option value="{{ $item->id }}" @selected((string) old('base_product_id', $draft['base_product_id'] ?? '') === (string) $item->id)
                                     data-harga="{{ $item->harga }}"
                                     data-harga-format="Rp {{ number_format($item->harga, 0, ',', '.') }}"
                                     data-nama="{{ $item->nama_kue }}"

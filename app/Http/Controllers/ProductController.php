@@ -26,7 +26,7 @@ class ProductController extends Controller
 
         return view('customer.produk.index', [
             'products' => $this->sortedProducts($search, $category, $readyOnly, $priceRange),
-            'categories' => Category::orderBy('nama_kategori')->get(),
+            'categories' => Category::whereHas('products')->orderBy('nama_kategori')->get(),
             'currentCategory' => $category,
             'selectedCategory' => $category,
             'search' => $search,
@@ -46,7 +46,7 @@ class ProductController extends Controller
 
         return view('customer.produk.index', [
             'products' => $this->sortedProducts(),
-            'categories' => Category::orderBy('nama_kategori')->get(),
+            'categories' => Category::whereHas('products')->orderBy('nama_kategori')->get(),
             'product' => $product,
             'draft' => ($draft['product_id'] ?? null) === $product->id ? $draft : [],
             'storeSetting' => StoreSetting::current(),

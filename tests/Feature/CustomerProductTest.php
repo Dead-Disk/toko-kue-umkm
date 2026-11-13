@@ -108,6 +108,16 @@ class CustomerProductTest extends TestCase
         $response->assertSee('name="metode_pembayaran"', false);
     }
 
+    public function test_product_page_places_the_direct_order_form_before_the_cart_action(): void
+    {
+        $product = Product::factory()->create();
+
+        $response = $this->get(route('customer.produk.show', $product));
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['Form Pesanan Langsung', 'Tambah ke Keranjang']);
+    }
+
     public function test_product_page_limits_quantity_inputs_to_the_product_maximum(): void
     {
         $product = Product::factory()->create(['max_per_order' => 3]);
@@ -736,6 +746,24 @@ class CustomerProductTest extends TestCase
         $response->assertOk();
         $response->assertSee('Tart Cokelat');
         $response->assertDontSee('Bolu Gulung');
+    }
+
+    public function test_catalog_hides_categories_without_active_products(): void
+    {
+        $kategoriAktif = Category::factory()->create(['nama_kategori' => 'Kategori Aktif']);
+        Product::factory()->create(['category_id' => $kategoriAktif->id]);
+
+        Category::factory()->create(['nama_kategori' => 'Kategori Tanpa Produk']);
+
+        $kategoriTerhapus = Category::factory()->create(['nama_kategori' => 'Kategori Produk Terhapus']);
+        Product::factory()->create(['category_id' => $kategoriTerhapus->id])->delete();
+
+        $response = $this->get(route('customer.produk.index'));
+
+        $response->assertOk();
+        $response->assertSee('Kategori Aktif');
+        $response->assertDontSee('Kategori Tanpa Produk');
+        $response->assertDontSee('Kategori Produk Terhapus');
     }
 
     public function test_catalog_can_be_filtered_by_ready_only(): void

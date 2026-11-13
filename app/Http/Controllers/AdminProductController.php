@@ -45,7 +45,13 @@ class AdminProductController extends PanelController
             }, $filename, ['Content-Type' => 'text/csv']);
         }
 
+        $showTrashed = $request->user()?->isAdmin() && $request->boolean('trashed');
+
         $query = Product::with('category')->latest();
+
+        if ($showTrashed) {
+            $query->onlyTrashed();
+        }
 
         if ($request->filled('search')) {
             $search = (string) $request->input('search');
@@ -64,9 +70,12 @@ class AdminProductController extends PanelController
         }
 
         $products = $query->paginate(8)->withQueryString();
-        $categories = Category::withCount('products')->get();
+        $categories = Category::withCount([
+            'products',
+            'products as trashed_products_count' => fn ($query) => $query->onlyTrashed(),
+        ])->get();
 
-        return $this->panelView('product.index', compact('products', 'categories'));
+        return $this->panelView('product.index', compact('products', 'categories', 'showTrashed'));
     }
 
     /**
@@ -148,6 +157,19 @@ class AdminProductController extends PanelController
 
         return $this->panelRedirect('produk.index')
             ->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /**
+     * Pulihkan produk yang sebelumnya di-soft delete.
+     */
+    public function restore(Product $product): RedirectResponse
+    {
+        $product->restore();
+
+        ActivityLog::record('pulihkan', 'Memulihkan produk: '.$product->nama_kue, $product);
+
+        return $this->panelRedirect('produk.index')
+            ->with('success', 'Produk berhasil dipulihkan.');
     }
 
     /**

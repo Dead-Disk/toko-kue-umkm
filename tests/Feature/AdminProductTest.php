@@ -27,6 +27,23 @@ class AdminProductTest extends TestCase
         $response->assertSee('Tambah Produk');
     }
 
+    public function test_index_filters_products_by_category(): void
+    {
+        $seller = User::factory()->create();
+        $kategoriTart = Category::factory()->create();
+        $kategoriDonat = Category::factory()->create();
+
+        Product::factory()->create(['nama_kue' => 'Tart Cokelat', 'category_id' => $kategoriTart->id]);
+        Product::factory()->create(['nama_kue' => 'Donat Gula', 'category_id' => $kategoriDonat->id]);
+
+        $response = $this->actingAs($seller)
+            ->get(route('admin.produk.index', ['category_id' => $kategoriTart->id]));
+
+        $response->assertOk();
+        $response->assertSee('Tart Cokelat');
+        $response->assertDontSee('Donat Gula');
+    }
+
     public function test_create_page_shows_form_with_categories(): void
     {
         $seller = User::factory()->create();
@@ -214,5 +231,43 @@ class AdminProductTest extends TestCase
 
         $response->assertRedirect(route('admin.produk.index'));
         $this->assertSoftDeleted('products', ['id' => $product->id]);
+    }
+
+    public function test_index_can_show_soft_deleted_products_for_a_category(): void
+    {
+        $seller = User::factory()->create();
+        $category = Category::factory()->create();
+        $product = Product::factory()->create([
+            'nama_kue' => 'Kue Dihapus',
+            'category_id' => $category->id,
+        ]);
+        $product->delete();
+
+        $activeResponse = $this->actingAs($seller)
+            ->get(route('admin.produk.index', ['category_id' => $category->id]));
+
+        $activeResponse->assertOk();
+        $activeResponse->assertDontSee('Kue Dihapus');
+        $activeResponse->assertSee('1 produk di kategori ini telah dihapus.');
+
+        $trashedResponse = $this->actingAs($seller)
+            ->get(route('admin.produk.index', ['category_id' => $category->id, 'trashed' => 1]));
+
+        $trashedResponse->assertOk();
+        $trashedResponse->assertSee('Kue Dihapus');
+        $trashedResponse->assertSee('Pulihkan');
+    }
+
+    public function test_restore_brings_back_a_soft_deleted_product(): void
+    {
+        $seller = User::factory()->create();
+        $product = Product::factory()->create(['nama_kue' => 'Kue Akan Dipulihkan']);
+        $product->delete();
+
+        $response = $this->actingAs($seller)
+            ->patch(route('admin.produk.restore', $product));
+
+        $response->assertRedirect(route('admin.produk.index'));
+        $this->assertNotSoftDeleted('products', ['id' => $product->id]);
     }
 }

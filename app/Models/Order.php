@@ -61,6 +61,16 @@ class Order extends Model
     }
 
     /**
+     * Pembayaran yang tercatat untuk pesanan ini.
+     *
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * Buat kode pesanan unik berformat ORD-YYYYMMDD-XXXX.
      * Pesanan soft-deleted ikut diperiksa karena kodenya masih menempati unique index.
      */
