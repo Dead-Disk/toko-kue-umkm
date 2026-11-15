@@ -4,8 +4,8 @@
 @endphp
 
 {{-- Top Navigation Bar --}}
-<header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-xs">
-    <div class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-2 sm:gap-4">
+<header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-xs relative">
+    <div id="navbar-main-content" class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-2 sm:gap-4 transition-opacity duration-200">
         {{-- Brand / Logo (Kiri) --}}
         <a href="{{ route('customer.index') }}" class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0 min-w-0 group" title="{{ $storeName }}">
             <img src="{{ asset('images/logo-nav.png') }}" alt="Logo {{ $storeName }}" class="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full object-cover border border-white/30 shadow-xs shrink-0">
@@ -32,11 +32,20 @@
 
         {{-- Action Icons: Search & Keranjang (Kanan Ujung) --}}
         <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
-            <a href="{{ route('customer.produk.index') }}" class="text-white/90 hover:text-white p-1 lg:p-1.5 transition shrink-0" title="Cari Kue" aria-label="Cari Kue">
-                <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            {{-- Tombol Buka Pencarian Langsung di Navbar --}}
+            <button
+                type="button"
+                id="navbar-search-toggle"
+                class="text-white/90 hover:text-white hover:bg-white/10 p-1 lg:p-1.5 rounded-lg transition-all duration-200 shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/40 active:scale-95"
+                title="Cari Kue"
+                aria-label="Cari Kue"
+                aria-expanded="false"
+                aria-controls="navbar-search-bar"
+            >
+                <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5 transition-transform duration-200 hover:scale-110" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-            </a>
+            </button>
 
             <a href="{{ route('cart.index') }}" class="relative bg-[#6B0F1A] hover:bg-[#520912] text-white p-1.5 lg:p-2 rounded-lg lg:rounded-xl flex items-center justify-center transition shadow-2xs shrink-0" aria-label="Keranjang Belanja" title="Lihat Keranjang">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-4.5 lg:h-4.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
@@ -50,4 +59,123 @@
             </a>
         </div>
     </div>
+
+    {{-- Shape Pencari Navbar (Interactive Animated Search Bar) --}}
+    <div
+        id="navbar-search-bar"
+        class="absolute inset-0 bg-[#4D626C] z-30 flex items-center transition-all duration-300 ease-out opacity-0 pointer-events-none -translate-y-2"
+        role="search"
+        aria-label="Pencarian Kue Langsung"
+    >
+        <div class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 w-full h-full flex items-center justify-between gap-2 sm:gap-3.5">
+            {{-- Brand / Logo (Kiri) --}}
+            <a href="{{ route('customer.index') }}" class="flex items-center gap-1.5 sm:gap-2 shrink-0 group" title="{{ $storeName }}">
+                <img src="{{ asset('images/logo-nav.png') }}" alt="Logo {{ $storeName }}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-white/30 shadow-xs shrink-0">
+                <span class="font-serif font-bold text-xs sm:text-base text-white tracking-wide group-hover:text-amber-100 transition truncate max-w-[80px] min-[400px]:max-w-[110px] md:max-w-[150px]">
+                    {{ $storeName }}
+                </span>
+            </a>
+
+            {{-- Form & Shape Input Pencarian (Tengah) --}}
+            <form
+                id="navbar-search-form"
+                action="{{ route('customer.produk.index') }}"
+                method="GET"
+                class="flex-1 relative max-w-xl mx-auto"
+            >
+                <div class="relative flex items-center bg-[#FAF2EE] text-gray-800 rounded-full border border-[#E8B8AE] shadow-inner pl-3 sm:pl-4 pr-1 sm:pr-1.5 py-1 sm:py-1.5 focus-within:ring-2 focus-within:ring-[#6B0F1A]/30 focus-within:border-[#6B0F1A] focus-within:bg-white transition-all duration-200">
+                    {{-- Ikon Kaca Pembesar --}}
+                    <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#6B0F1A] shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"/>
+                    </svg>
+
+                    {{-- Input Field --}}
+                    <input
+                        type="search"
+                        id="navbar-search-input"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Cari kue favoritmu... (misal: brownies, nastar)"
+                        autocomplete="off"
+                        class="w-full bg-transparent border-0 px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
+                    >
+
+                    {{-- Tombol Hapus Input --}}
+                    <button
+                        type="button"
+                        id="navbar-search-clear-input"
+                        class="hidden text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200/60 transition shrink-0 mr-1 cursor-pointer"
+                        aria-label="Hapus kata kunci"
+                        title="Hapus"
+                    >
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+
+                    {{-- Tombol Submit "Cari" --}}
+                    <button
+                        type="submit"
+                        class="bg-[#6B0F1A] hover:bg-[#520912] active:bg-[#3D070E] text-white text-[11px] sm:text-xs font-semibold px-3 sm:px-4 py-1.5 rounded-full transition-all duration-150 flex items-center gap-1.5 shadow-2xs shrink-0 cursor-pointer"
+                        title="Cari kue sekarang"
+                    >
+                        <span>Cari</span>
+                        <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 hidden sm:inline" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Dropdown Hasil Pencarian Langsung --}}
+                <div
+                    id="navbar-search-dropdown"
+                    class="hidden absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[#F4E1D9] overflow-hidden z-40 transition-all duration-200"
+                >
+                    {{-- Loading State --}}
+                    <div id="navbar-search-loading" class="hidden p-4 text-center text-xs sm:text-sm text-gray-500">
+                        <svg class="animate-spin h-5 w-5 mx-auto text-[#6B0F1A] mb-1.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Mencari kue lezat...</span>
+                    </div>
+
+                    {{-- Hasil Pencarian --}}
+                    <div id="navbar-search-results" class="py-1.5 max-h-72 sm:max-h-80 overflow-y-auto divide-y divide-gray-100"></div>
+
+                    {{-- Footer Dropdown --}}
+                    <div id="navbar-search-dropdown-footer" class="p-2 sm:p-2.5 bg-[#FAF2EE]/70 border-t border-[#F4E1D9] flex items-center justify-between text-xs">
+                        <span id="navbar-search-count-label" class="text-gray-500 font-medium"></span>
+                        <button type="submit" class="font-semibold text-[#6B0F1A] hover:underline inline-flex items-center gap-1 cursor-pointer">
+                            <span>Lihat semua di katalog</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {{-- Tombol Tutup --}}
+            <button
+                type="button"
+                id="navbar-search-close"
+                class="text-white/80 hover:text-white hover:bg-white/10 p-1.5 sm:p-2 rounded-xl transition shrink-0 cursor-pointer flex items-center gap-1"
+                title="Tutup Pencarian (Esc)"
+                aria-label="Tutup Pencarian"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span class="text-xs hidden md:inline font-medium">Tutup</span>
+            </button>
+        </div>
+    </div>
 </header>
+
+{{-- Backdrop Blur Saat Pencarian Terbuka --}}
+<div
+    id="navbar-search-backdrop"
+    class="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-40 opacity-0 pointer-events-none transition-opacity duration-300"
+    aria-hidden="true"
+></div>
+
