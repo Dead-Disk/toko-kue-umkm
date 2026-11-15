@@ -855,9 +855,9 @@ class CustomerProductTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('id="navbar-search-toggle"', false);
-        $response->assertSee('id="navbar-search-bar"', false);
+        $response->assertSee('id="navbar-search-shape"', false);
         $response->assertSee('id="navbar-search-input"', false);
-        $response->assertSee('id="navbar-search-clear-input"', false);
+        $response->assertSee('id="navbar-search-close"', false);
         $response->assertSee('id="navbar-search-dropdown"', false);
         $response->assertSee(route('customer.produk.index'), false);
     }
