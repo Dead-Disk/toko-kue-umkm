@@ -802,4 +802,63 @@ class CustomerProductTest extends TestCase
         $responseAbove50k->assertDontSee('Kue Murah');
         $responseAbove50k->assertDontSee('Kue Sedang');
     }
+
+    public function test_catalog_returns_json_suggestions_when_requested_as_json(): void
+    {
+        $kategori = Category::factory()->create(['nama_kategori' => 'Kue Kering']);
+        Product::factory()->create([
+            'nama_kue' => 'Nastar Keju Spesial',
+            'category_id' => $kategori->id,
+            'harga' => 65000,
+        ]);
+        Product::factory()->create([
+            'nama_kue' => 'Kastengel Keju',
+            'category_id' => $kategori->id,
+            'harga' => 70000,
+        ]);
+        Product::factory()->create([
+            'nama_kue' => 'Brownies Cokelat',
+        ]);
+
+        $response = $this->getJson(route('customer.produk.index', ['search' => 'Keju']));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'id',
+                    'nama_kue',
+                    'harga',
+                    'formatted_harga',
+                    'foto',
+                    'url',
+                    'is_ready',
+                    'stok',
+                    'category',
+                ],
+            ],
+            'total',
+        ]);
+
+        $data = $response->json('data');
+        $this->assertCount(2, $data);
+        $this->assertSame(2, $response->json('total'));
+        $names = array_column($data, 'nama_kue');
+        $this->assertContains('Nastar Keju Spesial', $names);
+        $this->assertContains('Kastengel Keju', $names);
+        $this->assertNotContains('Brownies Cokelat', $names);
+    }
+
+    public function test_navbar_contains_interactive_search_shape_and_toggle_button(): void
+    {
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee('id="navbar-search-toggle"', false);
+        $response->assertSee('id="navbar-search-shape"', false);
+        $response->assertSee('id="navbar-search-input"', false);
+        $response->assertSee('id="navbar-search-close"', false);
+        $response->assertSee('id="navbar-search-dropdown"', false);
+        $response->assertSee(route('customer.produk.index'), false);
+    }
 }

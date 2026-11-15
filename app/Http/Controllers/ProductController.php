@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\StoreSetting;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -17,15 +18,34 @@ class ProductController extends Controller
      * Dapat difilter berdasarkan keyword pencarian, kategori (id/slug),
      * status ketersediaan (ready only), dan rentang harga.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         $search = $request->query('search');
         $category = $request->query('kategori') ?? $request->query('category');
         $readyOnly = $request->boolean('ready_only');
         $priceRange = $request->query('price_range', 'all');
 
+        $products = $this->sortedProducts($search, $category, $readyOnly, $priceRange);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'data' => $products->take(6)->values()->map(fn (Product $item): array => [
+                    'id' => $item->id,
+                    'nama_kue' => $item->nama_kue,
+                    'harga' => (int) $item->harga,
+                    'formatted_harga' => 'Rp '.number_format($item->harga, 0, ',', '.'),
+                    'foto' => $item->foto ? asset('storage/'.$item->foto) : null,
+                    'url' => route('customer.produk.show', $item),
+                    'is_ready' => $item->status_stok === StatusStok::Ready,
+                    'stok' => $item->stok,
+                    'category' => $item->category?->nama_kategori,
+                ]),
+                'total' => $products->count(),
+            ]);
+        }
+
         return view('customer.produk.index', [
-            'products' => $this->sortedProducts($search, $category, $readyOnly, $priceRange),
+            'products' => $products,
             'categories' => Category::whereHas('products')->orderBy('nama_kategori')->get(),
             'currentCategory' => $category,
             'selectedCategory' => $category,
