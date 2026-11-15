@@ -34,18 +34,46 @@ export function initNavbarSearch() {
 
     let searchTimeout = null;
     let abortController = null;
+    let navLinksTimeout = null;
+
+    const OPEN_SHAPE_CLASSES = [
+        'max-w-[150px]',
+        'min-[380px]:max-w-[185px]',
+        'sm:max-w-[240px]',
+        'md:max-w-[280px]',
+        'lg:max-w-[320px]',
+        'opacity-100',
+        'pointer-events-auto',
+    ];
+
+    const CLOSED_SHAPE_CLASSES = [
+        'max-w-0',
+        'opacity-0',
+        'pointer-events-none',
+    ];
+
+    const NAV_COLLAPSED_CLASSES = [
+        'max-md:max-w-0',
+        'max-md:opacity-0',
+        'max-md:overflow-hidden',
+        'max-md:pointer-events-none',
+    ];
 
     function isSearchOpen() {
         return toggleBtn.getAttribute('aria-expanded') === 'true';
     }
 
     function openSearch() {
-        searchShape.classList.remove('max-w-0', 'opacity-0', 'pointer-events-none');
-        searchShape.classList.add('max-w-xs', 'sm:max-w-sm', 'md:max-w-md', 'opacity-100', 'pointer-events-auto');
+        clearTimeout(navLinksTimeout);
 
+        // Di mobile/layar kecil, sembunyikan navLinks terlebih dahulu agar ruang tersedia
         if (navLinks) {
-            navLinks.classList.add('max-md:max-w-0', 'max-md:opacity-0', 'max-md:overflow-hidden');
+            navLinks.classList.add(...NAV_COLLAPSED_CLASSES);
         }
+
+        // Lebarkan shape pencarian secara halus
+        searchShape.classList.remove(...CLOSED_SHAPE_CLASSES);
+        searchShape.classList.add(...OPEN_SHAPE_CLASSES);
 
         toggleBtn.setAttribute('aria-expanded', 'true');
         toggleBtn.setAttribute('title', 'Cari sekarang');
@@ -67,12 +95,9 @@ export function initNavbarSearch() {
     }
 
     function closeSearch() {
-        searchShape.classList.remove('max-w-xs', 'sm:max-w-sm', 'md:max-w-md', 'opacity-100', 'pointer-events-auto');
-        searchShape.classList.add('max-w-0', 'opacity-0', 'pointer-events-none');
-
-        if (navLinks) {
-            navLinks.classList.remove('max-md:max-w-0', 'max-md:opacity-0', 'max-md:overflow-hidden');
-        }
+        // 1. Mulai animasi mengecilkan searchShape ke width 0
+        searchShape.classList.remove(...OPEN_SHAPE_CLASSES);
+        searchShape.classList.add(...CLOSED_SHAPE_CLASSES);
 
         if (dropdown) {
             dropdown.classList.add('hidden');
@@ -85,6 +110,16 @@ export function initNavbarSearch() {
 
         toggleBtn.setAttribute('aria-expanded', 'false');
         toggleBtn.setAttribute('title', 'Cari Kue');
+
+        // 2. Cegah glitch offside pada layar kecil/mobile:
+        // Jangan kembalikan navLinks saat searchShape masih dalam proses transisi mengecil.
+        // Tunggu 310ms (setelah transition 300ms selesai) baru kembalikan navLinks.
+        clearTimeout(navLinksTimeout);
+        navLinksTimeout = setTimeout(() => {
+            if (!isSearchOpen() && navLinks) {
+                navLinks.classList.remove(...NAV_COLLAPSED_CLASSES);
+            }
+        }, 310);
     }
 
     function fetchSuggestions(query) {

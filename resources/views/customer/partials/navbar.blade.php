@@ -4,12 +4,12 @@
 @endphp
 
 {{-- Top Navigation Bar --}}
-<header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-xs">
-    <div id="navbar-main-content" class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-2 sm:gap-4 relative">
+<header class="bg-[#4D626C] text-white sticky top-0 z-50 shadow-xs overflow-x-clip">
+    <div id="navbar-main-content" class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-1.5 sm:gap-4 relative">
         {{-- Brand / Logo (Kiri) --}}
-        <a href="{{ route('customer.index') }}" class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0 min-w-0 group" title="{{ $storeName }}">
+        <a href="{{ route('customer.index') }}" class="flex items-center gap-1 sm:gap-2 lg:gap-2.5 shrink-0 min-w-0 group" title="{{ $storeName }}">
             <img src="{{ asset('images/logo-nav.png') }}" alt="Logo {{ $storeName }}" class="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full object-cover border border-white/30 shadow-xs shrink-0">
-            <span class="font-serif font-bold text-xs sm:text-base md:text-lg lg:text-xl text-white tracking-wide group-hover:text-amber-100 transition truncate max-w-[75px] min-[380px]:max-w-[105px] sm:max-w-none">
+            <span class="font-serif font-bold text-xs sm:text-base md:text-lg lg:text-xl text-white tracking-wide group-hover:text-amber-100 transition truncate max-w-[70px] min-[360px]:max-w-[90px] sm:max-w-none">
                 {{ $storeName }}
             </span>
         </a>
@@ -31,21 +31,21 @@
         </nav>
 
         {{-- Action Icons: Search & Keranjang (Kanan Ujung) --}}
-        <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
+        <div class="flex items-center gap-1 sm:gap-2 lg:gap-3 shrink-0">
             {{-- Form Pencarian Langsung yang muncul dari sebelah kiri tombol search --}}
             <form
                 id="navbar-search-form"
                 action="{{ route('customer.produk.index') }}"
                 method="GET"
-                class="relative flex items-center"
+                class="relative flex items-center shrink-0"
             >
                 {{-- Shape Input Pencari (Muncul melebar halus dari sebelah kiri tombol search) --}}
                 <div
                     id="navbar-search-shape"
-                    class="overflow-hidden transition-all duration-300 ease-in-out flex items-center max-w-0 opacity-0 pointer-events-none"
+                    class="overflow-hidden transition-[max-width,opacity] duration-300 ease-in-out flex items-center max-w-0 opacity-0 pointer-events-none shrink-0"
                 >
-                    <div class="relative flex items-center bg-[#FAF2EE] text-gray-800 rounded-full border border-[#E8B8AE] shadow-inner pl-2.5 sm:pl-3 pr-1 py-0.5 sm:py-1 mr-1 sm:mr-1.5 focus-within:ring-2 focus-within:ring-[#6B0F1A]/30 focus-within:border-[#6B0F1A] focus-within:bg-white transition-all w-38 sm:w-52 md:w-64 lg:w-72">
-                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B0F1A] shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <div class="flex items-center bg-[#FAF2EE] text-gray-800 rounded-full border border-[#E8B8AE] shadow-inner pl-2 sm:pl-3 pr-1 py-0.5 sm:py-1 mr-1 sm:mr-1.5 focus-within:ring-2 focus-within:ring-[#6B0F1A]/30 focus-within:border-[#6B0F1A] focus-within:bg-white w-36 min-[380px]:w-44 sm:w-56 md:w-64 lg:w-72">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6B0F1A] shrink-0 ml-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="7"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 20l-3.5-3.5"/>
                         </svg>
@@ -57,14 +57,14 @@
                             value="{{ request('search') }}"
                             placeholder="Cari kue..."
                             autocomplete="off"
-                            class="w-full bg-transparent border-0 px-2 py-0.5 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            class="w-full bg-transparent border-0 px-1.5 sm:px-2 py-0.5 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 min-w-0"
                         >
 
                         {{-- Tombol Close / Batal Shape (X) --}}
                         <button
                             type="button"
                             id="navbar-search-close"
-                            class="text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 p-1 rounded-full transition shrink-0 cursor-pointer"
+                            class="text-gray-400 hover:text-gray-600 hover:bg-gray-200/60 p-0.5 sm:p-1 rounded-full transition shrink-0 cursor-pointer"
                             title="Tutup pencarian"
                             aria-label="Tutup pencarian"
                         >
@@ -92,7 +92,7 @@
                 {{-- Dropdown Hasil Cepat Langsung di bawah Shape Pencarian --}}
                 <div
                     id="navbar-search-dropdown"
-                    class="hidden absolute top-full right-0 mt-2 w-72 sm:w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-[#F4E1D9] overflow-hidden z-50 transition-all duration-200"
+                    class="hidden absolute top-full right-0 mt-2 w-72 sm:w-80 md:w-96 max-w-[calc(100vw-24px)] bg-white rounded-2xl shadow-xl border border-[#F4E1D9] overflow-hidden z-50 transition-all duration-200"
                 >
                     {{-- Loading State --}}
                     <div id="navbar-search-loading" class="hidden p-4 text-center text-xs text-gray-500">
