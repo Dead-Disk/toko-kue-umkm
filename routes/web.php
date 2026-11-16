@@ -15,6 +15,7 @@ use App\Http\Controllers\CashierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductImageController;
 use App\Http\Controllers\StaffCashierController;
 use App\Http\Controllers\StaffCategoryController;
 use App\Http\Controllers\StaffDashboardController;
@@ -36,6 +37,10 @@ Route::get('/', [CustomerController::class, 'index'])->name('customer.index');
 Route::get('/p/{slug}', [CustomerController::class, 'page'])
     ->where('slug', '[A-Za-z0-9\-]+')
     ->name('customer.page');
+
+Route::get('/product-images/{path}', [ProductImageController::class, 'show'])
+    ->where('path', 'products/.*')
+    ->name('product-images.show');
 
 /*
 | Katalog produk & alur pemesanan reguler (tanpa login).
