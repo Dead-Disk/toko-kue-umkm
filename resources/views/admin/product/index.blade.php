@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
@@ -265,9 +267,7 @@
                             <tbody class="divide-y divide-stone-100">
                                 @forelse ($products as $product)
                                     @php
-                                        $photoUrl = $product->foto && file_exists(public_path('storage/' . $product->foto))
-                                            ? asset('storage/' . $product->foto)
-                                            : asset('images/rec-img-' . (($loop->index % 4) + 1) . '.png');
+                                        $photoUrl = $product->foto_url;
                                         $rowNumber = sprintf('%03d', $loop->iteration + ($products->firstItem() - 1));
                                     @endphp
                                     <tr class="hover:bg-stone-50/70 transition-colors">
@@ -549,14 +549,23 @@
                                      class="w-full h-full object-cover">
                             </div>
                             <div class="space-y-1.5">
-                                <label for="fotoInput" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-xs transition-colors">
-                                    <svg class="w-4 h-4 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span>Ubah Foto</span>
-                                </label>
-                                <input type="file" id="fotoInput" name="foto" accept="image/*" class="hidden">
-                                <p class="text-[10px] text-stone-400">Format: JPG, PNG, WEBP (Maks. 2MB)</p>
+                                <div class="flex items-center gap-2">
+                                    <label for="fotoInput" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-xs transition-colors">
+                                        <svg class="w-4 h-4 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                        </svg>
+                                        <span id="fotoInputLabel">Ubah Foto</span>
+                                    </label>
+                                    <button type="button" id="modalCropBtn" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-xl border border-[#6B0F1A]/20 bg-rose-50 hover:bg-rose-100 text-[#6B0F1A] cursor-pointer shadow-xs transition-colors">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3v14a2 2 0 002 2h14M17 21v-4a2 2 0 00-2-2H3"/>
+                                        </svg>
+                                        <span>Crop & Posisi</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="fotoInput" name="foto" accept="image/jpeg,image/png,image/jpg,image/webp" class="hidden">
+                                <input type="hidden" name="cropped_foto_base64" id="modalCroppedBase64">
+                                <p class="text-[10px] text-stone-400">Format: JPG, PNG, WEBP (Maks. 2MB). Foto akan dipotong persegi 1:1.</p>
                             </div>
                         </div>
                     </div>
@@ -706,20 +715,6 @@
             const fotoInput = document.getElementById('fotoInput');
             const previewImage = document.getElementById('previewImage');
 
-            // Image Preview on file select
-            if (fotoInput) {
-                fotoInput.addEventListener('change', function () {
-                    const file = this.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            previewImage.src = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-
             // Open Create Modal
             if (openCreateBtn) {
                 openCreateBtn.addEventListener('click', function () {
@@ -730,6 +725,8 @@
 
                     // Reset values
                     productForm.reset();
+                    const base64Input = document.getElementById('modalCroppedBase64');
+                    if (base64Input) base64Input.value = '';
                     previewImage.src = "{{ asset('images/hero-strawberry-cake.png') }}";
                     document.getElementById('modalStatusStok').value = 'ready';
                     document.getElementById('modalStok').value = '10';
@@ -746,6 +743,10 @@
                 productForm.action = product.update_url;
                 formMethod.value = 'PUT';
 
+                const base64Input = document.getElementById('modalCroppedBase64');
+                if (base64Input) base64Input.value = '';
+                if (fotoInput) fotoInput.value = '';
+
                 document.getElementById('modalNamaKue').value = product.nama_kue || '';
                 document.getElementById('modalCategoryId').value = product.category_id || '';
                 document.getElementById('modalHarga').value = product.harga || 0;
@@ -756,6 +757,8 @@
 
                 if (product.foto) {
                     previewImage.src = product.foto;
+                } else {
+                    previewImage.src = "{{ asset('images/hero-strawberry-cake.png') }}";
                 }
 
                 openDrawer();

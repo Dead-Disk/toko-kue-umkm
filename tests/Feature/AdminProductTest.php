@@ -222,6 +222,77 @@ class AdminProductTest extends TestCase
         Storage::disk('public')->assertExists($product->fresh()->foto);
     }
 
+    public function test_update_retains_existing_photo_when_no_new_photo_is_uploaded(): void
+    {
+        Storage::fake('public');
+        $seller = User::factory()->create();
+        $product = Product::factory()->create(['foto' => 'products/kue-asli.jpg']);
+        Storage::disk('public')->put('products/kue-asli.jpg', 'foto-asli');
+        $category = Category::factory()->create();
+
+        // Mengirim update tanpa file foto baru (seperti ketika admin hanya mengedit harga/stok)
+        $this->actingAs($seller)->put(route('admin.produk.update', $product), [
+            'nama_kue' => 'Nama Kue Diperbarui',
+            'category_id' => $category->id,
+            'harga' => 80_000,
+            'stok' => 15,
+            'status_stok' => StatusStok::Ready->value,
+            'foto' => null,
+        ]);
+
+        $this->assertSame('products/kue-asli.jpg', $product->fresh()->foto);
+        Storage::disk('public')->assertExists('products/kue-asli.jpg');
+    }
+
+    public function test_store_creates_product_with_cropped_base64_photo(): void
+    {
+        Storage::fake('public');
+        $seller = User::factory()->create();
+        $category = Category::factory()->create();
+
+        // 1x1 transparent png data URL
+        $base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        $response = $this->actingAs($seller)->post(route('admin.produk.store'), [
+            'nama_kue' => 'Kue Cropped',
+            'category_id' => $category->id,
+            'harga' => 45_000,
+            'stok' => 5,
+            'status_stok' => StatusStok::Ready->value,
+            'cropped_foto_base64' => $base64,
+        ]);
+
+        $response->assertRedirect(route('admin.produk.index'));
+        $product = Product::firstWhere('nama_kue', 'Kue Cropped');
+        $this->assertNotNull($product);
+        $this->assertNotNull($product->foto);
+        Storage::disk('public')->assertExists($product->foto);
+    }
+
+    public function test_update_replaces_old_photo_with_cropped_base64_photo(): void
+    {
+        Storage::fake('public');
+        $seller = User::factory()->create();
+        $product = Product::factory()->create(['foto' => 'products/kue-sebelumnya.jpg']);
+        Storage::disk('public')->put('products/kue-sebelumnya.jpg', 'data-lama');
+        $category = Category::factory()->create();
+
+        $base64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+
+        $this->actingAs($seller)->put(route('admin.produk.update', $product), [
+            'nama_kue' => $product->nama_kue,
+            'category_id' => $category->id,
+            'harga' => 50_000,
+            'stok' => 5,
+            'status_stok' => StatusStok::Ready->value,
+            'cropped_foto_base64' => $base64,
+        ]);
+
+        Storage::disk('public')->assertMissing('products/kue-sebelumnya.jpg');
+        $this->assertNotNull($product->fresh()->foto);
+        Storage::disk('public')->assertExists($product->fresh()->foto);
+    }
+
     public function test_destroy_deletes_the_product(): void
     {
         $seller = User::factory()->create();
