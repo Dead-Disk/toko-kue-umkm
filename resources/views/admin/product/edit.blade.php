@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
@@ -63,9 +65,7 @@
                     @method('PUT')
 
                     @php
-                        $currentPhoto = $product->foto && file_exists(public_path('storage/' . $product->foto))
-                            ? asset('storage/' . $product->foto)
-                            : asset('images/hero-strawberry-cake.png');
+                        $currentPhoto = $product->foto_url;
                     @endphp
 
                     <!-- Foto Produk & Live Preview -->
@@ -79,14 +79,23 @@
                                      class="w-full h-full object-cover">
                             </div>
                             <div class="space-y-2">
-                                <label for="editFotoInput" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-xs transition-colors">
-                                    <svg class="w-4 h-4 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span>Ubah Foto</span>
-                                </label>
-                                <input type="file" id="editFotoInput" name="foto" accept="image/*" class="hidden">
-                                <p class="text-[11px] text-stone-400 leading-relaxed">Format: JPG, JPEG, PNG, WEBP (Maksimal 2MB)</p>
+                                <div class="flex items-center gap-2">
+                                    <label for="editFotoInput" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-xs transition-colors">
+                                        <svg class="w-4 h-4 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                        </svg>
+                                        <span>Ubah Foto</span>
+                                    </label>
+                                    <button type="button" id="editCropBtn" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-[#6B0F1A]/20 bg-rose-50 hover:bg-rose-100 text-[#6B0F1A] cursor-pointer shadow-xs transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3v14a2 2 0 002 2h14M17 21v-4a2 2 0 00-2-2H3"/>
+                                        </svg>
+                                        <span>Atur Posisi & Crop</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="editFotoInput" name="foto" accept="image/jpeg,image/png,image/jpg,image/webp" class="hidden">
+                                <input type="hidden" name="cropped_foto_base64" id="editCroppedBase64">
+                                <p class="text-[11px] text-stone-400 leading-relaxed">Format: JPG, JPEG, PNG, WEBP (Maksimal 2MB). Biarkan kosong jika tidak ingin mengubah foto.</p>
                             </div>
                         </div>
                     </div>
@@ -190,22 +199,5 @@
             </div>
         </div>
     </main>
-
-    <script>
-        const editFotoInput = document.getElementById('editFotoInput');
-        const editPreviewImg = document.getElementById('editPreviewImg');
-        if (editFotoInput) {
-            editFotoInput.addEventListener('change', function () {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        editPreviewImg.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-    </script>
 </body>
 </html>

@@ -115,9 +115,7 @@
                             <tbody class="divide-y divide-stone-100">
                                 @forelse ($products as $product)
                                     @php
-                                        $photoUrl = $product->foto && file_exists(public_path('storage/' . $product->foto))
-                                            ? asset('storage/' . $product->foto)
-                                            : asset('images/rec-img-' . (($loop->index % 4) + 1) . '.png');
+                                        $photoUrl = $product->foto_url;
                                         $rowNumber = sprintf('%03d', $loop->iteration + ($products->firstItem() - 1));
                                         $isReady = $product->status_stok->value === 'ready' && $product->stok > 0;
                                     @endphp

@@ -190,9 +190,7 @@
                         @if ($bestSellers->isNotEmpty())
                             @foreach ($bestSellers as $item)
                                 @php
-                                    $imgUrl = $item->foto && file_exists(public_path('storage/' . $item->foto))
-                                        ? asset('storage/' . $item->foto)
-                                        : asset('images/rec-img-' . (($loop->index % 4) + 1) . '.png');
+                                    $imgUrl = $item->foto_url;
                                 @endphp
                                 <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow flex flex-col justify-between group">
                                     <div class="relative rounded-xl overflow-hidden aspect-square bg-[#FAF2EE] mb-2">

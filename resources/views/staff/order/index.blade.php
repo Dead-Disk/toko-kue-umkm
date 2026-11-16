@@ -305,9 +305,7 @@
                             @php
                                 $totalJumlah = $order->items->sum('jumlah');
                                 $firstItem = $order->items->first();
-                                $cakeImg = $firstItem?->product?->foto && file_exists(public_path('storage/' . $firstItem->product->foto))
-                                    ? asset('storage/' . $firstItem->product->foto)
-                                    : asset('images/rec-img-1.png');
+                                $cakeImg = $firstItem?->product?->foto_url ?? asset('images/rec-img-1.png');
 
                                 $statusVal = $order->status->value;
                                 $statusBadgeClass = match($statusVal) {

@@ -100,6 +100,10 @@ class AdminProductController extends PanelController
 
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('products', 'public');
+        } elseif ($request->filled('cropped_foto_base64')) {
+            $data['foto'] = $this->saveBase64Foto((string) $request->input('cropped_foto_base64'));
+        } else {
+            unset($data['foto']);
         }
 
         $product = Product::create($data);
@@ -136,6 +140,17 @@ class AdminProductController extends PanelController
         if ($request->hasFile('foto')) {
             $this->deleteFoto($product);
             $data['foto'] = $request->file('foto')->store('products', 'public');
+        } elseif ($request->filled('cropped_foto_base64')) {
+            $savedFoto = $this->saveBase64Foto((string) $request->input('cropped_foto_base64'));
+            if ($savedFoto) {
+                $this->deleteFoto($product);
+                $data['foto'] = $savedFoto;
+            } else {
+                unset($data['foto']);
+            }
+        } else {
+            // FIX: Jangan timpa foto yang sudah ada dengan null bila tidak ada foto baru yang diunggah
+            unset($data['foto']);
         }
 
         $product->update($data);
@@ -188,7 +203,30 @@ class AdminProductController extends PanelController
             'max_per_order' => ['nullable', 'integer', 'min:1'],
             'status_stok' => ['required', Rule::enum(StatusStok::class)],
             'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'cropped_foto_base64' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Simpan gambar dari base64 data URL ke disk public.
+     */
+    private function saveBase64Foto(string $base64Data): ?string
+    {
+        if (! preg_match('/^data:image\/(jpeg|png|webp|jpg);base64,/', $base64Data, $matches)) {
+            return null;
+        }
+
+        $rawImage = base64_decode(substr($base64Data, strpos($base64Data, ',') + 1));
+        if ($rawImage === false) {
+            return null;
+        }
+
+        $ext = ($matches[1] === 'jpeg') ? 'jpg' : $matches[1];
+        $filename = 'products/'.Str::random(40).'.'.$ext;
+
+        Storage::disk('public')->put($filename, $rawImage);
+
+        return $filename;
     }
 
     /**

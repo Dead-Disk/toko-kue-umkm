@@ -32,6 +32,35 @@ class Product extends Model
     use SoftDeletes;
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = ['foto_url'];
+
+    /**
+     * URL publik lengkap untuk foto produk dengan fallback aman.
+     */
+    public function getFotoUrlAttribute(): string
+    {
+        if ($this->foto) {
+            if (Storage::disk('public')->exists($this->foto) || file_exists(public_path('storage/'.$this->foto))) {
+                return asset('storage/'.$this->foto);
+            }
+
+            if (filter_var($this->foto, FILTER_VALIDATE_URL)) {
+                return $this->foto;
+            }
+
+            if (file_exists(public_path($this->foto))) {
+                return asset($this->foto);
+            }
+        }
+
+        return asset('images/hero-strawberry-cake.png');
+    }
+
+    /**
      * Hapus file foto dari disk 'public' saat produk di-force delete.
      * Saat soft delete, foto dibiarkan agar aman bila produk di-restore.
      */
