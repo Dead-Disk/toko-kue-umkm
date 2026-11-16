@@ -556,11 +556,21 @@
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-1.5">Foto Produk</label>
                         <div class="flex items-center gap-4">
-                            <div class="w-24 h-24 rounded-2xl overflow-hidden bg-[#FAF2EE] border border-stone-200 shrink-0">
+                            <div class="w-24 h-24 rounded-2xl overflow-hidden bg-[#FAF2EE] border border-stone-200 shrink-0 flex items-center justify-center relative">
+                                <div id="previewFallbackIcon" class="w-full h-full p-2.5 flex items-center justify-center">
+                                    @foreach ($categories as $cat)
+                                        <div data-category-id="{{ $cat->id }}" class="category-svg-item w-full h-full hidden">
+                                            <x-category-icon :category="$cat" class="w-full h-full" />
+                                        </div>
+                                    @endforeach
+                                    <div data-category-id="default" class="category-svg-item w-full h-full">
+                                        <x-category-icon category="default" class="w-full h-full" />
+                                    </div>
+                                </div>
                                 <img id="previewImage"
-                                     src="{{ asset('images/hero-strawberry-cake.png') }}"
+                                     src=""
                                      alt="Preview Foto"
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-cover hidden">
                             </div>
                             <div class="space-y-1.5">
                                 <div class="flex items-center gap-2">
@@ -728,6 +738,34 @@
 
             const fotoInput = document.getElementById('fotoInput');
             const previewImage = document.getElementById('previewImage');
+            const previewFallbackIcon = document.getElementById('previewFallbackIcon');
+            const modalCategoryId = document.getElementById('modalCategoryId');
+
+            function updateFallbackIcon(categoryId) {
+                if (!previewFallbackIcon) return;
+                const items = previewFallbackIcon.querySelectorAll('.category-svg-item');
+                let matched = false;
+                items.forEach(item => {
+                    if (categoryId && item.dataset.categoryId === String(categoryId)) {
+                        item.classList.remove('hidden');
+                        matched = true;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                if (!matched) {
+                    const def = previewFallbackIcon.querySelector('.category-svg-item[data-category-id="default"]');
+                    if (def) def.classList.remove('hidden');
+                }
+            }
+
+            if (modalCategoryId) {
+                modalCategoryId.addEventListener('change', function () {
+                    if (previewImage && previewImage.classList.contains('hidden')) {
+                        updateFallbackIcon(this.value);
+                    }
+                });
+            }
 
             // Open Create Modal
             if (openCreateBtn) {
@@ -741,7 +779,14 @@
                     productForm.reset();
                     const base64Input = document.getElementById('modalCroppedBase64');
                     if (base64Input) base64Input.value = '';
-                    previewImage.src = "{{ asset('images/hero-strawberry-cake.png') }}";
+                    if (previewImage) {
+                        previewImage.src = '';
+                        previewImage.classList.add('hidden');
+                    }
+                    if (previewFallbackIcon) {
+                        previewFallbackIcon.classList.remove('hidden');
+                        updateFallbackIcon('default');
+                    }
                     document.getElementById('modalStatusStok').value = 'ready';
                     document.getElementById('modalStok').value = '10';
                     document.getElementById('modalMaxPerOrder').value = '5';
@@ -771,8 +816,15 @@
 
                 if (product.foto) {
                     previewImage.src = product.foto;
+                    previewImage.classList.remove('hidden');
+                    if (previewFallbackIcon) previewFallbackIcon.classList.add('hidden');
                 } else {
-                    previewImage.src = "{{ asset('images/hero-strawberry-cake.png') }}";
+                    previewImage.src = '';
+                    previewImage.classList.add('hidden');
+                    if (previewFallbackIcon) {
+                        previewFallbackIcon.classList.remove('hidden');
+                        updateFallbackIcon(product.category_id);
+                    }
                 }
 
                 openDrawer();

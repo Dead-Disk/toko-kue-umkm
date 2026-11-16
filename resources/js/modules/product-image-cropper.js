@@ -82,7 +82,7 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
     if (cropBtn) {
         cropBtn.addEventListener('click', function () {
             // Gunakan gambar yang sedang aktif, atau ambil src dari previewImg
-            const src = activeImageSource || (previewImg ? previewImg.src : null);
+            const src = activeImageSource || (previewImg && !previewImg.classList.contains('hidden') ? previewImg.src : null);
             if (!src || src.includes('rec-img') || src.includes('placeholder')) {
                 // Jika belum ada foto, trigger klik input file
                 fileInput.click();
@@ -128,6 +128,12 @@ function applyCroppedResult({ fileInput, previewImg, hiddenBase64, cropBtn, crop
 
     if (previewImg) {
         previewImg.src = croppedDataUrl;
+        previewImg.classList.remove('hidden');
+        const fallback = previewImg.parentElement?.querySelector('#previewFallbackIcon') ||
+                         previewImg.parentElement?.querySelector('#createFallbackIcon') ||
+                         previewImg.parentElement?.querySelector('#editFallbackIcon') ||
+                         previewImg.parentElement?.querySelector('.category-fallback-icon');
+        if (fallback) fallback.classList.add('hidden');
     }
 
     if (cropBtn) {
