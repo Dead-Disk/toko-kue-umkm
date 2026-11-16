@@ -124,7 +124,7 @@
                                     data-harga="{{ $item->harga }}"
                                     data-harga-format="Rp {{ number_format($item->harga, 0, ',', '.') }}"
                                     data-nama="{{ $item->nama_kue }}"
-                                    data-foto="{{ $item->foto ? asset('storage/'.$item->foto) : '' }}">
+                                    data-foto="{{ $item->foto_url ?? '' }}">
                                 {{ $item->nama_kue }} - Rp {{ number_format($item->harga, 0, ',', '.') }}
                             </option>
                         @endforeach

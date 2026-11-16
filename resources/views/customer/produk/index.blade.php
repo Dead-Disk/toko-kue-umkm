@@ -60,12 +60,12 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 mb-6 lg:mb-8">
                     <div class="lg:col-span-5 aspect-square rounded-2xl lg:rounded-3xl overflow-hidden bg-[#FAF2EE] flex items-center justify-center">
-                        @if ($product->foto)
-                            <img src="{{ asset('storage/'.$product->foto) }}" alt="{{ $product->nama_kue }}" class="w-full h-full object-cover">
+                        @if ($product->foto_url)
+                            <img src="{{ $product->foto_url }}" alt="{{ $product->nama_kue }}" class="w-full h-full object-cover">
                         @else
-                            <div class="text-center text-gray-400 p-4">
-                                <svg class="w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-2 text-rose-200" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.69 2 6 4.69 6 8v2H4c-1.1 0-2 .9-2 2v9c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-9c0-1.1-.9-2-2-2h-2V8c0-3.31-2.69-6-6-6zm0 2c2.21 0 4 1.79 4 4v2H8V8c0-2.21 1.79-4 4-4zm8 8v7H4v-7h16z"/></svg>
-                                <span class="text-xs sm:text-sm">Foto kue belum diunggah</span>
+                            <div class="w-full h-full p-8 sm:p-12 flex flex-col items-center justify-center text-center">
+                                <x-category-icon :category="$product->category" class="w-32 h-32 sm:w-40 sm:h-40 max-w-full max-h-full mb-3" />
+                                <span class="text-xs sm:text-sm text-stone-500 font-medium">Foto kue belum diunggah</span>
                             </div>
                         @endif
                     </div>
@@ -82,9 +82,9 @@
                             </p>
                         </div>
 
-                        @if ($product->foto)
+                        @if ($product->foto_url)
                             <div>
-                                <a href="{{ asset('storage/'.$product->foto) }}" target="_blank" rel="noopener" class="text-xs sm:text-sm text-[#6B0F1A] underline font-medium">Lihat Foto Ukuran Asli</a>
+                                <a href="{{ $product->foto_url }}" target="_blank" rel="noopener" class="text-xs sm:text-sm text-[#6B0F1A] underline font-medium">Lihat Foto Ukuran Asli</a>
                             </div>
                         @endif
                     </div>
@@ -340,24 +340,22 @@
                     <div>
                         {{-- Cake Image Container (Rounded-2xl as seen in mockup) --}}
                         <div class="aspect-square w-full rounded-2xl lg:rounded-3xl overflow-hidden bg-[#FAF2EE] relative mb-2.5 lg:mb-3 flex items-center justify-center">
-                            @if ($item->foto)
+                            @if ($item->foto_url)
                                 @if ($isReady)
                                     <a href="{{ route('customer.produk.show', $item) }}" class="w-full h-full block">
-                                        <img src="{{ asset('storage/'.$item->foto) }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                        <img src="{{ $item->foto_url }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
                                     </a>
                                 @else
-                                    <img src="{{ asset('storage/'.$item->foto) }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover grayscale opacity-75">
+                                    <img src="{{ $item->foto_url }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover grayscale opacity-75">
                                 @endif
                             @else
-                                {{-- Placeholder for cakes without uploaded photo (clean soft blank like card 2 Oreo Pom-pom) --}}
                                 @if ($isReady)
-                                    <a href="{{ route('customer.produk.show', $item) }}" class="w-full h-full flex flex-col items-center justify-center text-rose-300/80 p-3 hover:text-[#6B0F1A] transition">
-                                        <svg class="w-12 h-12 lg:w-16 lg:h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.69 2 6 4.69 6 8v2H4c-1.1 0-2 .9-2 2v9c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-9c0-1.1-.9-2-2-2h-2V8c0-3.31-2.69-6-6-6zm0 2c2.21 0 4 1.79 4 4v2H8V8c0-2.21 1.79-4 4-4zm8 8v7H4v-7h16z"/></svg>
-                                        <span class="text-[10px] sm:text-xs text-gray-400 mt-1">Toko Kue</span>
+                                    <a href="{{ route('customer.produk.show', $item) }}" class="w-full h-full p-4 sm:p-5 flex items-center justify-center hover:scale-105 transition-transform duration-300">
+                                        <x-category-icon :category="$item->category" class="w-full h-full max-w-[80px] max-h-[80px] lg:max-w-[100px] lg:max-h-[100px]" />
                                     </a>
                                 @else
-                                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-300 p-3">
-                                        <svg class="w-12 h-12 lg:w-16 lg:h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.69 2 6 4.69 6 8v2H4c-1.1 0-2 .9-2 2v9c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-9c0-1.1-.9-2-2-2h-2V8c0-3.31-2.69-6-6-6zm0 2c2.21 0 4 1.79 4 4v2H8V8c0-2.21 1.79-4 4-4zm8 8v7H4v-7h16z"/></svg>
+                                    <div class="w-full h-full p-4 sm:p-5 flex items-center justify-center grayscale opacity-60">
+                                        <x-category-icon :category="$item->category" class="w-full h-full max-w-[80px] max-h-[80px] lg:max-w-[100px] lg:max-h-[100px]" />
                                     </div>
                                 @endif
                             @endif

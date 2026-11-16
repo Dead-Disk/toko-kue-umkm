@@ -72,11 +72,21 @@
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-2">Foto Produk</label>
                         <div class="flex items-center gap-5">
-                            <div class="w-28 h-28 rounded-2xl overflow-hidden bg-[#FAF2EE] border border-stone-200 shrink-0">
+                            <div class="w-28 h-28 rounded-2xl overflow-hidden bg-[#FAF2EE] border border-stone-200 shrink-0 flex items-center justify-center relative">
+                                <div id="editFallbackIcon" class="w-full h-full p-3 flex items-center justify-center {{ $currentPhoto ? 'hidden' : '' }}">
+                                    @foreach ($categories as $cat)
+                                        <div data-category-id="{{ $cat->id }}" class="category-svg-item w-full h-full {{ $product->category_id == $cat->id ? '' : 'hidden' }}">
+                                            <x-category-icon :category="$cat" class="w-full h-full" />
+                                        </div>
+                                    @endforeach
+                                    <div data-category-id="default" class="category-svg-item w-full h-full hidden">
+                                        <x-category-icon category="default" class="w-full h-full" />
+                                    </div>
+                                </div>
                                 <img id="editPreviewImg"
-                                     src="{{ $currentPhoto }}"
+                                     src="{{ $currentPhoto ?? '' }}"
                                      alt="{{ $product->nama_kue }}"
-                                     class="w-full h-full object-cover">
+                                     class="w-full h-full object-cover {{ $currentPhoto ? '' : 'hidden' }}">
                             </div>
                             <div class="space-y-2">
                                 <div class="flex items-center gap-2">
@@ -199,5 +209,38 @@
             </div>
         </div>
     </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const categorySelect = document.getElementById('category_id');
+            const fallbackContainer = document.getElementById('editFallbackIcon');
+            const previewImg = document.getElementById('editPreviewImg');
+
+            function updateCategoryIcon(catId) {
+                if (!fallbackContainer) return;
+                const items = fallbackContainer.querySelectorAll('.category-svg-item');
+                let matched = false;
+                items.forEach(item => {
+                    if (catId && item.dataset.categoryId === String(catId)) {
+                        item.classList.remove('hidden');
+                        matched = true;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                if (!matched) {
+                    const def = fallbackContainer.querySelector('.category-svg-item[data-category-id="default"]');
+                    if (def) def.classList.remove('hidden');
+                }
+            }
+
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function () {
+                    if (previewImg && previewImg.classList.contains('hidden')) {
+                        updateCategoryIcon(this.value);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

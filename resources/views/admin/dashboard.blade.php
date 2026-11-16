@@ -165,22 +165,22 @@
                             [
                                 'nama' => 'Tart Pink',
                                 'harga' => 65000,
-                                'foto' => asset('images/rec-img-1.png'),
+                                'kategori' => 'kue-tart',
                             ],
                             [
-                                'nama' => 'Oreo Pom-pom',
-                                'harga' => 65000,
-                                'foto' => asset('images/rec-img-2.png'),
+                                'nama' => 'Donat Oreo',
+                                'harga' => 15000,
+                                'kategori' => 'donat',
                             ],
                             [
-                                'nama' => 'Tart Cokelat',
+                                'nama' => 'Roti Gulung Cokelat',
                                 'harga' => 35000,
-                                'foto' => asset('images/rec-img-3.png'),
+                                'kategori' => 'roti-gulung',
                             ],
                             [
-                                'nama' => 'Tart Sembur Biru',
+                                'nama' => 'Spiku Kenari',
                                 'harga' => 40000,
-                                'foto' => asset('images/rec-img-4.png'),
+                                'kategori' => 'spiku',
                             ],
                         ];
                     @endphp
@@ -193,10 +193,16 @@
                                     $imgUrl = $item->foto_url;
                                 @endphp
                                 <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow flex flex-col justify-between group">
-                                    <div class="relative rounded-xl overflow-hidden aspect-square bg-[#FAF2EE] mb-2">
-                                        <img src="{{ $imgUrl }}"
-                                             alt="{{ $item->nama_kue }}"
-                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    <div class="relative rounded-xl overflow-hidden aspect-square bg-[#FAF2EE] mb-2 flex items-center justify-center">
+                                        @if ($imgUrl)
+                                            <img src="{{ $imgUrl }}"
+                                                 alt="{{ $item->nama_kue }}"
+                                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                        @else
+                                            <div class="w-full h-full p-3 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                                <x-category-icon :category="$item->category ?? $item" class="w-full h-full" />
+                                            </div>
+                                        @endif
                                         <!-- Three dots options -->
                                         <a href="{{ route('admin.produk.edit', $item->id) }}"
                                            title="Edit Produk"
@@ -217,10 +223,10 @@
                         @else
                             @foreach ($mockBestSellers as $mock)
                                 <div class="bg-white rounded-2xl p-2.5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow flex flex-col justify-between group">
-                                    <div class="relative rounded-xl overflow-hidden aspect-square bg-[#FAF2EE] mb-2">
-                                        <img src="{{ $mock['foto'] }}"
-                                             alt="{{ $mock['nama'] }}"
-                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    <div class="relative rounded-xl overflow-hidden aspect-square bg-[#FAF2EE] mb-2 flex items-center justify-center">
+                                        <div class="w-full h-full p-3 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                            <x-category-icon :category="$mock['kategori']" class="w-full h-full" />
+                                        </div>
                                         <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-stone-600 shadow-xs text-xs font-bold">
                                             •••
                                         </div>

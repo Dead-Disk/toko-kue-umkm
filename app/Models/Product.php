@@ -48,11 +48,40 @@ class Product extends Model
     }
 
     /**
-     * URL publik lengkap untuk foto produk dengan fallback aman.
+     * Cek apakah produk memiliki file foto fisik atau URL yang benar-benar ada.
      */
-    public function getFotoUrlAttribute(): string
+    public function hasRealFoto(): bool
     {
-        if ($this->foto) {
+        if (empty($this->foto)) {
+            return false;
+        }
+
+        if (Storage::disk('public')->exists($this->foto)) {
+            return true;
+        }
+
+        if (file_exists(public_path('storage/'.$this->foto))) {
+            return true;
+        }
+
+        if (filter_var($this->foto, FILTER_VALIDATE_URL)) {
+            return true;
+        }
+
+        if (file_exists(public_path($this->foto))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * URL publik lengkap untuk foto produk dengan fallback aman.
+     * Mengembalikan null jika produk tidak memiliki foto fisik yang valid.
+     */
+    public function getFotoUrlAttribute(): ?string
+    {
+        if (! empty($this->foto)) {
             if (Storage::disk('public')->exists($this->foto)) {
                 return route('product-images.show', ['path' => $this->foto]);
             }
@@ -70,7 +99,7 @@ class Product extends Model
             }
         }
 
-        return asset('images/hero-strawberry-cake.png');
+        return null;
     }
 
     /**

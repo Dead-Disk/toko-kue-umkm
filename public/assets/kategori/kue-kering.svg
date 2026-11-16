@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="Kue Kering">
+    <!-- Bayangan -->
+    <ellipse cx="50" cy="84" rx="38" ry="6" fill="#E8B8AE" fill-opacity="0.5"/>
+    <!-- Cookie Belakang Kiri -->
+    <circle cx="34" cy="46" r="22" fill="#D97706"/>
+    <circle cx="34" cy="46" r="21" fill="#FBBF24"/>
+    <circle cx="28" cy="38" r="3" fill="#6B0F1A"/>
+    <circle cx="42" cy="40" r="3.5" fill="#6B0F1A"/>
+    <circle cx="30" cy="52" r="3" fill="#6B0F1A"/>
+    <circle cx="43" cy="54" r="2.5" fill="#6B0F1A"/>
+    <!-- Cookie Utama Depan Kanan -->
+    <circle cx="62" cy="56" r="25" fill="#B45309"/>
+    <circle cx="62" cy="55" r="24" fill="#F59E0B"/>
+    <circle cx="62" cy="53" r="23" fill="#FDE68A"/>
+    <!-- Tekstur Kerutan Cookie -->
+    <path d="M50 44 Q56 46 60 42" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M68 62 Q72 65 76 60" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Chocolate Chips Besar -->
+    <circle cx="54" cy="48" r="4.5" fill="#6B0F1A"/>
+    <circle cx="70" cy="46" r="4" fill="#6B0F1A"/>
+    <circle cx="60" cy="62" r="4.5" fill="#6B0F1A"/>
+    <circle cx="74" cy="58" r="3.5" fill="#6B0F1A"/>
+    <circle cx="50" cy="60" r="3" fill="#6B0F1A"/>
+    <!-- Cengkih Nastar Mini di Depan Bawah -->
+    <circle cx="30" cy="72" r="10" fill="#EAB308"/>
+    <circle cx="30" cy="71" r="9.5" fill="#FDE047"/>
+    <polygon points="30,68 32,71 30,74 28,71" fill="#451A03"/>
+</svg>

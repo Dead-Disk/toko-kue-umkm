@@ -31,7 +31,7 @@ class CustomerController extends Controller
      */
     public function index(): View
     {
-        $categories = Category::whereHas('products')->get();
+        $categories = Category::whereHas('products')->with('products')->get();
         $produks = $this->topProducts();
 
         return view('customer.beranda.index', [

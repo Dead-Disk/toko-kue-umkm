@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="Roti">
+    <!-- Bayangan Roti -->
+    <ellipse cx="50" cy="85" rx="36" ry="7" fill="#E8B8AE" fill-opacity="0.5"/>
+    <!-- Loaf Roti Sobek / Roti Kasur (3 Bulatan Mengembang) -->
+    <!-- Bulatan 1 Kiri -->
+    <ellipse cx="28" cy="56" rx="16" ry="22" fill="#B45309"/>
+    <ellipse cx="28" cy="54" rx="15" ry="21" fill="#D97706"/>
+    <ellipse cx="28" cy="50" rx="13" ry="17" fill="#FBBF24"/>
+    <!-- Bulatan 3 Kanan -->
+    <ellipse cx="72" cy="56" rx="16" ry="22" fill="#B45309"/>
+    <ellipse cx="72" cy="54" rx="15" ry="21" fill="#D97706"/>
+    <ellipse cx="72" cy="50" rx="13" ry="17" fill="#FBBF24"/>
+    <!-- Bulatan 2 Tengah (Lebih Menonjol di Depan) -->
+    <ellipse cx="50" cy="54" rx="18" ry="24" fill="#92400E"/>
+    <ellipse cx="50" cy="52" rx="17" ry="23" fill="#D97706"/>
+    <ellipse cx="50" cy="48" rx="15" ry="19" fill="#F59E0B"/>
+    <!-- Kilap Mentega (Glossy Butter Shine di Atas Roti) -->
+    <path d="M42 34 C46 32, 54 32, 58 34" stroke="#FFFBEB" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M22 38 C25 36, 31 36, 34 38" stroke="#FFFBEB" stroke-width="2" stroke-linecap="round"/>
+    <path d="M66 38 C69 36, 75 36, 78 38" stroke="#FFFBEB" stroke-width="2" stroke-linecap="round"/>
+    <!-- Alas Kertas Cup Roti -->
+    <path d="M12 70 C24 78, 76 78, 88 70 L84 78 C72 84, 28 84, 16 78 Z" fill="#6B0F1A" fill-opacity="0.25"/>
+</svg>

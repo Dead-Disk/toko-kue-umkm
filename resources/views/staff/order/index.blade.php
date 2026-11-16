@@ -305,7 +305,7 @@
                             @php
                                 $totalJumlah = $order->items->sum('jumlah');
                                 $firstItem = $order->items->first();
-                                $cakeImg = $firstItem?->product?->foto_url ?? asset('images/rec-img-1.png');
+                                $cakeImg = $firstItem?->product?->foto_url;
 
                                 $statusVal = $order->status->value;
                                 $statusBadgeClass = match($statusVal) {
@@ -336,8 +336,14 @@
                                 <!-- Nomor Pesanan & Thumbnail -->
                                 <td class="py-3.5 px-3.5 whitespace-nowrap">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 border border-stone-200/60 shrink-0">
-                                            <img src="{{ $cakeImg }}" alt="Kue" class="w-full h-full object-cover">
+                                        <div class="w-10 h-10 rounded-xl overflow-hidden bg-[#FAF2EE] border border-stone-200/60 shrink-0 flex items-center justify-center">
+                                            @if ($cakeImg)
+                                                <img src="{{ $cakeImg }}" alt="Kue" class="w-full h-full object-cover">
+                                            @else
+                                                <div class="w-full h-full p-1.5 flex items-center justify-center">
+                                                    <x-category-icon :category="$firstItem?->product?->category ?? 'tart'" class="w-full h-full" />
+                                                </div>
+                                            @endif
                                         </div>
                                         <div>
                                             <p class="font-bold text-stone-900 tracking-tight">

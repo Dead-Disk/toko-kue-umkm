@@ -277,19 +277,14 @@
                 <!-- Visual Category Cards Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                     @forelse ($categories as $category)
-                        @php
-                            $catImg = match($category->slug) {
-                                'kue-tart' => asset('images/cat-kue-tart.png'),
-                                'donat' => asset('images/cat-donat.png'),
-                                'roti-gulung' => asset('images/cat-roti-gulung.png'),
-                                'spiku' => asset('images/cat-spiku.png'),
-                                default => asset('images/cat-kue-tart.png'),
-                            };
-                        @endphp
                         <div class="bg-stone-50/70 rounded-2xl p-4 border border-stone-200/70 hover:border-rose-200 hover:bg-rose-50/30 transition-all flex flex-col justify-between group">
                             <div class="flex items-start justify-between gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-xl bg-white p-1.5 border border-stone-200/70 shadow-xs flex items-center justify-center shrink-0">
-                                    <img src="{{ $catImg }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-contain">
+                                <div class="w-12 h-12 rounded-xl bg-[#FAF2EE] p-1.5 border border-stone-200/70 shadow-xs flex items-center justify-center shrink-0">
+                                    @if ($category->foto_url)
+                                        <img src="{{ $category->foto_url }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-cover rounded-lg">
+                                    @else
+                                        <x-category-icon :category="$category" class="w-full h-full" />
+                                    @endif
                                 </div>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-stone-600 border border-stone-200/80">
                                     {{ $category->products_count }} Produk

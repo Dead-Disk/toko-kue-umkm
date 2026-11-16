@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="Cupcake Bakery">
+    <!-- Bayangan Alas -->
+    <ellipse cx="50" cy="85" rx="30" ry="5" fill="#E8B8AE" fill-opacity="0.5"/>
+    <!-- Wadah / Cup Cupcake (Trapezoid beralur maroon) -->
+    <path d="M30 55 L35 84 C35 84, 36 86, 40 86 L60 86 C64 86, 65 84, 65 84 L70 55 Z" fill="#6B0F1A"/>
+    <!-- Garis Lipatan Paper Cup -->
+    <path d="M36 55 L40 86" stroke="#9E1B2D" stroke-width="1.2"/>
+    <path d="M43 55 L46 86" stroke="#9E1B2D" stroke-width="1.2"/>
+    <path d="M50 55 L50 86" stroke="#9E1B2D" stroke-width="1.2"/>
+    <path d="M57 55 L54 86" stroke="#9E1B2D" stroke-width="1.2"/>
+    <path d="M64 55 L60 86" stroke="#9E1B2D" stroke-width="1.2"/>
+    <!-- Frosting / Swirl Krim Cupcake Bertingkat -->
+    <!-- Tingkat 1 (Bawah) -->
+    <path d="M24 55 C24 51, 28 47, 34 47 C37 47, 40 49, 42 50 C44 48, 47 47, 50 47 C53 47, 56 48, 58 50 C60 49, 63 47, 66 47 C72 47, 76 51, 76 55 C76 60, 24 60, 24 55 Z" fill="#FDE8E1"/>
+    <!-- Tingkat 2 (Tengah) -->
+    <path d="M29 48 C29 43, 34 39, 41 39 C43 39, 46 40, 48 41 C50 40, 52 39, 55 39 C62 39, 68 43, 68 48 C68 51, 29 51, 29 48 Z" fill="#FFF5F2"/>
+    <!-- Tingkat 3 (Puncak Swirl) -->
+    <path d="M36 40 C36 34, 42 30, 50 30 C58 30, 64 34, 64 40 Z" fill="#FFFFFF"/>
+    <!-- Taburan Sprinkles Manis -->
+    <circle cx="38" cy="46" r="1.5" fill="#F59E0B"/>
+    <circle cx="56" cy="44" r="1.5" fill="#F59E0B"/>
+    <circle cx="48" cy="38" r="1.5" fill="#6B0F1A"/>
+    <circle cx="62" cy="48" r="1.5" fill="#34D399"/>
+    <!-- Tangkai Buah Ceri -->
+    <path d="M50 24 C54 18, 59 16, 64 17" stroke="#047857" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Buah Ceri di Puncak -->
+    <circle cx="50" cy="28" r="5.5" fill="#DC2626"/>
+    <circle cx="48" cy="26" r="1.8" fill="#FFFFFF" fill-opacity="0.8"/>
+</svg>

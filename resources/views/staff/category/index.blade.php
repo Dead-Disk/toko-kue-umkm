@@ -62,20 +62,16 @@
     <!-- Category Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         @forelse ($categories as $category)
-            @php
-                $catImg = match($category->slug) {
-                    'kue-tart' => asset('images/cat-kue-tart.png'),
-                    'donat' => asset('images/cat-donat.png'),
-                    'roti-gulung' => asset('images/cat-roti-gulung.png'),
-                    'spiku' => asset('images/cat-spiku.png'),
-                    default => asset('images/cat-kue-tart.png'),
-                };
-            @endphp
-
             <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow flex flex-col justify-between">
                 <div class="flex items-start gap-3.5">
-                    <div class="w-14 h-14 rounded-2xl overflow-hidden bg-[#FAF2EE] p-1.5 border border-stone-100 shrink-0 flex items-center justify-center">
-                        <img src="{{ $catImg }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-contain">
+                    <div class="w-14 h-14 rounded-2xl overflow-hidden bg-[#FAF2EE] border border-stone-100 shrink-0 flex items-center justify-center">
+                        @if ($category->foto_url)
+                            <img src="{{ $category->foto_url }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full p-2 flex items-center justify-center">
+                                <x-category-icon :category="$category" class="w-full h-full" />
+                            </div>
+                        @endif
                     </div>
                     <div class="min-w-0">
                         <h2 class="text-sm font-bold text-stone-800 truncate" title="{{ $category->nama_kategori }}">

@@ -15,6 +15,7 @@ class StaffCategoryController extends Controller
     public function index(): View
     {
         $categories = Category::query()
+            ->with('products')
             ->withCount([
                 'products',
                 'products as produk_habis_count' => fn (Builder $query) => $query

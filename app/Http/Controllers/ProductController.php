@@ -36,11 +36,12 @@ class ProductController extends Controller
                     'short_deskripsi' => $item->short_deskripsi,
                     'harga' => (int) $item->harga,
                     'formatted_harga' => 'Rp '.number_format($item->harga, 0, ',', '.'),
-                    'foto' => $item->foto ? asset('storage/'.$item->foto) : null,
+                    'foto' => $item->foto_url,
                     'url' => route('customer.produk.show', $item),
                     'is_ready' => $item->status_stok === StatusStok::Ready,
                     'stok' => $item->stok,
                     'category' => $item->category?->nama_kategori,
+                    'category_slug' => $item->category?->slug,
                 ]),
                 'total' => $products->count(),
             ]);
