@@ -94,14 +94,8 @@
             <div class="grid grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-5 xl:gap-6">
                 @forelse ($categories as $cat)
                     <a href="{{ route('customer.produk.index', ['kategori' => $cat->slug]) }}" class="group flex flex-col items-center">
-                        <div class="w-full aspect-[4/3] lg:aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] shadow-xs lg:shadow-sm border border-[#F4E1D9] mb-1 lg:mb-2.5 flex items-center justify-center">
-                            @if ($cat->foto_url)
-                                <img src="{{ $cat->foto_url }}" alt="{{ $cat->nama_kategori }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                            @else
-                                <div class="w-full h-full p-2.5 sm:p-3 lg:p-4 flex items-center justify-center group-hover:scale-105 transition duration-300">
-                                    <x-category-icon :category="$cat" class="w-full h-full max-w-[56px] max-h-[56px] sm:max-w-[72px] sm:max-h-[72px] lg:max-w-[90px] lg:max-h-[90px]" />
-                                </div>
-                            @endif
+                        <div class="w-full aspect-[4/3] lg:aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] shadow-xs lg:shadow-sm border border-[#F4E1D9] mb-1 lg:mb-2.5 flex items-center justify-center p-2.5 sm:p-3 lg:p-4">
+                            <x-category-icon :category="$cat" class="w-full h-full max-w-[56px] max-h-[56px] sm:max-w-[72px] sm:max-h-[72px] lg:max-w-[90px] lg:max-h-[90px] group-hover:scale-105 transition duration-300" />
                         </div>
                         <span class="text-[11px] sm:text-xs lg:text-sm xl:text-base font-semibold text-gray-800 group-hover:text-[#6B0F1A] transition text-center line-clamp-1">
                             {{ $cat->nama_kategori }}

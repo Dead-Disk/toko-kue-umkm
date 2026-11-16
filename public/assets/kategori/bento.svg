@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" role="img" aria-label="Bento Cake">
+    <!-- Bayangan Box -->
+    <ellipse cx="50" cy="85" rx="38" ry="7" fill="#E8B8AE" fill-opacity="0.45"/>
+
+    <!-- Bento Clamshell Box (Bagian Bawah Wadah Bento) -->
+    <rect x="14" y="32" width="72" height="52" rx="14" fill="#FFFFFF" stroke="#E2D1C3" stroke-width="2"/>
+    <path d="M14 42 H86" stroke="#F0E4D8" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+    <!-- Kertas Roti / Baking Paper di Dasar Kue -->
+    <path d="M22 68 C22 68, 25 78, 50 78 C75 78, 78 68, 78 68 C78 68, 75 72, 50 72 C25 72, 22 68, 22 68 Z" fill="#FDEEE9"/>
+    <ellipse cx="50" cy="65" rx="27" ry="12" fill="#FFF3EE" stroke="#EACEC5" stroke-width="1" stroke-dasharray="2 2"/>
+
+    <!-- Badan Mini Cake Bento (Bentuk Silinder 3D) -->
+    <path d="M26 48 C26 48, 30 58, 50 58 C70 58, 74 48, 74 48 V62 C74 68, 64 72, 50 72 C36 72, 26 68, 26 62 Z" fill="#FBCFE8"/>
+    <!-- Shading Bawah Cake -->
+    <path d="M26 62 C26 68, 36 72, 50 72 C64 72, 74 68, 74 62 V58 C74 64, 64 68, 50 68 C36 68, 26 64, 26 58 Z" fill="#F472B6" fill-opacity="0.6"/>
+
+    <!-- Permukaan Atas Cake (Pastel Pink) -->
+    <ellipse cx="50" cy="48" rx="24" ry="10.5" fill="#FDF2F8"/>
+    <ellipse cx="50" cy="48" rx="22" ry="9" fill="#FCE7F3"/>
+
+    <!-- Piped Buttercream Border (Kerutan Krim Cantik Mengelilingi Kue) -->
+    <circle cx="28" cy="48" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="32" cy="44" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="38" cy="41" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="45" cy="39.5" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="50" cy="39" r="3" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="55" cy="39.5" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="62" cy="41" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="68" cy="44" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="72" cy="48" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="68" cy="52" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="62" cy="55" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="55" cy="56.5" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="50" cy="57" r="3" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="45" cy="56.5" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="38" cy="55" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+    <circle cx="32" cy="52" r="2.8" fill="#FFFFFF" stroke="#FBCFE8" stroke-width="0.8"/>
+
+    <!-- Piped Icing Heart & Lettering di Tengah Bento Cake -->
+    <path d="M50 48 C49 46, 45 44, 45 47 C45 50, 50 53, 50 53 C50 53, 55 50, 55 47 C55 44, 51 46, 50 48 Z" fill="#6B0F1A"/>
+
+    <!-- Detail Box Bento Atas (Tutup Box Terbuka ke Belakang) -->
+    <path d="M16 34 L22 14 C23 11, 26 9, 30 9 H70 C74 9, 77 11, 78 14 L84 34" fill="#FAF5F0" stroke="#E2D1C3" stroke-width="1.8"/>
+    <!-- Garis Lipatan Box -->
+    <path d="M22 14 H78" stroke="#EFE4DA" stroke-width="1.5"/>
+    <circle cx="50" cy="18" r="3.5" fill="#E8B8AE" fill-opacity="0.6"/>
+</svg>

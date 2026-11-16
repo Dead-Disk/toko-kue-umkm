@@ -59,8 +59,9 @@ class DatabaseSeeder extends Seeder
         // 3. Kategori Kue
         $categories = [
             'Kue Tart' => 'kue-tart',
-            'Roti Gulung' => 'roti-gulung',
+            'Bento Cake' => 'bento-cake',
             'Donat' => 'donat',
+            'Roti Gulung' => 'roti-gulung',
             'Spiku' => 'spiku',
         ];
 

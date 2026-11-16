@@ -85,35 +85,43 @@ class ProductImageTest extends TestCase
         $catalogResponse->assertSee('Donat Cokelat Polos');
     }
 
-    public function test_category_foto_url_syncs_with_its_first_product_with_real_photo(): void
+    public function test_category_foto_url_returns_category_svg_from_assets_kategori(): void
     {
-        Storage::fake('public');
-        Storage::disk('public')->put('products/tart-enak.jpg', 'fake-tart');
-
-        $category = Category::factory()->create([
-            'nama_kategori' => 'Kue Tart',
+        $bentoCat = Category::factory()->create([
+            'nama_kategori' => 'Bento Cake',
+            'slug' => 'bento-cake',
+        ]);
+        $donatCat = Category::factory()->create([
+            'nama_kategori' => 'Donat Manis',
+            'slug' => 'donat',
+        ]);
+        $tartCat = Category::factory()->create([
+            'nama_kategori' => 'Kue Tart Spesial',
             'slug' => 'kue-tart',
         ]);
-
-        // Category with no products yet
-        $this->assertNull($category->fresh()->foto_url);
-
-        // Add product without photo
-        $product1 = Product::factory()->create([
-            'category_id' => $category->id,
-            'nama_kue' => 'Tart Tanpa Foto',
-            'foto' => null,
-        ]);
-        $this->assertNull($category->fresh()->foto_url);
-
-        // Add product with real photo
-        $product2 = Product::factory()->create([
-            'category_id' => $category->id,
-            'nama_kue' => 'Tart Ada Foto',
-            'foto' => 'products/tart-enak.jpg',
+        $unknownCat = Category::factory()->create([
+            'nama_kategori' => 'Kategori Lain',
+            'slug' => 'kategori-lain-xyz',
         ]);
 
-        $this->assertNotNull($category->fresh()->foto_url);
-        $this->assertSame($product2->foto_url, $category->fresh()->foto_url);
+        $this->assertStringContainsString('assets/kategori/bento', $bentoCat->foto_url);
+        $this->assertStringContainsString('assets/kategori/donat.svg', $donatCat->foto_url);
+        $this->assertStringContainsString('assets/kategori/kue-tart.svg', $tartCat->foto_url);
+        $this->assertStringContainsString('assets/kategori/default.svg', $unknownCat->foto_url);
+
+        $this->assertFileExists(public_path('assets/kategori/bento.svg'));
+        $this->assertFileExists(public_path('assets/kategori/donat.svg'));
+        $this->assertFileExists(public_path('assets/kategori/kue-tart.svg'));
+        $this->assertFileExists(public_path('assets/kategori/default.svg'));
+
+        Product::factory()->create(['category_id' => $bentoCat->id]);
+        Product::factory()->create(['category_id' => $donatCat->id]);
+        Product::factory()->create(['category_id' => $tartCat->id]);
+
+        $customerResponse = $this->get(route('customer.index'));
+        $customerResponse->assertOk();
+        $customerResponse->assertSee('assets/kategori/bento', false);
+        $customerResponse->assertSee('assets/kategori/donat.svg', false);
+        $customerResponse->assertSee('assets/kategori/kue-tart.svg', false);
     }
 }
