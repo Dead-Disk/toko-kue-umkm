@@ -32,6 +32,8 @@ class ProductController extends Controller
                 'data' => $products->take(6)->values()->map(fn (Product $item): array => [
                     'id' => $item->id,
                     'nama_kue' => $item->nama_kue,
+                    'deskripsi' => $item->deskripsi,
+                    'short_deskripsi' => $item->short_deskripsi,
                     'harga' => (int) $item->harga,
                     'formatted_harga' => 'Rp '.number_format($item->harga, 0, ',', '.'),
                     'foto' => $item->foto ? asset('storage/'.$item->foto) : null,
