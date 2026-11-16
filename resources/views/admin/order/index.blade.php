@@ -41,21 +41,22 @@
 
     <!-- Mobile Sidebar Drawer Backdrop -->
     <div id="mobileSidebarBackdrop" class="fixed inset-0 bg-stone-900/50 z-50 hidden transition-opacity lg:hidden">
-        <div id="mobileSidebarDrawer" class="w-72 max-w-[80vw] h-full bg-[#4D626C] text-stone-200 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out">
-            <div>
-                <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-                    <div class="flex items-center gap-2.5">
-                        <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-7 w-auto brightness-0 invert">
-                        <span class="text-white font-bold text-base">Nak Mbarep</span>
-                    </div>
-                    <button type="button" id="closeMobileSidebarBtn" class="p-1.5 rounded-lg text-stone-300 hover:text-white hover:bg-white/10">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
+        <div id="mobileSidebarDrawer" class="w-72 max-w-[80vw] h-full bg-[#4D626C] text-stone-200 flex flex-col shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto overflow-x-hidden sidebar-scrollbar">
+            <!-- Brand & Close Header -->
+            <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#4D626C] z-10 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-7 w-auto brightness-0 invert">
+                    <span class="text-white font-bold text-base">Nak Mbarep</span>
                 </div>
+                <button type="button" id="closeMobileSidebarBtn" class="p-1.5 rounded-lg text-stone-300 hover:text-white hover:bg-white/10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
 
-                <nav class="p-4 space-y-1.5">
+            <!-- Navigation Menu -->
+            <nav class="p-4 space-y-1.5 flex-1">
                     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-stone-300 hover:text-white hover:bg-white/10">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                         <span>Beranda</span>
@@ -85,9 +86,8 @@
                         <span>Pengaturan</span>
                     </a>
                 </nav>
-            </div>
 
-            <div class="p-4 border-t border-white/10 space-y-2">
+            <div class="p-4 border-t border-white/10 space-y-2 mt-auto shrink-0">
                 <a href="{{ route('customer.index') }}" target="_blank" class="block text-center py-2 text-xs text-stone-200 bg-white/10 rounded-lg">
                     Lihat Web Toko ↗
                 </a>

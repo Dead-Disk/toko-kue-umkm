@@ -47,30 +47,31 @@
 
     <!-- Mobile Sidebar Drawer Backdrop -->
     <div id="mobileSidebarBackdrop" class="fixed inset-0 bg-stone-900/50 z-50 hidden transition-opacity lg:hidden">
-        <div id="mobileSidebarDrawer" class="w-72 max-w-[80vw] h-full bg-[#4D626C] text-stone-200 flex flex-col justify-between shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out">
-            <div>
-                <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-                    <div class="flex items-center gap-2.5">
-                        <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-7 w-auto brightness-0 invert">
-                        <div class="leading-tight">
-                            <span class="block text-white font-bold text-base">PANEL STAF</span>
-                            <span class="block text-[10px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>
-                        </div>
+        <div id="mobileSidebarDrawer" class="w-72 max-w-[80vw] h-full bg-[#4D626C] text-stone-200 flex flex-col shadow-2xl transform -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto overflow-x-hidden sidebar-scrollbar">
+            <!-- Brand & Close Header -->
+            <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#4D626C] z-10 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-7 w-auto brightness-0 invert">
+                    <div class="leading-tight">
+                        <span class="block text-white font-bold text-base">PANEL STAF</span>
+                        <span class="block text-[10px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>
                     </div>
-                    <button type="button" id="closeMobileSidebarBtn" aria-label="Tutup menu"
-                            class="p-1.5 rounded-lg text-stone-300 hover:text-white hover:bg-white/10">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
                 </div>
-
-                <nav class="p-4 space-y-1.5">
-                    @include('staff.partials.navigation', ['active' => $active ?? 'dashboard', 'mobile' => true])
-                </nav>
+                <button type="button" id="closeMobileSidebarBtn" aria-label="Tutup menu"
+                        class="p-1.5 rounded-lg text-stone-300 hover:text-white hover:bg-white/10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
             </div>
 
-            <div class="p-4 border-t border-white/10 space-y-2">
+            <!-- Navigation Menu -->
+            <nav class="p-4 space-y-1.5 flex-1">
+                @include('staff.partials.navigation', ['active' => $active ?? 'dashboard', 'mobile' => true])
+            </nav>
+
+            <!-- Bottom Actions -->
+            <div class="p-4 border-t border-white/10 space-y-2 mt-auto shrink-0">
                 <a href="{{ route('staff.profile.edit') }}"
                    class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-200 text-xs font-medium transition-colors">
                     <div class="flex items-center gap-2.5 min-w-0">
