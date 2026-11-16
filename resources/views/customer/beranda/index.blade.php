@@ -94,12 +94,12 @@
             <div class="grid grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-5 xl:gap-6">
                 @forelse ($categories as $cat)
                     <a href="{{ route('customer.produk.index', ['kategori' => $cat->slug]) }}" class="group flex flex-col items-center">
-                        <div class="w-full aspect-[4/3] lg:aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-white shadow-xs lg:shadow-sm border border-[#F4E1D9] mb-1 lg:mb-2.5 flex items-center justify-center">
-                            @if ($cat->products->first()?->foto)
-                                <img src="{{ asset('storage/' . $cat->products->first()->foto) }}" alt="{{ $cat->nama_kategori }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="w-full aspect-[4/3] lg:aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] shadow-xs lg:shadow-sm border border-[#F4E1D9] mb-1 lg:mb-2.5 flex items-center justify-center">
+                            @if ($cat->foto_url)
+                                <img src="{{ $cat->foto_url }}" alt="{{ $cat->nama_kategori }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             @else
-                                <div class="w-full h-full flex flex-col items-center justify-center text-rose-300 bg-[#FAF2EE]">
-                                    <svg class="w-7 h-7 sm:w-9 sm:h-9 lg:w-12 lg:h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.69 2 6 4.69 6 8v2H4c-1.1 0-2 .9-2 2v9c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-9c0-1.1-.9-2-2-2h-2V8c0-3.31-2.69-6-6-6zm0 2c2.21 0 4 1.79 4 4v2H8V8c0-2.21 1.79-4 4-4zm8 8v7H4v-7h16z"/></svg>
+                                <div class="w-full h-full p-2.5 sm:p-3 lg:p-4 flex items-center justify-center group-hover:scale-105 transition duration-300">
+                                    <x-category-icon :category="$cat" class="w-full h-full max-w-[56px] max-h-[56px] sm:max-w-[72px] sm:max-h-[72px] lg:max-w-[90px] lg:max-h-[90px]" />
                                 </div>
                             @endif
                         </div>
@@ -136,12 +136,11 @@
                     <div class="bg-white rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-4 xl:p-5 border border-[#F3E1DC] shadow-2xs hover:shadow-md transition flex flex-col justify-between group">
                         <div>
                             <a href="{{ route('customer.produk.show', $produk) }}" class="block aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] mb-1.5 sm:mb-2.5 lg:mb-3 relative">
-                                @if ($produk->foto)
-                                    <img src="{{ asset('storage/'.$produk->foto) }}" alt="{{ $produk->nama_kue }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                @if ($produk->foto_url)
+                                    <img src="{{ $produk->foto_url }}" alt="{{ $produk->nama_kue }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                                 @else
-                                    <div class="w-full h-full flex flex-col items-center justify-center text-rose-300 p-1 text-center bg-[#FAF2EE]">
-                                        <svg class="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 mb-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.69 2 6 4.69 6 8v2H4c-1.1 0-2 .9-2 2v9c0 .55.45 1 1 1h18c.55 0 1-.45 1-1v-9c0-1.1-.9-2-2-2h-2V8c0-3.31-2.69-6-6-6zm0 2c2.21 0 4 1.79 4 4v2H8V8c0-2.21 1.79-4 4-4zm8 8v7H4v-7h16z"/></svg>
-                                        <span class="text-[9px] sm:text-[10px] leading-tight text-gray-400">{{ $storeSetting->store_name ?? 'Nak Mbarep' }}</span>
+                                    <div class="w-full h-full p-3 sm:p-4 lg:p-5 flex items-center justify-center group-hover:scale-105 transition duration-300">
+                                        <x-category-icon :category="$produk->category" class="w-full h-full max-w-[70px] max-h-[70px] sm:max-w-[85px] sm:max-h-[85px]" />
                                     </div>
                                 @endif
 

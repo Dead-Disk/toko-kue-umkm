@@ -127,10 +127,16 @@
 
                                         <!-- Gambar -->
                                         <td class="py-3 px-4">
-                                            <div class="w-12 h-12 rounded-xl overflow-hidden bg-stone-100 border border-stone-200/60 shrink-0">
-                                                <img src="{{ $photoUrl }}"
-                                                     alt="{{ $product->nama_kue }}"
-                                                     class="w-full h-full object-cover">
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden bg-[#FAF2EE] border border-stone-200/60 shrink-0 flex items-center justify-center">
+                                                @if ($photoUrl)
+                                                    <img src="{{ $photoUrl }}"
+                                                         alt="{{ $product->nama_kue }}"
+                                                         class="w-full h-full object-cover">
+                                                @else
+                                                    <div class="w-full h-full p-1.5 flex items-center justify-center">
+                                                        <x-category-icon :category="$product->category" class="w-full h-full" />
+                                                    </div>
+                                                @endif
                                             </div>
                                         </td>
 
@@ -270,20 +276,19 @@
                     <div class="space-y-2">
                         @forelse ($categories as $category)
                             @php
-                                $catImg = match($category->slug) {
-                                    'kue-tart' => asset('images/cat-kue-tart.png'),
-                                    'donat' => asset('images/cat-donat.png'),
-                                    'roti-gulung' => asset('images/cat-roti-gulung.png'),
-                                    'spiku' => asset('images/cat-spiku.png'),
-                                    default => asset('images/cat-kue-tart.png'),
-                                };
                                 $isActiveCategory = request('category_id') == $category->id;
                             @endphp
                             <a href="{{ $isActiveCategory ? route('staff.produk.index') : route('staff.produk.index', ['category_id' => $category->id]) }}"
                                class="flex items-center justify-between p-2.5 rounded-xl border {{ $isActiveCategory ? 'border-[#6B0F1A] bg-rose-50/60 font-semibold' : 'border-stone-100 hover:border-stone-200 hover:bg-stone-50/60' }} transition-all group">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-xl overflow-hidden bg-white p-1 border border-stone-100 shrink-0 flex items-center justify-center">
-                                        <img src="{{ $catImg }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-contain">
+                                    <div class="w-9 h-9 rounded-xl overflow-hidden bg-[#FAF2EE] border border-stone-100 shrink-0 flex items-center justify-center">
+                                        @if ($category->foto_url)
+                                            <img src="{{ $category->foto_url }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-cover">
+                                        @else
+                                            <div class="w-full h-full p-1 flex items-center justify-center">
+                                                <x-category-icon :category="$category" class="w-full h-full" />
+                                            </div>
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="text-xs font-semibold text-stone-800 group-hover:text-[#6B0F1A] transition-colors">

@@ -70,7 +70,7 @@ class AdminProductController extends PanelController
         }
 
         $products = $query->paginate(8)->withQueryString();
-        $categories = Category::withCount([
+        $categories = Category::with('products')->withCount([
             'products',
             'products as trashed_products_count' => fn ($query) => $query->onlyTrashed(),
         ])->get();
