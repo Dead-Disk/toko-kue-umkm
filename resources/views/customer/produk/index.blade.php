@@ -371,13 +371,20 @@
 
                         {{-- Cake Title --}}
                         @if ($isReady)
-                            <a href="{{ route('customer.produk.show', $item) }}" class="block font-bold text-gray-800 text-sm sm:text-base lg:text-lg leading-snug line-clamp-2 hover:text-[#6B0F1A] transition">
+                            <a href="{{ route('customer.produk.show', $item) }}" class="block font-bold text-gray-800 text-sm sm:text-base lg:text-lg leading-snug line-clamp-1 hover:text-[#6B0F1A] transition" title="{{ $item->nama_kue }}">
                                 {{ $item->nama_kue }}
                             </a>
                         @else
-                            <span class="block font-bold text-gray-700 text-sm sm:text-base lg:text-lg leading-snug line-clamp-2">
+                            <span class="block font-bold text-gray-700 text-sm sm:text-base lg:text-lg leading-snug line-clamp-1" title="{{ $item->nama_kue }}">
                                 {{ $item->nama_kue }}
                             </span>
+                        @endif
+
+                        {{-- Short Description --}}
+                        @if ($item->deskripsi)
+                            <p class="text-[11px] sm:text-xs text-stone-500 font-normal line-clamp-1 mt-0.5" title="{{ $item->deskripsi }}">
+                                {{ Str::limit($item->deskripsi, 60) }}
+                            </p>
                         @endif
                     </div>
 

@@ -286,10 +286,19 @@
                                         </td>
 
                                         <!-- Nama Produk -->
-                                        <td class="py-3 px-4 font-bold text-stone-800">
-                                            <span class="block truncate max-w-[180px] sm:max-w-xs" title="{{ $product->nama_kue }}">
+                                        <td class="py-3 px-4">
+                                            <span class="block font-bold text-stone-800 truncate max-w-[180px] sm:max-w-xs" title="{{ $product->nama_kue }}">
                                                 {{ $product->nama_kue }}
                                             </span>
+                                            @if ($product->deskripsi)
+                                                <p class="text-[11px] text-stone-500 font-normal line-clamp-1 max-w-[180px] sm:max-w-xs mt-0.5 leading-tight" title="{{ $product->deskripsi }}">
+                                                    {{ Str::limit($product->deskripsi, 60) }}
+                                                </p>
+                                            @else
+                                                <p class="text-[11px] text-stone-400 italic font-normal line-clamp-1 max-w-[180px] sm:max-w-xs mt-0.5 leading-tight">
+                                                    Tidak ada deskripsi
+                                                </p>
+                                            @endif
                                             @if ($showTrashed)
                                                 <span class="inline-block mt-1 px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-semibold"
                                                       title="Dihapus {{ $product->deleted_at?->format('d M Y H:i') }}">

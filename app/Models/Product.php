@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'category_id',
@@ -36,7 +37,15 @@ class Product extends Model
      *
      * @var list<string>
      */
-    protected $appends = ['foto_url'];
+    protected $appends = ['foto_url', 'short_deskripsi'];
+
+    /**
+     * Ringkasan deskripsi singkat (maksimal 60 karakter) untuk tabel dan katalog.
+     */
+    public function getShortDeskripsiAttribute(): string
+    {
+        return Str::limit($this->deskripsi ?? '', 60);
+    }
 
     /**
      * URL publik lengkap untuk foto produk dengan fallback aman.

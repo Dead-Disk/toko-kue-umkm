@@ -155,11 +155,13 @@
                             <a href="{{ route('customer.produk.show', $produk) }}" class="block font-semibold text-[11px] sm:text-xs lg:text-sm xl:text-base text-gray-900 group-hover:text-[#6B0F1A] transition leading-tight line-clamp-1" title="{{ $produk->nama_kue }}">
                                 {{ $produk->nama_kue }}
                             </a>
-                            <p class="text-[9px] sm:text-[10px] lg:text-xs text-gray-500 mt-0.5 sm:mt-1 line-clamp-1">
-                                {{ $produk->category?->nama_kategori ?? 'Kue Pilihan' }}
-                            </p>
+                            @if ($produk->deskripsi)
+                                <p class="text-[9px] sm:text-[10px] lg:text-xs text-stone-500 line-clamp-1 mt-0.5 leading-tight" title="{{ $produk->deskripsi }}">
+                                    {{ Str::limit($produk->deskripsi, 50) }}
+                                </p>
+                            @endif
                             <p class="text-[9px] sm:text-[10px] lg:text-xs text-gray-400 mt-0.5">
-                                Stok: {{ $produk->stok }}
+                                {{ $produk->category?->nama_kategori ?? 'Kue Pilihan' }} • Stok: {{ $produk->stok }}
                             </p>
                         </div>
 

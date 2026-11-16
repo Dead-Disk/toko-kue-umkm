@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AdminProductTest extends TestCase
@@ -18,12 +19,16 @@ class AdminProductTest extends TestCase
     public function test_index_lists_all_products(): void
     {
         $seller = User::factory()->create();
-        Product::factory()->create(['nama_kue' => 'Kue Lapis Legit']);
+        Product::factory()->create([
+            'nama_kue' => 'Kue Lapis Legit',
+            'deskripsi' => 'Kue lapis legit dengan aroma rempah istimewa dan tekstur yang lembut.',
+        ]);
 
         $response = $this->actingAs($seller)->get(route('admin.produk.index'));
 
         $response->assertOk();
         $response->assertSee('Kue Lapis Legit');
+        $response->assertSee(Str::limit('Kue lapis legit dengan aroma rempah istimewa dan tekstur yang lembut.', 60));
         $response->assertSee('Tambah Produk');
     }
 
