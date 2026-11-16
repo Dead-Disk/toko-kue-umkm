@@ -44,7 +44,11 @@ class Product extends Model
     public function getFotoUrlAttribute(): string
     {
         if ($this->foto) {
-            if (Storage::disk('public')->exists($this->foto) || file_exists(public_path('storage/'.$this->foto))) {
+            if (Storage::disk('public')->exists($this->foto)) {
+                return route('product-images.show', ['path' => $this->foto]);
+            }
+
+            if (file_exists(public_path('storage/'.$this->foto))) {
                 return asset('storage/'.$this->foto);
             }
 
