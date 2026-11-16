@@ -5,25 +5,23 @@
 @endphp
 
 <!-- Sidebar Desktop -->
-<aside class="w-64 bg-[#4D626C] text-stone-200 flex flex-col justify-between shrink-0 min-h-screen select-none transition-all">
-    <div>
-        <!-- Brand Header -->
-        <div class="px-6 py-6 border-b border-white/10 flex items-center gap-3">
-            <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-8 w-auto brightness-0 invert drop-shadow-sm">
-            <div>
-                <span class="block text-white font-bold text-lg tracking-tight leading-none">PANEL STAF</span>
-                <span class="text-[10px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>
-            </div>
+<aside class="w-64 bg-[#4D626C] text-stone-200 flex flex-col shrink-0 h-full max-h-screen overflow-y-auto overflow-x-hidden sidebar-scrollbar select-none transition-all">
+    <!-- Brand Header -->
+    <div class="px-6 py-6 border-b border-white/10 flex items-center gap-3 sticky top-0 bg-[#4D626C] z-10 shrink-0">
+        <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-8 w-auto brightness-0 invert drop-shadow-sm">
+        <div>
+            <span class="block text-white font-bold text-lg tracking-tight leading-none">PANEL STAF</span>
+            <span class="text-[10px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>
         </div>
-
-        <!-- Navigation Menu -->
-        <nav class="p-4 space-y-1.5">
-            @include('staff.partials.navigation', ['active' => $active])
-        </nav>
     </div>
 
+    <!-- Navigation Menu -->
+    <nav class="p-4 space-y-1.5 flex-1">
+        @include('staff.partials.navigation', ['active' => $active])
+    </nav>
+
     <!-- Bottom Actions & User Profile -->
-    <div class="p-4 border-t border-white/10 space-y-3">
+    <div class="p-4 border-t border-white/10 space-y-3 mt-auto shrink-0">
         <!-- Ke Web Pembeli -->
         <a href="{{ route('customer.index') }}" target="_blank"
            class="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-stone-200 text-xs font-medium transition-colors">
