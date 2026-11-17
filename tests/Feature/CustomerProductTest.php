@@ -87,6 +87,37 @@ class CustomerProductTest extends TestCase
         $response->assertDontSee(route('customer.produk.show', $habis), false);
     }
 
+    public function test_catalog_card_shows_category_label_and_description_fallback(): void
+    {
+        $category = Category::factory()->create(['nama_kategori' => 'Kue Tart']);
+        Product::factory()->create([
+            'nama_kue' => 'Tart Karakter Princess',
+            'category_id' => $category->id,
+            'deskripsi' => null,
+        ]);
+
+        $response = $this->get(route('customer.produk.index'));
+
+        $response->assertOk();
+        $response->assertSee('Tart Karakter Princess');
+        $response->assertSee('title="Kue Tart"', false);
+        $response->assertSee('Tidak ada deskripsi');
+    }
+
+    public function test_catalog_card_shows_the_product_description_when_available(): void
+    {
+        Product::factory()->create([
+            'nama_kue' => 'Tart Cokelat',
+            'deskripsi' => 'Cokelat Belgia dengan krim lembut.',
+        ]);
+
+        $response = $this->get(route('customer.produk.index'));
+
+        $response->assertOk();
+        $response->assertSee('Cokelat Belgia dengan krim lembut.');
+        $response->assertDontSee('Tidak ada deskripsi');
+    }
+
     public function test_show_displays_product_detail_and_order_form(): void
     {
         $product = Product::factory()->create([
