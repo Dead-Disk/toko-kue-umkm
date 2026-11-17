@@ -64,15 +64,10 @@
                     </div>
                 </div>
 
-                {{-- Right Hero Cake Image with Floating Badges --}}
+                {{-- Right Hero Cake Image --}}
                 <div class="col-span-5 lg:col-span-6 relative flex items-center justify-center">
-                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-[320px] xl:max-w-[380px] aspect-square rounded-2xl lg:rounded-3xl overflow-hidden shadow-xs lg:shadow-md bg-white/50 p-0.5 lg:p-1.5">
-                        <img src="{{ asset('images/hero-strawberry-cake.png') }}" alt="Strawberry Cake Spesial Nak Mbarep" class="w-full h-full object-cover rounded-xl lg:rounded-2xl">
-
-                        {{-- Floating Badge Top Right --}}
-                        <div class="absolute -top-1 -right-1 lg:top-2 lg:right-2 bg-white/95 border border-[#DE9DA7] text-[#6B0F1A] text-[8px] sm:text-[9px] lg:text-xs px-1.5 py-0.5 lg:px-3 lg:py-1 rounded-full font-semibold shadow-2xs lg:shadow-sm">
-                            Rasa Lezat Kualitas Terbaik Selalu ♡
-                        </div>
+                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-[320px] xl:max-w-[380px]">
+                        <img src="{{ asset('images/hero-new-banner.png') }}" alt="Strawberry Cake Spesial Nak Mbarep" class="block w-full h-auto object-contain">
                     </div>
                 </div>
             </div>
