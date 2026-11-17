@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\StatusStok;
+use App\Http\Controllers\Concerns\StoresBase64Images;
 use App\Models\ActivityLog;
 use App\Models\Category;
 use App\Models\Product;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminProductController extends PanelController
 {
+    use StoresBase64Images;
+
     /**
      * Daftar semua produk kue.
      */
@@ -101,7 +104,7 @@ class AdminProductController extends PanelController
         if ($request->hasFile('foto')) {
             $data['foto'] = $request->file('foto')->store('products', 'public');
         } elseif ($request->filled('cropped_foto_base64')) {
-            $data['foto'] = $this->saveBase64Foto((string) $request->input('cropped_foto_base64'));
+            $data['foto'] = $this->storeBase64Image((string) $request->input('cropped_foto_base64'), 'products');
         } else {
             unset($data['foto']);
         }
@@ -141,7 +144,7 @@ class AdminProductController extends PanelController
             $this->deleteFoto($product);
             $data['foto'] = $request->file('foto')->store('products', 'public');
         } elseif ($request->filled('cropped_foto_base64')) {
-            $savedFoto = $this->saveBase64Foto((string) $request->input('cropped_foto_base64'));
+            $savedFoto = $this->storeBase64Image((string) $request->input('cropped_foto_base64'), 'products');
             if ($savedFoto) {
                 $this->deleteFoto($product);
                 $data['foto'] = $savedFoto;
@@ -205,28 +208,6 @@ class AdminProductController extends PanelController
             'foto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'cropped_foto_base64' => ['nullable', 'string'],
         ];
-    }
-
-    /**
-     * Simpan gambar dari base64 data URL ke disk public.
-     */
-    private function saveBase64Foto(string $base64Data): ?string
-    {
-        if (! preg_match('/^data:image\/(jpeg|png|webp|jpg);base64,/', $base64Data, $matches)) {
-            return null;
-        }
-
-        $rawImage = base64_decode(substr($base64Data, strpos($base64Data, ',') + 1));
-        if ($rawImage === false) {
-            return null;
-        }
-
-        $ext = ($matches[1] === 'jpeg') ? 'jpg' : $matches[1];
-        $filename = 'products/'.Str::random(40).'.'.$ext;
-
-        Storage::disk('public')->put($filename, $rawImage);
-
-        return $filename;
     }
 
     /**

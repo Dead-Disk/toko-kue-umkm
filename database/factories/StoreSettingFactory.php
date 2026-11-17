@@ -22,11 +22,22 @@ class StoreSettingFactory extends Factory
             'store_description' => 'Kue rumahan dibuat segar setiap hari.',
             'store_address' => fake()->address(),
             'store_phone' => fake()->numerify('08##########'),
+            'logo_path' => null,
             'bank_name' => 'BNI',
             'bank_account_number' => '1234567890',
             'bank_account_holder' => 'Toko Kue',
             'qris_image_path' => null,
         ];
+    }
+
+    /**
+     * Toko dengan logo kustom yang sudah diunggah.
+     */
+    public function withLogo(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'logo_path' => 'logo/logo-toko.png',
+        ]);
     }
 
     /**

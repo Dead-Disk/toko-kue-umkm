@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
     'store_description',
     'store_address',
     'store_phone',
+    'logo_path',
     'store_email',
     'instagram_url',
     'facebook_url',
@@ -34,6 +35,24 @@ class StoreSetting extends Model
     public static function current(): self
     {
         return static::query()->firstOrNew([]);
+    }
+
+    /**
+     * Logo toko dianggap siap bila admin sudah mengunggahnya.
+     */
+    public function hasLogo(): bool
+    {
+        return filled($this->logo_path);
+    }
+
+    /**
+     * URL logo toko dengan fallback ke logo bawaan aplikasi.
+     */
+    public function logoUrl(): string
+    {
+        return $this->hasLogo()
+            ? asset('storage/'.$this->logo_path)
+            : asset('images/logo-nav.png');
     }
 
     /**

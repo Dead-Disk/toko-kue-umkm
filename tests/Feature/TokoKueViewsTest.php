@@ -68,6 +68,121 @@ class TokoKueViewsTest extends TestCase
         $response->assertSee(route('customer.page', 'tentang-kami'), false);
     }
 
+    public function test_navbar_renders_the_uploaded_store_logo(): void
+    {
+        StoreSetting::factory()->withLogo()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => 'logo/logo-toko.png',
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('storage/logo/logo-toko.png').'" alt="Logo Kue Nyonya"',
+            false
+        );
+    }
+
+    public function test_navbar_falls_back_to_the_default_logo_when_none_is_uploaded(): void
+    {
+        StoreSetting::factory()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => null,
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('images/logo-nav.png').'" alt="Logo Kue Nyonya"',
+            false
+        );
+    }
+
+    public function test_catalog_navbar_renders_the_uploaded_logo_without_explicit_controller_data(): void
+    {
+        StoreSetting::factory()->withLogo()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => 'logo/logo-toko.png',
+        ]);
+
+        $response = $this->get(route('customer.produk.index'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('storage/logo/logo-toko.png').'" alt="Logo Kue Nyonya"',
+            false
+        );
+    }
+
+    public function test_admin_layout_renders_the_uploaded_store_logo(): void
+    {
+        StoreSetting::factory()->withLogo()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => 'logo/logo-toko.png',
+        ]);
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('storage/logo/logo-toko.png').'" alt="Logo Kue Nyonya"',
+            false
+        );
+    }
+
+    public function test_admin_layout_falls_back_to_the_default_logo_when_none_is_uploaded(): void
+    {
+        StoreSetting::factory()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => null,
+        ]);
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('images/logo-nav.png').'" alt="Logo Kue Nyonya"',
+            false
+        );
+    }
+
+    public function test_staff_layout_renders_the_uploaded_store_logo(): void
+    {
+        StoreSetting::factory()->withLogo()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => 'logo/logo-toko.png',
+        ]);
+        $staff = User::factory()->staff()->create();
+
+        $response = $this->actingAs($staff)->get(route('staff.dashboard'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('storage/logo/logo-toko.png').'" alt="Logo Kue Nyonya"',
+            false
+        );
+    }
+
+    public function test_store_logo_has_an_onerror_fallback_to_the_default_image(): void
+    {
+        StoreSetting::factory()->withLogo()->create([
+            'store_name' => 'Kue Nyonya',
+            'logo_path' => 'logo/logo-toko.png',
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee(
+            "this.onerror=null;this.src='".asset('images/logo-nav.png')."';",
+            false
+        );
+    }
+
     public function test_landing_page_hides_categories_without_active_products(): void
     {
         $kategoriAktif = Category::factory()->create(['nama_kategori' => 'Kategori Aktif']);
