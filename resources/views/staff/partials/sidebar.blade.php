@@ -8,7 +8,7 @@
 <aside class="w-64 bg-[#4D626C] text-stone-200 flex flex-col shrink-0 h-full max-h-screen overflow-y-auto overflow-x-hidden sidebar-scrollbar select-none transition-all">
     <!-- Brand Header -->
     <div class="px-6 py-6 border-b border-white/10 flex items-center gap-3 sticky top-0 bg-[#4D626C] z-10 shrink-0">
-        <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-8 w-auto brightness-0 invert drop-shadow-sm">
+        <x-store-logo class="h-8 w-8" />
         <div>
             <span class="block text-white font-bold text-lg tracking-tight leading-none">PANEL STAF</span>
             <span class="text-[10px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>

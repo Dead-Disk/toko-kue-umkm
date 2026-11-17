@@ -59,6 +59,8 @@ class AdminProductTest extends TestCase
         $response->assertOk();
         $response->assertSee('Simpan Produk');
         $response->assertSee('Kue Basah');
+        $response->assertSee('id="createCropBtn"', false);
+        $response->assertSee('name="cropped_foto_base64"', false);
     }
 
     public function test_store_creates_product_with_uploaded_photo(): void
@@ -160,6 +162,8 @@ class AdminProductTest extends TestCase
         $response->assertOk();
         $response->assertSee('Tart Buah');
         $response->assertSee('Perbarui Produk');
+        $response->assertSee('id="editCropBtn"', false);
+        $response->assertSee('name="cropped_foto_base64"', false);
     }
 
     public function test_update_changes_product_data_and_stock_status(): void

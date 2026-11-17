@@ -1,7 +1,7 @@
 /**
- * Module: Product Image Cropper & Position Adjuster
+ * Module: Image Cropper & Position Adjuster
  * Memberikan antarmuka visual untuk memotong (crop 1:1) dan mengatur posisi
- * foto produk sebelum formulir disubmit ke server.
+ * foto produk / logo toko sebelum formulir disubmit ke server.
  * Mendukung Cropper.js jika tersedia, atau fallback otomatis ke interactive HTML5 canvas.
  */
 
@@ -30,12 +30,21 @@ export function initProductImageCropper() {
         cropBtnId: 'modalCropBtn',
         hiddenBase64Id: 'modalCroppedBase64',
     });
+
+    // Logo toko pada halaman pengaturan admin
+    bindCropperInstance({
+        fileInputId: 'logo',
+        previewImgId: 'logoPreviewImg',
+        cropBtnId: 'logoCropBtn',
+        hiddenBase64Id: 'logoCroppedBase64',
+        defaultFileName: 'logo-toko.jpg',
+    });
 }
 
 /**
  * Menyambungkan input file, tombol crop, preview img, dan hidden base64 ke engine cropper
  */
-function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase64Id }) {
+function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase64Id, defaultFileName = 'gambar.jpg' }) {
     const fileInput = document.getElementById(fileInputId);
     const previewImg = document.getElementById(previewImgId);
     const cropBtn = document.getElementById(cropBtnId);
@@ -45,7 +54,7 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
 
     // Simpan data gambar asli (dataURL atau file) untuk re-crop
     let activeImageSource = null;
-    let originalFileName = 'product.jpg';
+    let originalFileName = defaultFileName;
 
     fileInput.addEventListener('change', function () {
         const file = this.files && this.files[0];
@@ -53,10 +62,23 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
 
         if (!file.type.startsWith('image/')) {
             alert('Silakan pilih file gambar (JPG, PNG, WEBP).');
+            this.value = '';
             return;
         }
 
-        originalFileName = file.name;
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran gambar maksimal 2 MB. Silakan pilih file yang lebih kecil.');
+            this.value = '';
+            return;
+        }
+
+        originalFileName = file.name || defaultFileName;
+
+        // Tampilkan tombol crop sejak file dipilih agar admin bisa membuka ulang bila batal.
+        if (cropBtn) {
+            cropBtn.classList.remove('hidden');
+        }
+
         const reader = new FileReader();
         reader.onload = function (e) {
             activeImageSource = e.target.result;
@@ -81,8 +103,16 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
 
     if (cropBtn) {
         cropBtn.addEventListener('click', function () {
-            // Gunakan gambar yang sedang aktif, atau ambil src dari previewImg
-            const src = activeImageSource || (previewImg && !previewImg.classList.contains('hidden') ? previewImg.src : null);
+            // Prioritaskan file yang baru dipilih; jika tidak ada, gunakan foto yang tampil di preview.
+            const hasPendingFile = fileInput.files && fileInput.files.length > 0;
+            const hasVisiblePreview = previewImg
+                && !previewImg.classList.contains('hidden')
+                && previewImg.getAttribute('src');
+
+            const src = hasPendingFile
+                ? activeImageSource
+                : (hasVisiblePreview ? previewImg.src : null);
+
             if (!src || src.includes('rec-img') || src.includes('placeholder')) {
                 // Jika belum ada foto, trigger klik input file
                 fileInput.click();
@@ -172,7 +202,7 @@ function ensureCropperModal() {
                     </div>
                     <div>
                         <h3 class="text-sm sm:text-base font-bold text-[#5A121A]">Sesuaikan Posisi & Crop Foto</h3>
-                        <p class="text-[11px] text-stone-500">Geser, perbesar, dan posisikan foto agar kue terlihat presisi di thumbnail katalog.</p>
+                        <p class="text-[11px] text-stone-500">Geser, perbesar, dan posisikan foto agar tampil presisi di katalog produk maupun navbar toko.</p>
                     </div>
                 </div>
                 <button type="button" id="closeCropModalBtn" class="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg hover:bg-stone-200/60 transition-colors">
@@ -192,7 +222,7 @@ function ensureCropperModal() {
 
                     <!-- Guiding Frame Overlay for Canvas mode -->
                     <div id="canvasFrameOverlay" class="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div class="w-56 h-56 sm:w-64 sm:h-64 border-2 border-dashed border-white/90 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.55)] relative">
+                        <div id="cropFrameGuide" class="w-56 h-56 sm:w-64 sm:h-64 border-2 border-dashed border-white/90 rounded-2xl shadow-[0_0_0_9999px_rgba(0,0,0,0.55)] relative">
                             <!-- Rule of Thirds Grid -->
                             <div class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
                                 <div class="border-r border-b border-white/25"></div>
@@ -252,7 +282,7 @@ function ensureCropperModal() {
                         </div>
                         <div class="text-[11px] text-stone-500 leading-tight">
                             <p class="font-bold text-stone-700">Hasil Thumbnail</p>
-                            <p class="text-[10px] text-stone-400 mt-0.5">Tampilan yang akan dilihat pembeli di katalog produk.</p>
+                            <p class="text-[10px] text-stone-400 mt-0.5">Tampilan yang akan dilihat pembeli di katalog & navbar toko.</p>
                         </div>
                     </div>
                 </div>
@@ -464,12 +494,14 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
     canvas.width = rect.width || 600;
     canvas.height = rect.height || 320;
 
-    const cropBoxSize = Math.min(canvas.width, canvas.height) * 0.75;
-    const cropX = (canvas.width - cropBoxSize) / 2;
-    const cropY = (canvas.height - cropBoxSize) / 2;
+    // Ukur frame panduan yang terlihat agar hasil crop sama persis dengan preview.
+    const frameEl = document.getElementById('cropFrameGuide');
+    const frameRect = frameEl ? frameEl.getBoundingClientRect() : null;
+    const cropBoxSize = frameRect ? frameRect.width : Math.min(canvas.width, canvas.height) * 0.75;
 
     const state = {
         img,
+        fitScale: Math.max(cropBoxSize / img.width, cropBoxSize / img.height) * 1.1,
         scale: 1,
         offsetX: 0,
         offsetY: 0,
@@ -477,8 +509,6 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
         isDragging: false,
         startX: 0,
         startY: 0,
-        cropX,
-        cropY,
         cropSize: cropBoxSize,
         reset: function () {
             this.scale = 1;
@@ -498,6 +528,10 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
             const oCtx = out.getContext('2d');
             oCtx.imageSmoothingQuality = 'high';
 
+            // Latar putih agar area kosong hasil rotasi/zoom-out tidak menjadi hitam pada JPEG.
+            oCtx.fillStyle = '#ffffff';
+            oCtx.fillRect(0, 0, targetW, targetH);
+
             // Skala dari crop frame di layar ke target output
             const scaleToOut = targetW / this.cropSize;
 
@@ -506,8 +540,8 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
             oCtx.rotate((this.rotation * Math.PI) / 180);
 
             // Perhitungan posisi relatif gambar
-            const effectiveW = this.img.width * this.scale * scaleToOut;
-            const effectiveH = this.img.height * this.scale * scaleToOut;
+            const effectiveW = this.img.width * this.fitScale * this.scale * scaleToOut;
+            const effectiveH = this.img.height * this.fitScale * this.scale * scaleToOut;
             const drawX = -effectiveW / 2 + this.offsetX * scaleToOut;
             const drawY = -effectiveH / 2 + this.offsetY * scaleToOut;
 
@@ -517,10 +551,6 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
             return out;
         },
     };
-
-    // Hitung inisial fit agar gambar menutupi kotak crop
-    const initialRatio = Math.max(cropBoxSize / img.width, cropBoxSize / img.height);
-    state.scale = initialRatio * 1.1;
 
     // Pointer events untuk pan / drag
     canvas.onpointerdown = (e) => {
@@ -547,7 +577,7 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
     canvas.onwheel = (e) => {
         e.preventDefault();
         const delta = e.deltaY < 0 ? 0.08 : -0.08;
-        state.scale = Math.min(3.5, Math.max(0.4, state.scale + delta));
+        state.scale = Math.min(3, Math.max(0.5, state.scale + delta));
         const zoomRange = document.getElementById('cropZoomRange');
         const zoomText = document.getElementById('zoomLevelText');
         if (zoomRange) zoomRange.value = state.scale;
@@ -567,8 +597,8 @@ function drawWorkspace(ctx, canvas, state) {
     ctx.translate(canvas.width / 2 + state.offsetX, canvas.height / 2 + state.offsetY);
     ctx.rotate((state.rotation * Math.PI) / 180);
 
-    const drawW = state.img.width * state.scale;
-    const drawH = state.img.height * state.scale;
+    const drawW = state.img.width * state.fitScale * state.scale;
+    const drawH = state.img.height * state.fitScale * state.scale;
     ctx.drawImage(state.img, -drawW / 2, -drawH / 2, drawW, drawH);
     ctx.restore();
 }
@@ -586,8 +616,8 @@ function drawPreview(previewCanvas, state) {
     pCtx.translate(80, 80);
     pCtx.rotate((state.rotation * Math.PI) / 180);
 
-    const effectiveW = state.img.width * state.scale * scaleToOut;
-    const effectiveH = state.img.height * state.scale * scaleToOut;
+    const effectiveW = state.img.width * state.fitScale * state.scale * scaleToOut;
+    const effectiveH = state.img.height * state.fitScale * state.scale * scaleToOut;
     const drawX = -effectiveW / 2 + state.offsetX * scaleToOut;
     const drawY = -effectiveH / 2 + state.offsetY * scaleToOut;
 

@@ -42,7 +42,7 @@
                 <div class="col-span-7 lg:col-span-6 space-y-2 sm:space-y-3 lg:space-y-4 xl:space-y-5">
                     {{-- Mini Brand Tag --}}
                     <div class="inline-flex items-center gap-1.5 lg:gap-2 text-[#6B0F1A]">
-                        <img src="{{ asset('images/logo-nav.png') }}" alt="" class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6 rounded-full object-cover">
+                        <x-store-logo class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                         <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm tracking-tight">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
                         <span class="text-[9px] sm:text-[10px] lg:text-xs text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
                     </div>

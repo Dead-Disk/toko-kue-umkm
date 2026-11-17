@@ -1,5 +1,13 @@
 @extends('admin.layouts.app', ['title' => 'Pengaturan Toko', 'active' => 'pengaturan'])
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+@endpush
+
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+@endpush
+
 @section('content')
     <!-- Top Header & Breadcrumb -->
     <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -13,7 +21,7 @@
                 Pengaturan Toko
             </h1>
             <p class="text-stone-500 text-xs sm:text-sm mt-1">
-                Kelola profil toko, kontak, rekening bank, dan barcode pembayaran QRIS Toko Kue Nak Mbarep.
+                Kelola logo, profil toko, kontak, rekening bank, dan barcode pembayaran QRIS Toko Kue Nak Mbarep.
             </p>
         </div>
 
@@ -339,8 +347,98 @@
 
             </div>
 
-            <!-- Right Column: QRIS & Quick Links (5 cols) -->
+            <!-- Right Column: Logo, QRIS & Quick Links (5 cols) -->
             <div class="lg:col-span-5 space-y-6">
+
+                <!-- Card: Logo Toko -->
+                <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-5 sm:p-7">
+                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-stone-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-[#5A121A] tracking-tight">Logo Toko</h2>
+                                <p class="text-xs text-stone-500">Tampil di navbar pembeli serta top bar panel admin & staf</p>
+                            </div>
+                        </div>
+
+                        @if ($setting->hasLogo())
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+                                Kustom
+                            </span>
+                        @endif
+                    </div>
+
+                    <!-- Current Logo Display -->
+                    <div class="mb-5 p-4 rounded-xl bg-stone-50 border border-stone-200/80 text-center">
+                        <p class="text-xs font-semibold text-stone-700 mb-3">
+                            {{ $setting->hasLogo() ? 'Logo Saat Ini:' : 'Logo Bawaan (Belum Ada Logo Kustom):' }}
+                        </p>
+                        <div class="inline-block bg-white p-3 rounded-full border border-stone-200 shadow-sm">
+                            <img id="logoPreviewImg"
+                                 src="{{ $setting->logoUrl() }}"
+                                 alt="Logo {{ $setting->store_name ?: 'Toko' }}"
+                                 class="w-20 h-20 rounded-full object-cover">
+                        </div>
+
+                        @if ($setting->hasLogo())
+                            <div class="mt-4 pt-3 border-t border-stone-200/80">
+                                <label class="inline-flex items-center gap-2 text-xs font-semibold text-rose-600 hover:text-rose-700 cursor-pointer">
+                                    <input type="checkbox"
+                                           name="hapus_logo"
+                                           value="1"
+                                           class="rounded border-stone-300 text-rose-600 focus:ring-rose-500">
+                                    <span>Hapus logo dan gunakan logo bawaan</span>
+                                </label>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Upload Input Area -->
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <label for="logo" class="block text-xs font-bold text-stone-700">
+                                {{ $setting->hasLogo() ? 'Ganti Logo Toko' : 'Unggah Logo Toko' }}
+                            </label>
+                            <button type="button"
+                                    id="logoCropBtn"
+                                    class="{{ $setting->hasLogo() ? '' : 'hidden' }} inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg border border-[#6B0F1A]/20 bg-rose-50 hover:bg-rose-100 text-[#6B0F1A] cursor-pointer shadow-xs transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3v14a2 2 0 002 2h14M17 21v-4a2 2 0 00-2-2H3"/>
+                                </svg>
+                                <span>Atur Posisi & Crop</span>
+                            </button>
+                        </div>
+
+                        <div class="relative border-2 border-dashed border-stone-200 hover:border-[#6B0F1A]/40 rounded-xl p-4 text-center transition-colors bg-stone-50/50">
+                            <input type="file"
+                                   id="logo"
+                                   name="logo"
+                                   accept="image/jpeg,image/png,image/webp"
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <input type="hidden"
+                                   name="cropped_logo_base64"
+                                   id="logoCroppedBase64">
+
+                            <div class="space-y-1">
+                                <div class="w-10 h-10 rounded-full bg-rose-50 text-[#6B0F1A] mx-auto flex items-center justify-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-semibold text-stone-700">
+                                    Klik atau seret file gambar ke sini
+                                </p>
+                                <p class="text-[11px] text-stone-400">
+                                    Format JPG, PNG, atau WEBP. Maksimal 2 MB. Setelah memilih file, jendela atur posisi & crop 1:1 akan terbuka otomatis.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Card 3: QRIS -->
                 <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-5 sm:p-7">

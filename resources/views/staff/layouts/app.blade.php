@@ -29,7 +29,7 @@
                 </svg>
             </button>
             <div class="flex items-center gap-2">
-                <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-6 w-auto brightness-0 invert">
+                <x-store-logo class="h-6 w-6" />
                 <div class="leading-tight">
                     <span class="block font-bold text-sm tracking-tight">PANEL STAF</span>
                     <span class="block text-[9px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>
@@ -51,7 +51,7 @@
             <!-- Brand & Close Header -->
             <div class="px-5 py-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#4D626C] z-10 shrink-0">
                 <div class="flex items-center gap-2.5">
-                    <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-7 w-auto brightness-0 invert">
+                    <x-store-logo class="h-7 w-7" />
                     <div class="leading-tight">
                         <span class="block text-white font-bold text-base">PANEL STAF</span>
                         <span class="block text-[10px] text-stone-300 font-medium tracking-wider uppercase">Nak Mbarep</span>

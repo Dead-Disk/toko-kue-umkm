@@ -1,5 +1,6 @@
 @php
-    $storeName = $storeSetting->store_name ?? \App\Models\StoreSetting::current()?->store_name ?? 'Nak Mbarep';
+    $storeSetting = $storeSetting ?? \App\Models\StoreSetting::current();
+    $storeName = $storeSetting->store_name ?? 'Nak Mbarep';
     $cartCount = array_sum(array_column(session('cart', []), 'quantity'));
 @endphp
 
@@ -8,7 +9,7 @@
     <div id="navbar-main-content" class="max-w-md md:max-w-2xl lg:max-w-5xl xl:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 h-13 sm:h-14 lg:h-16 flex items-center justify-between flex-nowrap gap-1.5 sm:gap-4 relative">
         {{-- Brand / Logo (Kiri) --}}
         <a href="{{ route('customer.index') }}" class="flex items-center gap-1 sm:gap-2 lg:gap-2.5 shrink-0 min-w-0 group" title="{{ $storeName }}">
-            <img src="{{ asset('images/logo-nav.png') }}" alt="Logo {{ $storeName }}" class="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 rounded-full object-cover border border-white/30 shadow-xs shrink-0">
+            <x-store-logo class="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9" />
             <span class="font-serif font-bold text-xs sm:text-base md:text-lg lg:text-xl text-white tracking-wide group-hover:text-amber-100 transition truncate max-w-[70px] min-[360px]:max-w-[90px] sm:max-w-none">
                 {{ $storeName }}
             </span>

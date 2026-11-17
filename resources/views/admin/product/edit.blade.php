@@ -22,7 +22,7 @@
     <!-- Mobile Topbar (< lg) -->
     <header class="lg:hidden bg-[#4D626C] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-sm">
         <div class="flex items-center gap-2">
-            <img src="{{ asset('images/logo-nav.png') }}" alt="Nak Mbarep Logo" class="h-6 w-auto brightness-0 invert">
+            <x-store-logo class="h-6 w-6" />
             <span class="font-bold text-base tracking-tight">Nak Mbarep</span>
         </div>
         <a href="{{ route('admin.produk.index') }}" class="text-xs text-stone-200 hover:text-white">← Kembali</a>

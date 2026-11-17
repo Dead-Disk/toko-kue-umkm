@@ -21,6 +21,7 @@ class AdminStoreSettingTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Pengaturan Toko');
+        $response->assertSee('Logo Toko');
         $response->assertSee('Nama Bank');
         $response->assertSee('Nomor Rekening');
         $response->assertSee('Nama Pemilik Rekening');
@@ -28,6 +29,11 @@ class AdminStoreSettingTest extends TestCase
         $response->assertSee('Kontak & Akun Media Sosial', false);
         $response->assertSee('Link Akun Instagram');
         $response->assertSee('enctype="multipart/form-data"', false);
+        $response->assertSee('name="logo"', false);
+        $response->assertSee('name="cropped_logo_base64"', false);
+        $response->assertSee('id="logoCropBtn"', false);
+        $response->assertSee('Atur Posisi & Crop', false);
+        $response->assertSee('cropper.min.js', false);
         $response->assertSee('name="qris_image"', false);
     }
 
@@ -82,6 +88,153 @@ class AdminStoreSettingTest extends TestCase
 
         $this->assertDatabaseCount('store_settings', 1);
         $this->assertSame('Toko Kedua', StoreSetting::firstOrFail()->store_name);
+    }
+
+    public function test_admin_can_upload_a_logo(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'logo' => UploadedFile::fake()->create('logo.png', 10, 'image/png'),
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+
+        $this->assertNotNull($setting->logo_path);
+        $this->assertStringStartsWith('logo/', $setting->logo_path);
+        $this->assertTrue($setting->hasLogo());
+        Storage::disk('public')->assertExists($setting->logo_path);
+    }
+
+    public function test_admin_can_upload_a_logo_from_cropped_base64(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'cropped_logo_base64' => $base64,
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+
+        $this->assertNotNull($setting->logo_path);
+        $this->assertStringStartsWith('logo/', $setting->logo_path);
+        $this->assertStringEndsWith('.png', $setting->logo_path);
+        Storage::disk('public')->assertExists($setting->logo_path);
+    }
+
+    public function test_logo_uploaded_from_settings_is_rendered_in_the_customer_navbar(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $base64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'cropped_logo_base64' => $base64,
+        ])->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee(
+            'src="'.asset('storage/'.$setting->logo_path).'" alt="Logo Toko Kue"',
+            false
+        );
+    }
+
+    public function test_replacing_a_logo_from_cropped_base64_deletes_the_previous_file(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('logo/lama.png', 'gambar');
+        $admin = User::factory()->create();
+        StoreSetting::factory()->withLogo()->create(['logo_path' => 'logo/lama.png']);
+
+        $base64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'cropped_logo_base64' => $base64,
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+
+        $this->assertNotSame('logo/lama.png', $setting->logo_path);
+        $this->assertStringEndsWith('.jpg', $setting->logo_path);
+        Storage::disk('public')->assertMissing('logo/lama.png');
+        Storage::disk('public')->assertExists($setting->logo_path);
+    }
+
+    public function test_invalid_cropped_logo_base64_keeps_the_existing_logo(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('logo/lama.png', 'gambar');
+        $admin = User::factory()->create();
+        StoreSetting::factory()->withLogo()->create(['logo_path' => 'logo/lama.png']);
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'cropped_logo_base64' => 'data:image/png;base64,bukan-gambar',
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $this->assertSame('logo/lama.png', StoreSetting::firstOrFail()->logo_path);
+        Storage::disk('public')->assertExists('logo/lama.png');
+    }
+
+    public function test_uploading_a_new_logo_deletes_the_previous_file(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('logo/lama.png', 'gambar');
+        $admin = User::factory()->create();
+        StoreSetting::factory()->withLogo()->create(['logo_path' => 'logo/lama.png']);
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'logo' => UploadedFile::fake()->create('logo-baru.png', 10, 'image/png'),
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+
+        $this->assertNotSame('logo/lama.png', $setting->logo_path);
+        $this->assertStringStartsWith('logo/', $setting->logo_path);
+        Storage::disk('public')->assertMissing('logo/lama.png');
+        Storage::disk('public')->assertExists($setting->logo_path);
+    }
+
+    public function test_admin_can_remove_the_logo(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('logo/lama.png', 'gambar');
+        $admin = User::factory()->create();
+        StoreSetting::factory()->withLogo()->create(['logo_path' => 'logo/lama.png']);
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'hapus_logo' => '1',
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $this->assertNull(StoreSetting::firstOrFail()->logo_path);
+        Storage::disk('public')->assertMissing('logo/lama.png');
     }
 
     public function test_admin_can_upload_a_qris_image(): void
