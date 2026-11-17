@@ -329,6 +329,8 @@
             @forelse ($products as $item)
                 @php
                     $isReady = $item->status_stok === \App\Enums\StatusStok::Ready;
+                    $categoryName = $item->category?->nama_kategori ?? 'Umum';
+                    $hasDescription = filled($item->deskripsi);
                 @endphp
                 <div
                     class="product-card bg-white rounded-3xl p-3 sm:p-3.5 lg:p-4 xl:p-5 shadow-xs border border-[#F4E1D9] hover:shadow-md transition-all flex flex-col justify-between"
@@ -360,8 +362,13 @@
                                 @endif
                             @endif
 
+                            <span class="absolute top-2 left-2 z-10 block max-w-[60%] truncate rounded-md border border-[#DE9DA7] bg-rose-100 px-2 py-0.5 text-[9px] font-bold text-[#6B0F1A] shadow-xs pointer-events-none sm:px-2.5 sm:py-1 sm:text-[10px]"
+                                  title="{{ $categoryName }}">
+                                {{ $categoryName }}
+                            </span>
+
                             @unless ($isReady)
-                                <span class="absolute top-2 left-2 bg-[#6B0F1A]/90 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-xs">
+                                <span class="absolute top-2 right-2 bg-[#6B0F1A]/90 text-white text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full shadow-xs">
                                     Habis
                                 </span>
                             @endunless
@@ -379,11 +386,10 @@
                         @endif
 
                         {{-- Short Description --}}
-                        @if ($item->deskripsi)
-                            <p class="text-[11px] sm:text-xs text-stone-500 font-normal line-clamp-1 mt-0.5" title="{{ $item->deskripsi }}">
-                                {{ Str::limit($item->deskripsi, 60) }}
-                            </p>
-                        @endif
+                        <p class="text-[11px] sm:text-xs font-normal line-clamp-1 mt-0.5 {{ $hasDescription ? 'text-stone-500' : 'text-stone-400 italic' }}"
+                           title="{{ $hasDescription ? $item->deskripsi : 'Tidak ada deskripsi' }}">
+                            {{ $hasDescription ? Str::limit($item->deskripsi, 60) : 'Tidak ada deskripsi' }}
+                        </p>
                     </div>
 
                     {{-- Bottom Row: Price & Shopping Cart / Order Button --}}
