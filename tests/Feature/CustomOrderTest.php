@@ -49,6 +49,7 @@ class CustomOrderTest extends TestCase
             'jumlah' => 2,
             'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
             'metode_pembayaran' => MetodePembayaran::TransferBank->value,
+            'tanggal_ambil' => now()->addDay()->toDateString(),
         ], $overrides);
     }
 
@@ -151,6 +152,7 @@ class CustomOrderTest extends TestCase
             'jumlah',
             'opsi_pengiriman',
             'metode_pembayaran',
+            'tanggal_ambil',
         ]);
         $this->assertDatabaseCount('orders', 0);
     }
@@ -345,5 +347,66 @@ class CustomOrderTest extends TestCase
         $response->assertOk();
         $response->assertSee($order->kode_pesanan);
         $response->assertSee('Siti');
+    }
+
+    public function test_custom_form_shows_tanggal_ambil_input(): void
+    {
+        $this->cakeOption();
+
+        $response = $this->get(route('customer.custom.create'));
+
+        $response->assertOk();
+        $response->assertSee('name="tanggal_ambil"', false);
+        $response->assertSee('Tanggal Ambil');
+    }
+
+    public function test_custom_review_validates_required_tanggal_ambil(): void
+    {
+        $option = $this->cakeOption();
+
+        $response = $this->post(route('customer.custom.review'), $this->formData($option, [
+            'tanggal_ambil' => '',
+        ]));
+
+        $response->assertSessionHasErrors('tanggal_ambil');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_custom_review_rejects_tanggal_ambil_in_the_past(): void
+    {
+        $option = $this->cakeOption();
+
+        $response = $this->post(route('customer.custom.review'), $this->formData($option, [
+            'tanggal_ambil' => now()->subDay()->toDateString(),
+        ]));
+
+        $response->assertSessionHasErrors('tanggal_ambil');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_custom_order_saves_tanggal_ambil_and_shows_on_review_and_admin(): void
+    {
+        Storage::fake('local');
+        $seller = User::factory()->create();
+        $option = $this->cakeOption();
+        $pickupDate = now()->addDays(3)->toDateString();
+
+        $review = $this->post(route('customer.custom.review'), $this->formData($option, [
+            'tanggal_ambil' => $pickupDate,
+        ]));
+
+        $review->assertOk();
+        $review->assertSee('Tanggal Ambil');
+
+        $this->post(route('customer.custom.store'))->assertRedirect();
+
+        $order = Order::firstOrFail();
+
+        $this->assertNotNull($order->tanggal_ambil);
+        $this->assertSame($pickupDate, $order->tanggal_ambil->toDateString());
+
+        $adminResponse = $this->actingAs($seller)->get(route('admin.pesanan.index'));
+        $adminResponse->assertOk();
+        $adminResponse->assertSee($order->kode_pesanan);
     }
 }

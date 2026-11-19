@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'status',
     'catatan',
     'bukti_pembayaran',
+    'tanggal_ambil',
 ])]
 class Order extends Model
 {
@@ -47,6 +48,7 @@ class Order extends Model
             'metode_pembayaran' => MetodePembayaran::class,
             'status' => StatusPesanan::class,
             'total_harga' => 'integer',
+            'tanggal_ambil' => 'date',
         ];
     }
 
@@ -100,9 +102,14 @@ class Order extends Model
             "*Alamat:* {$this->alamat_lengkap}",
             "*Metode Pembayaran:* {$this->metode_pembayaran->label()}",
             "*Opsi Pengiriman:* {$this->opsi_pengiriman->label()}",
-            '',
-            '*Item Pesanan:*',
         ];
+
+        if ($this->tanggal_ambil) {
+            $baris[] = "*Tanggal Ambil:* {$this->tanggal_ambil->format('d/m/Y')}";
+        }
+
+        $baris[] = '';
+        $baris[] = '*Item Pesanan:*';
 
         foreach ($this->items as $nomor => $item) {
             $hargaSatuan = intdiv($item->subtotal, max($item->jumlah, 1));

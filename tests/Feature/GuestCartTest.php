@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -135,6 +136,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'cash',
         ]);
 
@@ -201,6 +203,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'transfer_bank',
             'catatan' => 'Tolong tulis "Selamat Ulang Tahun", potong 8 bagian',
             'bukti_pembayaran' => $this->paymentProof(),
@@ -245,6 +248,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'cash',
         ]);
 
@@ -305,6 +309,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'transfer_bank',
             'bukti_pembayaran' => $this->paymentProof(),
         ]);
@@ -356,6 +361,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'transfer_bank',
             'bukti_pembayaran' => $this->paymentProof(),
         ]);
@@ -382,6 +388,7 @@ class GuestCartTest extends TestCase
                 'alamat_lengkap' => 'Jl. Merdeka No. 1',
                 'nomor_wa' => '08123456789',
                 'opsi_pengiriman' => 'kurir_toko',
+                'tanggal_ambil' => now()->toDateString(),
                 'metode_pembayaran' => 'transfer_bank',
             ]);
 
@@ -402,6 +409,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'cash',
         ]);
 
@@ -421,6 +429,7 @@ class GuestCartTest extends TestCase
             'alamat_lengkap' => 'Jl. Merdeka No. 1',
             'nomor_wa' => '08123456789',
             'opsi_pengiriman' => 'kurir_toko',
+            'tanggal_ambil' => now()->toDateString(),
             'metode_pembayaran' => 'cash',
             'bukti_pembayaran' => UploadedFile::fake()->create('catatan.txt', 10, 'text/plain'),
         ]);
@@ -442,5 +451,99 @@ class GuestCartTest extends TestCase
         $response->assertSee('data-payment-proof', false);
         $response->assertSee('data-payment-cash-info', false);
         $response->assertSee('Pembayaran tunai dilakukan secara langsung di toko / saat penerimaan kue.');
+    }
+
+    public function test_checkout_form_shows_tanggal_ambil_input_field(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product));
+
+        $response = $this->get(route('customer.pesanan.review-cart'));
+
+        $response->assertOk();
+        $response->assertSee('Tanggal Ambil');
+        $response->assertSee('name="tanggal_ambil"', false);
+        $response->assertSee('type="date"', false);
+        $response->assertSee('min="'.date('Y-m-d').'"', false);
+    }
+
+    public function test_cart_checkout_validates_required_tanggal_ambil(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product));
+
+        $response = $this->from(route('customer.pesanan.review-cart'))
+            ->post(route('customer.pesanan.checkout'), [
+                'checkout_mode' => 'cart',
+                'nama_pemesan' => 'Budi',
+                'alamat_lengkap' => 'Jl. Merdeka No. 1',
+                'nomor_wa' => '08123456789',
+                'opsi_pengiriman' => 'kurir_toko',
+                'metode_pembayaran' => 'cash',
+            ]);
+
+        $response->assertRedirect(route('customer.pesanan.review-cart'));
+        $response->assertSessionHasErrors('tanggal_ambil');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_cart_checkout_rejects_tanggal_ambil_in_the_past(): void
+    {
+        $product = Product::factory()->create();
+        $this->post(route('cart.add', $product));
+
+        $yesterday = now()->subDay()->toDateString();
+
+        $response = $this->from(route('customer.pesanan.review-cart'))
+            ->post(route('customer.pesanan.checkout'), [
+                'checkout_mode' => 'cart',
+                'nama_pemesan' => 'Budi',
+                'alamat_lengkap' => 'Jl. Merdeka No. 1',
+                'nomor_wa' => '08123456789',
+                'opsi_pengiriman' => 'kurir_toko',
+                'tanggal_ambil' => $yesterday,
+                'metode_pembayaran' => 'cash',
+            ]);
+
+        $response->assertRedirect(route('customer.pesanan.review-cart'));
+        $response->assertSessionHasErrors('tanggal_ambil');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_cart_checkout_saves_tanggal_ambil_and_displays_on_summary_and_admin(): void
+    {
+        $product = Product::factory()->create(['nama_kue' => 'Bolu Susu', 'harga' => 45_000]);
+        $this->post(route('cart.add', $product));
+
+        $targetDate = now()->addDays(2)->toDateString();
+
+        $response = $this->post(route('customer.pesanan.checkout'), [
+            'checkout_mode' => 'cart',
+            'nama_pemesan' => 'Dewi Sartika',
+            'alamat_lengkap' => 'Jl. Melati No. 4',
+            'nomor_wa' => '08123456789',
+            'opsi_pengiriman' => 'ambil_sendiri',
+            'tanggal_ambil' => $targetDate,
+            'metode_pembayaran' => 'cash',
+        ]);
+
+        $order = Order::firstOrFail();
+
+        $response->assertRedirect(route('customer.pesanan.sukses', $order->kode_pesanan));
+        $this->assertNotNull($order->tanggal_ambil);
+        $this->assertSame($targetDate, $order->tanggal_ambil->format('Y-m-d'));
+
+        // Cek halaman sukses pembeli
+        $successResponse = $this->get(route('customer.pesanan.sukses', $order->kode_pesanan));
+        $successResponse->assertOk();
+        $successResponse->assertSee('Tanggal Ambil');
+        $successResponse->assertSee($order->tanggal_ambil->translatedFormat('d F Y'));
+
+        // Cek halaman admin kelola pesanan
+        $admin = User::factory()->create();
+        $adminResponse = $this->actingAs($admin)->get(route('admin.pesanan.index'));
+        $adminResponse->assertOk();
+        $adminResponse->assertSee('Tanggal Ambil:');
+        $adminResponse->assertSee($order->tanggal_ambil->format('d M Y'));
     }
 }

@@ -54,6 +54,7 @@ class OrderController extends Controller
             'nomor_wa' => ['required', 'string', 'max:20'],
             'jumlah' => ['required', 'integer', 'min:1'],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
+            'tanggal_ambil' => ['nullable', 'date', 'after_or_equal:today'],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
             'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -99,6 +100,7 @@ class OrderController extends Controller
             'nomor_wa' => $data['nomor_wa'],
             'jumlah' => (int) $data['jumlah'],
             'opsi_pengiriman' => $data['opsi_pengiriman'],
+            'tanggal_ambil' => $data['tanggal_ambil'] ?? null,
             'metode_pembayaran' => $data['metode_pembayaran'],
             'catatan' => $data['catatan'] ?? null,
         ];
@@ -183,6 +185,7 @@ class OrderController extends Controller
                     'nomor_wa' => $draft['nomor_wa'],
                     'alamat_lengkap' => $draft['alamat_lengkap'],
                     'opsi_pengiriman' => $draft['opsi_pengiriman'],
+                    'tanggal_ambil' => $draft['tanggal_ambil'] ?? null,
                     'metode_pembayaran' => $draft['metode_pembayaran'],
                     'total_harga' => $subtotal,
                     'status' => StatusPesanan::Pending,
@@ -228,6 +231,7 @@ class OrderController extends Controller
             'alamat_lengkap' => ['required', 'string', 'max:1000'],
             'nomor_wa' => ['required', 'string', 'max:20'],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
+            'tanggal_ambil' => ['required', 'date', 'after_or_equal:today'],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
             'catatan' => ['nullable', 'string', 'max:1000'],
             'bukti_pembayaran' => $this->paymentProofRules(
@@ -294,6 +298,7 @@ class OrderController extends Controller
                     'nomor_wa' => $data['nomor_wa'],
                     'alamat_lengkap' => $data['alamat_lengkap'],
                     'opsi_pengiriman' => $data['opsi_pengiriman'],
+                    'tanggal_ambil' => $data['tanggal_ambil'],
                     'metode_pembayaran' => $data['metode_pembayaran'],
                     'total_harga' => $total,
                     'status' => StatusPesanan::Pending,
