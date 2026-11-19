@@ -68,13 +68,15 @@ class TokoKueViewsTest extends TestCase
         $response->assertSee(route('customer.page', 'tentang-kami'), false);
     }
 
-    public function test_customer_landing_page_renders_empty_state_when_no_banners_available(): void
+    public function test_customer_landing_page_renders_hero_section_without_empty_state_when_no_banners_available(): void
     {
         $response = $this->get(route('customer.index'));
 
         $response->assertOk();
-        $response->assertSee('tidak ada banner');
-        $response->assertSee('Saat ini belum ada banner yang ditampilkan.');
+        $response->assertSee('Kue Spesial untuk');
+        $response->assertSee('Setiap Momen Berharga');
+        $response->assertDontSee('tidak ada banner');
+        $response->assertDontSee('customerBannerPrev');
     }
 
     public function test_customer_landing_page_renders_active_banners_when_provided(): void

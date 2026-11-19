@@ -35,47 +35,9 @@
             </div>
         @endif
 
-        {{-- 1. Hero Promo Banner --}}
-        <section class="relative overflow-hidden rounded-[24px] lg:rounded-[32px] bg-[#FAF0EB] border border-[#F4DDD5] shadow-xs">
-            <div class="p-3.5 sm:p-5 lg:p-6 xl:p-8 grid grid-cols-12 gap-3 sm:gap-6 lg:gap-8 items-center relative z-10">
-                {{-- Left Text Info --}}
-                <div class="col-span-7 lg:col-span-6 space-y-2 sm:space-y-3 lg:space-y-4 xl:space-y-5">
-                    {{-- Mini Brand Tag --}}
-                    <div class="inline-flex items-center gap-1.5 lg:gap-2 text-[#6B0F1A]">
-                        <x-store-logo class="w-4.5 h-4.5 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-                        <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm tracking-tight">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
-                        <span class="text-[9px] sm:text-[10px] lg:text-xs text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
-                    </div>
-
-                    {{-- Main Headline --}}
-                    <h2 class="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif font-bold text-[#540F18] leading-tight">
-                        Kue Spesial untuk<br>Setiap Momen Berharga
-                    </h2>
-
-                    {{-- Quote Badge --}}
-                    <div class="inline-block bg-white/70 border border-dashed border-[#DE9DA7] text-[#6B0F1A] text-[10px] sm:text-xs lg:text-sm px-2.5 py-0.5 lg:px-4 lg:py-1 rounded-full font-medium shadow-2xs">
-                        Karena setiap kebahagiaan layak dirayakan dengan kue terbaik ♡
-                    </div>
-
-                    {{-- Cute Chef Mascot --}}
-                    <div class="pt-0.5 lg:pt-1 flex items-center gap-1.5 lg:gap-2.5">
-                        <img src="{{ asset('images/hero-mascot.png') }}" alt="Maskot Nak Mbarep" class="h-11 sm:h-13 lg:h-16 xl:h-18 w-auto object-contain">
-                        <span class="text-[10px] sm:text-xs lg:text-sm text-[#7A2832] italic">Dari dapur kecil, untuk kebahagiaan besar ♡</span>
-                    </div>
-                </div>
-
-                {{-- Right Hero Cake Image --}}
-                <div class="col-span-5 lg:col-span-6 relative flex items-center justify-center">
-                    <div class="relative w-full max-w-[175px] sm:max-w-[220px] lg:max-w-[320px] xl:max-w-[380px]">
-                        <img src="{{ asset('images/hero-new-banner.png') }}" alt="Strawberry Cake Spesial Nak Mbarep" class="block w-full h-auto object-contain">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {{-- Sistem Banner Sementara / Carousel Promosi --}}
-        <section aria-label="Banner Promosi" class="w-full">
-            <x-banner-carousel :banners="$banners ?? collect()" :setting="$storeSetting ?? null" preview-id="customerBanner" />
+        {{-- 1. Hero & Banner Carousel Promosi Terpadu --}}
+        <section aria-label="Hero dan Banner Promosi" class="w-full">
+            <x-banner-carousel :banners="$banners ?? collect()" :setting="$storeSetting ?? null" preview-id="customerBanner" :with-hero="true" />
         </section>
 
         {{-- 2. Section: Katalog Kue (Data Murni dari $categories) --}}

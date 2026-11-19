@@ -350,7 +350,7 @@ class AdminStoreSettingTest extends TestCase
         $response = $this->get(route('customer.index'));
 
         $response->assertOk();
-        $response->assertSee(asset('storage/banner/hero.png'), false);
+        $response->assertSee('/storage/banner/hero.png', false);
         $response->assertDontSee('tidak ada banner');
     }
 

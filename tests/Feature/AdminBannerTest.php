@@ -202,6 +202,67 @@ class AdminBannerTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('Banner Rahasia Nonaktif');
-        $response->assertSee('tidak ada banner');
+        $response->assertDontSee('tidak ada banner');
+        $response->assertSee('Kue Spesial untuk');
+        $response->assertDontSee('customerBannerPrev');
+    }
+
+    public function test_banner_resolves_image_url_to_relative_storage_path_without_hardcoded_domain(): void
+    {
+        $this->assertSame(
+            '/storage/banners/promo.png',
+            Banner::resolveImageUrl('banners/promo.png')
+        );
+
+        $this->assertSame(
+            '/storage/banners/promo.png',
+            Banner::resolveImageUrl('storage/banners/promo.png')
+        );
+
+        $this->assertSame(
+            '/storage/banners/promo.png',
+            Banner::resolveImageUrl('/storage/banners/promo.png')
+        );
+
+        $this->assertSame(
+            '/storage/banners/promo.png',
+            Banner::resolveImageUrl('storage/storage/banners/promo.png')
+        );
+
+        $this->assertSame(
+            '/storage/banners/promo.png',
+            Banner::resolveImageUrl('http://127.0.0.1:8000/storage/banners/promo.png')
+        );
+
+        $this->assertSame(
+            '/storage/banners/promo.png',
+            Banner::resolveImageUrl('http://192.168.1.10:8000/storage/banners/promo.png')
+        );
+
+        $this->assertSame(
+            'https://example.com/promo.png',
+            Banner::resolveImageUrl('https://example.com/promo.png')
+        );
+
+        $this->assertSame(
+            '/images/hero-mascot.png',
+            Banner::resolveImageUrl('images/hero-mascot.png')
+        );
+    }
+
+    public function test_customer_beranda_renders_relative_banner_image_src_when_path_has_storage_prefix(): void
+    {
+        Banner::factory()->create([
+            'judul' => 'Promo Diskon LAN',
+            'gambar' => 'storage/banners/diskon-lan.png',
+            'is_active' => true,
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee('src="/storage/banners/diskon-lan.png"', false);
+        $response->assertDontSee('127.0.0.1');
+        $response->assertDontSee('/storage/storage/');
     }
 }
