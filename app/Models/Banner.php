@@ -35,22 +35,58 @@ class Banner extends Model
     }
 
     /**
-     * URL publik untuk file gambar banner.
+     * URL publik untuk file gambar banner menggunakan path relatif (/storage/...)
+     * agar aman diakses dari perangkat lain melalui IP LAN tanpa hardcoded domain.
      */
     public function getGambarUrlAttribute(): string
     {
-        if (empty($this->gambar)) {
+        return self::resolveImageUrl($this->gambar);
+    }
+
+    /**
+     * Menyelesaikan URL atau path gambar banner menjadi path relatif (/storage/...)
+     * atau mempertahankan URL eksternal jika menggunakan http(s).
+     */
+    public static function resolveImageUrl(?string $path): string
+    {
+        if (empty($path)) {
             return '';
         }
 
-        if (str_starts_with($this->gambar, 'http://') || str_starts_with($this->gambar, 'https://')) {
-            return $this->gambar;
+        $path = trim($path);
+
+        // Jika merupakan URL penuh lokal/storage (misal: http://127.0.0.1:8000/storage/...)
+        if (preg_match('#^https?://[^/]+(/.*)$#i', $path, $matches)) {
+            $urlPath = $matches[1];
+            if (str_contains($urlPath, '/storage/')) {
+                $storagePart = preg_replace('#^.*?(/storage/(?:storage/)*)#', '', $urlPath);
+
+                return '/storage/'.ltrim($storagePart, '/');
+            }
+
+            return $path;
         }
 
-        if (str_starts_with($this->gambar, 'images/')) {
-            return asset($this->gambar);
+        // Jika merupakan URL eksternal murni
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
         }
 
-        return Storage::disk('public')->url($this->gambar);
+        // Jika menunjuk ke folder public bawaan (images/...)
+        if (preg_match('#^/?images/#', $path)) {
+            return '/'.ltrim($path, '/');
+        }
+
+        // Tangani prefix berulang seperti public/, storage/, /storage/
+        $cleanPath = ltrim($path, '/');
+        if (str_starts_with($cleanPath, 'public/')) {
+            $cleanPath = substr($cleanPath, 7);
+        }
+        while (str_starts_with($cleanPath, 'storage/')) {
+            $cleanPath = substr($cleanPath, 8);
+        }
+        $cleanPath = ltrim($cleanPath, '/');
+
+        return '/storage/'.$cleanPath;
     }
 }

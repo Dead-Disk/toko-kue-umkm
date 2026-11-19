@@ -98,7 +98,7 @@ class StoreSetting extends Model
     }
 
     /**
-     * URL banner toko dari storage publik.
+     * URL banner toko menggunakan path relatif (/storage/...) agar aman diakses via LAN/mobile.
      */
     public function bannerUrl(): ?string
     {
@@ -106,15 +106,7 @@ class StoreSetting extends Model
             return null;
         }
 
-        if (str_starts_with($this->banner_path, 'http://') || str_starts_with($this->banner_path, 'https://')) {
-            return $this->banner_path;
-        }
-
-        if (str_starts_with($this->banner_path, 'images/')) {
-            return asset($this->banner_path);
-        }
-
-        return Storage::disk('public')->url($this->banner_path);
+        return Banner::resolveImageUrl($this->banner_path);
     }
 
     /**
