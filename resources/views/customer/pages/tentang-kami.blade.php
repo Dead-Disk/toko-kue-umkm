@@ -62,18 +62,34 @@
                 </div>
             </div>
 
-            <div class="bg-[#FAF0EB] rounded-2xl lg:rounded-3xl p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row items-center justify-between gap-4 lg:gap-8 border border-[#F4DDD5]">
-                <div class="space-y-1 text-center sm:text-left">
-                    <h4 class="font-serif font-bold text-[#540F18] text-sm sm:text-base lg:text-2xl">Kunjungi Toko Kami</h4>
-                    <p class="text-xs sm:text-sm lg:text-base text-gray-600 mt-0.5 lg:mt-1">
+            <div class="bg-[#FAF0EB] rounded-2xl lg:rounded-3xl p-4 sm:p-6 lg:p-8 border border-[#F4DDD5] space-y-4">
+                <div class="space-y-1">
+                    <h4 class="font-serif font-bold text-[#540F18] text-sm sm:text-base lg:text-2xl">
+                        Kunjungi Toko Kami
+                    </h4>
+
+                    <p class="text-xs sm:text-sm lg:text-base text-gray-600">
                         {{ $storeSetting->store_address ?? 'Jl. Letjend Suprapto Gang 1 No. 4, Kepatihan, Tulungagung, Jawa Timur' }}
                     </p>
                 </div>
+
+                <div class="rounded-2xl overflow-hidden border border-[#F4DDD5]">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d987.5898181334694!2d111.9103228!3d-8.0647879!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e78e318ae6e60a7%3A0x190c4d002f50b06!2sToko%20Kue%20Nak%20Mbarep!5e0!3m2!1sid!2sid!4v1795066676212!5m2!1sid!2sid"
+                        width="100%"
+                        height="300"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="strict-origin-when-cross-origin">
+                    </iframe>
+                </div>
+
                 <a href="https://maps.app.goo.gl/ucfkVK7QnMgQ1GGo6"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs sm:text-sm lg:text-base font-semibold px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 rounded-full transition shadow-xs whitespace-nowrap">
-                    Lihat di Maps →
+                class="inline-flex items-center justify-center bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs sm:text-sm lg:text-base font-semibold px-5 py-2.5 sm:px-6 sm:py-3 rounded-full transition shadow-xs">
+                    Buka di Google Maps →
                 </a>
             </div>
         </div>
