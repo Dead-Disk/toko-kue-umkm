@@ -134,6 +134,11 @@
                                 <input type="number" id="jumlah" name="jumlah" value="{{ old('jumlah', $draft['jumlah'] ?? 1) }}" min="1" max="{{ $maxPerOrder }}" data-max-per-order="{{ $maxPerOrder }}" data-max-order-message="Produk ini hanya dapat dipesan maksimal {{ $maxPerOrder }} pcs per transaksi." required class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">
                             </div>
 
+                            <div>
+                                <label for="tanggal_ambil" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Tanggal Ambil</label>
+                                <input type="date" id="tanggal_ambil" name="tanggal_ambil" value="{{ old('tanggal_ambil', $draft['tanggal_ambil'] ?? date('Y-m-d')) }}" min="{{ date('Y-m-d') }}" class="w-full bg-white border border-[#E8B8AE] rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] outline-none">
+                            </div>
+
                             <fieldset class="p-3.5 sm:p-4 bg-[#FAF2EE] rounded-2xl border border-[#F4E1D9]">
                                 <legend class="text-xs sm:text-sm font-semibold text-gray-800 px-1">Opsi Pengiriman</legend>
                                 <div class="mt-2 flex gap-4 text-xs sm:text-sm">

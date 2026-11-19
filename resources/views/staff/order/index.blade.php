@@ -291,7 +291,7 @@
                             <th class="py-3 px-3.5 w-12 text-center">No</th>
                             <th class="py-3 px-3.5">Nomor Pesanan</th>
                             <th class="py-3 px-3.5">Nama Pelanggan</th>
-                            <th class="py-3 px-3.5">Tanggal Pesan</th>
+                            <th class="py-3 px-3.5">Tanggal Pesan & Ambil</th>
                             <th class="py-3 px-3.5">Detail Item</th>
                             <th class="py-3 px-3.5">Total Harga</th>
                             <th class="py-3 px-3.5">Metode Pembayaran</th>
@@ -375,10 +375,24 @@
                                     @endif
                                 </td>
 
-                                <!-- Tanggal Pesan -->
+                                <!-- Tanggal Pesan & Tanggal Ambil -->
                                 <td class="py-3.5 px-3.5 whitespace-nowrap text-stone-600 text-[11px]">
-                                    <span class="block font-medium text-stone-800">{{ $order->created_at->format('d M Y') }}</span>
-                                    <span class="text-stone-400">{{ $order->created_at->format('H:i') }} WIB</span>
+                                    <div class="space-y-1">
+                                        <div>
+                                            <span class="text-[10px] text-stone-400 font-semibold block">Dipesan:</span>
+                                            <span class="block font-medium text-stone-800">{{ $order->created_at->format('d M Y') }}</span>
+                                            <span class="text-stone-400">{{ $order->created_at->format('H:i') }} WIB</span>
+                                        </div>
+                                        @if ($order->tanggal_ambil)
+                                            <div class="pt-1 border-t border-stone-100">
+                                                <span class="text-[10px] text-rose-700 font-bold block uppercase tracking-wider">Tanggal Ambil:</span>
+                                                <span class="inline-flex items-center gap-1 font-bold text-[#6B0F1A] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                                                    <svg class="w-3 h-3 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                    {{ $order->tanggal_ambil->format('d M Y') }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </div>
                                     <span class="hidden">{{ $order->created_at->format('d-m-Y H:i') }}</span>
                                 </td>
 

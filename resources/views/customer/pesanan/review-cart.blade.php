@@ -84,7 +84,18 @@
                                       required>{{ old('alamat_lengkap') }}</textarea>
                         </div>
 
-
+                        {{-- Tanggal Ambil --}}
+                        <div>
+                            <label for="tanggal_ambil" class="block text-xs font-medium text-gray-600 mb-1">
+                                Tanggal Ambil <span class="text-rose-600">*</span>
+                            </label>
+                            <input type="date" id="tanggal_ambil" name="tanggal_ambil"
+                                   value="{{ old('tanggal_ambil', date('Y-m-d')) }}"
+                                   min="{{ date('Y-m-d') }}"
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6B0F1A]/30 focus:border-[#6B0F1A] outline-none transition"
+                                   required>
+                            <p class="text-[11px] text-gray-400 mt-1">Pilih tanggal pengambilan atau pengiriman kue (minimal hari ini).</p>
+                        </div>
                     </section>
 
                     {{-- ============================================================ --}}

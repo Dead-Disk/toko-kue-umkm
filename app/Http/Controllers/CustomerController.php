@@ -164,6 +164,7 @@ class CustomerController extends Controller
             'jumlah' => ['required', 'integer', 'min:1', 'max:'.self::MAX_CUSTOM_QUANTITY],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
+            'tanggal_ambil' => ['required', 'date', 'after_or_equal:today'],
             'foto_referensi' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [
             'jumlah.max' => 'Maksimal pemesanan untuk pesanan ini adalah '.self::MAX_CUSTOM_QUANTITY.' pcs.',
@@ -194,6 +195,7 @@ class CustomerController extends Controller
             'jumlah' => (int) $data['jumlah'],
             'opsi_pengiriman' => $data['opsi_pengiriman'],
             'metode_pembayaran' => $data['metode_pembayaran'],
+            'tanggal_ambil' => $data['tanggal_ambil'],
             'foto_referensi' => $tempFoto,
         ];
 
@@ -277,6 +279,7 @@ class CustomerController extends Controller
                 'metode_pembayaran' => $draft['metode_pembayaran'],
                 'total_harga' => $subtotal,
                 'status' => StatusPesanan::Pending,
+                'tanggal_ambil' => $draft['tanggal_ambil'] ?? null,
             ]);
 
             $order->items()->create([

@@ -63,6 +63,16 @@
                     </span>
                 </div>
 
+                {{-- Tanggal Ambil --}}
+                @if (!empty($draft['tanggal_ambil']))
+                    <div class="p-3.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 bg-white">
+                        <span class="text-stone-500 font-medium">Tanggal Ambil</span>
+                        <span class="font-semibold text-[#6B0F1A] text-left sm:text-right">
+                            {{ \Carbon\Carbon::parse($draft['tanggal_ambil'])->translatedFormat('d F Y') }}
+                        </span>
+                    </div>
+                @endif
+
                 {{-- Deskripsi Request --}}
                 <div class="p-3.5 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 bg-white">
                     <span class="text-stone-500 font-medium shrink-0">Deskripsi Request</span>

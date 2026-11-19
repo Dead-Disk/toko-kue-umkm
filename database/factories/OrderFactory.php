@@ -28,6 +28,7 @@ class OrderFactory extends Factory
             'nomor_wa' => fake()->numerify('08##########'),
             'alamat_lengkap' => fake()->address(),
             'opsi_pengiriman' => fake()->randomElement(OpsiPengiriman::cases()),
+            'tanggal_ambil' => null,
             'metode_pembayaran' => fake()->randomElement(MetodePembayaran::cases()),
             'total_harga' => 0,
             'status' => StatusPesanan::Pending,

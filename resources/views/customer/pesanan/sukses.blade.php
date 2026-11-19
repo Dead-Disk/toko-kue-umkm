@@ -85,6 +85,16 @@
                             </span>
                         </div>
 
+                        {{-- Tanggal Ambil --}}
+                        @if ($order->tanggal_ambil)
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 text-xs">Tanggal Ambil</span>
+                                <span class="text-xs font-bold text-[#6B0F1A]">
+                                    {{ $order->tanggal_ambil->translatedFormat('d F Y') }}
+                                </span>
+                            </div>
+                        @endif
+
                         {{-- Metode Pembayaran --}}
                         <div class="flex justify-between">
                             <span class="text-gray-500 text-xs">Metode Pembayaran</span>
