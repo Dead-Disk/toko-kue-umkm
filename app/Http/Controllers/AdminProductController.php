@@ -111,7 +111,15 @@ class AdminProductController extends PanelController
 
         $product = Product::create($data);
 
-        ActivityLog::record('tambah', 'Menambahkan produk baru: '.$product->nama_kue.' (Stok: '.$product->stok.')', $product);
+        ActivityLog::record(
+            'tambah',
+            'Menambahkan produk baru: '.$product->nama_kue.' (Stok: '.$product->stok.')',
+            $product,
+            [
+                'stok_lama' => 0,
+                'stok_baru' => (int) $product->stok,
+            ]
+        );
 
         return $this->panelRedirect('produk.index')
             ->with('success', 'Produk berhasil ditambahkan.');
@@ -136,6 +144,8 @@ class AdminProductController extends PanelController
 
         $data['max_per_order'] = $data['max_per_order'] ?? 5;
 
+        $oldStock = (int) $product->stok;
+
         if ($data['nama_kue'] !== $product->nama_kue) {
             $data['slug'] = $this->uniqueSlug($data['nama_kue'], $product->id);
         }
@@ -158,7 +168,13 @@ class AdminProductController extends PanelController
 
         $product->update($data);
 
-        ActivityLog::record('ubah', 'Memperbarui produk: '.$product->nama_kue, $product);
+        $properties = [];
+        if (array_key_exists('stok', $data) && (int) $data['stok'] !== $oldStock) {
+            $properties['stok_lama'] = $oldStock;
+            $properties['stok_baru'] = (int) $data['stok'];
+        }
+
+        ActivityLog::record('ubah', 'Memperbarui produk: '.$product->nama_kue, $product, $properties);
 
         return $this->panelRedirect('produk.index')
             ->with('success', 'Produk berhasil diperbarui.');
