@@ -7,6 +7,7 @@ use Database\Factories\StoreSettingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'store_name',
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
     'store_address',
     'store_phone',
     'logo_path',
+    'banner_path',
     'store_email',
     'instagram_url',
     'facebook_url',
@@ -22,11 +24,53 @@ use Illuminate\Database\Eloquent\Model;
     'bank_account_number',
     'bank_account_holder',
     'qris_image_path',
+    'banner_scale',
+    'banner_size',
+    'banner_slide_duration',
+    'banner_auto_slide',
 ])]
 class StoreSetting extends Model
 {
     /** @use HasFactory<StoreSettingFactory> */
     use HasFactory;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'banner_slide_duration' => 'integer',
+            'banner_auto_slide' => 'boolean',
+        ];
+    }
+
+    /**
+     * Class CSS Tailwind untuk aspek rasio wadah banner.
+     */
+    public function bannerAspectRatioClass(): string
+    {
+        return match ($this->banner_size ?? '21:9') {
+            '16:9' => 'aspect-[16/9]',
+            '16:7' => 'aspect-[16/7]',
+            '4:1' => 'aspect-[4/1]',
+            default => 'aspect-[21/9]',
+        };
+    }
+
+    /**
+     * Class CSS Tailwind untuk object fit gambar banner.
+     */
+    public function bannerScaleClass(?string $itemScale = null): string
+    {
+        $scale = $itemScale ?: ($this->banner_scale ?? 'cover');
+
+        return match ($scale) {
+            'contain' => 'object-contain',
+            'fill' => 'object-fill',
+            default => 'object-cover',
+        };
+    }
 
     /**
      * Pengaturan toko bersifat single-row. Baris kosong belum tentu ada di
@@ -43,6 +87,34 @@ class StoreSetting extends Model
     public function hasLogo(): bool
     {
         return filled($this->logo_path);
+    }
+
+    /**
+     * Banner toko dianggap siap bila sudah diunggah di pengaturan toko.
+     */
+    public function hasBanner(): bool
+    {
+        return filled($this->banner_path);
+    }
+
+    /**
+     * URL banner toko dari storage publik.
+     */
+    public function bannerUrl(): ?string
+    {
+        if (! $this->hasBanner()) {
+            return null;
+        }
+
+        if (str_starts_with($this->banner_path, 'http://') || str_starts_with($this->banner_path, 'https://')) {
+            return $this->banner_path;
+        }
+
+        if (str_starts_with($this->banner_path, 'images/')) {
+            return asset($this->banner_path);
+        }
+
+        return Storage::disk('public')->url($this->banner_path);
     }
 
     /**

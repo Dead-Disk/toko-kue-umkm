@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminActivityLogController;
+use App\Http\Controllers\AdminBannerController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminOrderController;
@@ -108,7 +109,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
 
-    Route::middleware('role:admin,staff')->group(function () {
+    Route::middleware('role:admin,owner,staff')->group(function () {
         // Pesanan masuk & ubah status
         Route::get('pesanan', [AdminOrderController::class, 'index'])->name('pesanan.index');
         Route::patch('pesanan/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('pesanan.update-status');
@@ -127,7 +128,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             ->name('orders.custom_photo');
     });
 
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:admin,owner')->group(function () {
         // Pulihkan produk yang di-soft delete.
         Route::patch('produk/{product}/restore', [AdminProductController::class, 'restore'])
             ->name('produk.restore')
@@ -143,6 +144,19 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         // Pengaturan toko: profil, rekening bank, dan QRIS (single-row).
         Route::get('settings', [AdminStoreSettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [AdminStoreSettingController::class, 'update'])->name('settings.update');
+        Route::post('settings/banners/{banner}/move-up', [AdminStoreSettingController::class, 'moveUpBanner'])->name('settings.banners.move-up');
+        Route::post('settings/banners/{banner}/move-down', [AdminStoreSettingController::class, 'moveDownBanner'])->name('settings.banners.move-down');
+        Route::delete('settings/banners/{banner}', [AdminStoreSettingController::class, 'deleteBannerItem'])->name('settings.banners.destroy');
+
+        // Pengaturan Banner Promosi (khusus role owner/admin).
+        Route::prefix('banners')->name('banners.')->group(function () {
+            Route::get('/', [AdminBannerController::class, 'index'])->name('index');
+            Route::post('/', [AdminBannerController::class, 'store'])->name('store');
+            Route::put('settings', [AdminBannerController::class, 'updateSettings'])->name('settings');
+            Route::put('{banner}', [AdminBannerController::class, 'update'])->name('update');
+            Route::delete('{banner}', [AdminBannerController::class, 'destroy'])->name('destroy');
+            Route::patch('{banner}/toggle', [AdminBannerController::class, 'toggle'])->name('toggle');
+        });
 
         // Pengaturan Varian Custom Cake (CRUD)
         Route::resource('pengaturan', AdminSettingController::class)

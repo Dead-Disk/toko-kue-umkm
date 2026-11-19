@@ -39,12 +39,48 @@ export function initProductImageCropper() {
         hiddenBase64Id: 'logoCroppedBase64',
         defaultFileName: 'logo-toko.jpg',
     });
+
+    // Banner toko pada halaman pengaturan admin (sesuai canvas banner pembeli)
+    bindCropperInstance({
+        fileInputId: 'banner',
+        previewImgId: 'bannerPreviewImg',
+        cropBtnId: 'bannerCropBtn',
+        hiddenBase64Id: 'bannerCroppedBase64',
+        defaultFileName: 'banner-toko.jpg',
+        aspectRatio: () => {
+            const checked = document.querySelector('input[name="banner_size"]:checked');
+            const val = checked ? checked.value : '21:9';
+            if (val === '16:9') return 16 / 9;
+            if (val === '16:7') return 16 / 7;
+            if (val === '4:1') return 4 / 1;
+            return 21 / 9;
+        },
+        cropLabel: () => {
+            const checked = document.querySelector('input[name="banner_size"]:checked');
+            const val = checked ? checked.value : '21:9';
+            return `Canvas Banner Pembeli (${val})`;
+        },
+        outWidth: 1260,
+        outHeight: 540,
+        maxFileSize: 5 * 1024 * 1024,
+    });
 }
 
 /**
  * Menyambungkan input file, tombol crop, preview img, dan hidden base64 ke engine cropper
  */
-function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase64Id, defaultFileName = 'gambar.jpg' }) {
+function bindCropperInstance({
+    fileInputId,
+    previewImgId,
+    cropBtnId,
+    hiddenBase64Id,
+    defaultFileName = 'gambar.jpg',
+    aspectRatio = 1,
+    outWidth = 800,
+    outHeight = 800,
+    cropLabel = 'Area Crop 1:1 (Persegi)',
+    maxFileSize = 2 * 1024 * 1024,
+}) {
     const fileInput = document.getElementById(fileInputId);
     const previewImg = document.getElementById(previewImgId);
     const cropBtn = document.getElementById(cropBtnId);
@@ -66,8 +102,9 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
-            alert('Ukuran gambar maksimal 2 MB. Silakan pilih file yang lebih kecil.');
+        if (file.size > maxFileSize) {
+            const maxMb = Math.round(maxFileSize / (1024 * 1024));
+            alert(`Ukuran gambar maksimal ${maxMb} MB. Silakan pilih file yang lebih kecil.`);
             this.value = '';
             return;
         }
@@ -82,9 +119,18 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
         const reader = new FileReader();
         reader.onload = function (e) {
             activeImageSource = e.target.result;
+            const currentAspect = typeof aspectRatio === 'function' ? aspectRatio() : aspectRatio;
+            const currentWidth = typeof outWidth === 'function' ? outWidth() : outWidth;
+            const currentHeight = typeof outHeight === 'function' ? outHeight() : (outHeight || Math.round(currentWidth / currentAspect));
+            const currentLabel = typeof cropLabel === 'function' ? cropLabel() : cropLabel;
+
             openCropModal({
                 imageSrc: activeImageSource,
                 fileName: originalFileName,
+                aspectRatio: currentAspect,
+                outWidth: currentWidth,
+                outHeight: currentHeight,
+                cropLabel: currentLabel,
                 onApply: function (croppedBlob, croppedDataUrl) {
                     applyCroppedResult({
                         fileInput,
@@ -119,9 +165,18 @@ function bindCropperInstance({ fileInputId, previewImgId, cropBtnId, hiddenBase6
                 return;
             }
 
+            const currentAspect = typeof aspectRatio === 'function' ? aspectRatio() : aspectRatio;
+            const currentWidth = typeof outWidth === 'function' ? outWidth() : outWidth;
+            const currentHeight = typeof outHeight === 'function' ? outHeight() : (outHeight || Math.round(currentWidth / currentAspect));
+            const currentLabel = typeof cropLabel === 'function' ? cropLabel() : cropLabel;
+
             openCropModal({
                 imageSrc: src,
                 fileName: originalFileName,
+                aspectRatio: currentAspect,
+                outWidth: currentWidth,
+                outHeight: currentHeight,
+                cropLabel: currentLabel,
                 onApply: function (croppedBlob, croppedDataUrl) {
                     applyCroppedResult({
                         fileInput,
@@ -162,12 +217,18 @@ function applyCroppedResult({ fileInput, previewImg, hiddenBase64, cropBtn, crop
         const fallback = previewImg.parentElement?.querySelector('#previewFallbackIcon') ||
                          previewImg.parentElement?.querySelector('#createFallbackIcon') ||
                          previewImg.parentElement?.querySelector('#editFallbackIcon') ||
-                         previewImg.parentElement?.querySelector('.category-fallback-icon');
+                         previewImg.parentElement?.querySelector('.category-fallback-icon') ||
+                         previewImg.parentElement?.querySelector('#bannerPlaceholder');
         if (fallback) fallback.classList.add('hidden');
     }
 
     if (cropBtn) {
         cropBtn.classList.remove('hidden');
+    }
+
+    const pendingContainer = document.getElementById('newBannerPendingContainer');
+    if (pendingContainer && fileInput.id === 'banner') {
+        pendingContainer.classList.remove('hidden');
     }
 
     const toastContainer = document.getElementById('toastContainer');
@@ -235,7 +296,7 @@ function ensureCropperModal() {
                                 <div class="border-r border-white/25"></div>
                                 <div></div>
                             </div>
-                            <span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-white/90 font-medium tracking-wide whitespace-nowrap bg-black/60 px-2 py-0.5 rounded-full">
+                            <span id="cropFrameGuideLabel" class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-white/90 font-medium tracking-wide whitespace-nowrap bg-black/60 px-2 py-0.5 rounded-full">
                                 Area Crop 1:1 (Persegi)
                             </span>
                         </div>
@@ -309,7 +370,15 @@ function ensureCropperModal() {
 /**
  * Membuka modal crop dan menginisialisasi canvas / cropper engine
  */
-function openCropModal({ imageSrc, fileName, onApply }) {
+function openCropModal({
+    imageSrc,
+    fileName,
+    aspectRatio = 1,
+    outWidth = 800,
+    outHeight = 800,
+    cropLabel = 'Area Crop 1:1 (Persegi)',
+    onApply,
+}) {
     ensureCropperModal();
     if (!cropperModalEl) return;
 
@@ -330,6 +399,37 @@ function openCropModal({ imageSrc, fileName, onApply }) {
     const cancelBtn = document.getElementById('cancelCropModalBtn');
     const applyBtn = document.getElementById('applyCropModalBtn');
     const frameOverlay = document.getElementById('canvasFrameOverlay');
+    const frameGuide = document.getElementById('cropFrameGuide');
+    const frameLabel = document.getElementById('cropFrameGuideLabel');
+
+    if (frameLabel) {
+        frameLabel.textContent = cropLabel;
+    }
+
+    if (frameGuide) {
+        if (aspectRatio > 1.2) {
+            frameGuide.style.width = '88%';
+            frameGuide.style.maxWidth = '500px';
+            frameGuide.style.height = 'auto';
+            frameGuide.style.aspectRatio = `${aspectRatio}`;
+        } else {
+            frameGuide.style.width = '';
+            frameGuide.style.maxWidth = '';
+            frameGuide.style.height = '';
+            frameGuide.style.aspectRatio = '1 / 1';
+        }
+    }
+
+    if (previewCanvas && previewCanvas.parentElement) {
+        previewCanvas.parentElement.style.aspectRatio = `${aspectRatio}`;
+        if (aspectRatio > 1.2) {
+            previewCanvas.parentElement.style.width = '120px';
+            previewCanvas.parentElement.style.height = 'auto';
+        } else {
+            previewCanvas.parentElement.style.width = '80px';
+            previewCanvas.parentElement.style.height = '80px';
+        }
+    }
 
     let isUsingCropperJs = typeof window.Cropper !== 'undefined';
 
@@ -347,11 +447,14 @@ function openCropModal({ imageSrc, fileName, onApply }) {
                 currentCropperInstance.destroy();
             }
 
+            const previewW = 160;
+            const previewH = Math.round(160 / aspectRatio);
+
             currentCropperInstance = new window.Cropper(sourceImg, {
-                aspectRatio: 1,
+                aspectRatio: aspectRatio,
                 viewMode: 1,
                 dragMode: 'move',
-                autoCropArea: 0.9,
+                autoCropArea: 0.95,
                 responsive: true,
                 restore: false,
                 guides: true,
@@ -361,7 +464,7 @@ function openCropModal({ imageSrc, fileName, onApply }) {
                 cropBoxResizable: true,
                 toggleDragModeOnDblclick: false,
                 crop: function () {
-                    updateCropperJsPreview(currentCropperInstance, previewCanvas);
+                    updateCropperJsPreview(currentCropperInstance, previewCanvas, previewW, previewH);
                 },
             });
         } else {
@@ -370,7 +473,7 @@ function openCropModal({ imageSrc, fileName, onApply }) {
             canvas.classList.remove('hidden');
             frameOverlay.classList.remove('hidden');
 
-            initCanvasPositioner(canvas, loadedImg, previewCanvas);
+            initCanvasPositioner(canvas, loadedImg, previewCanvas, aspectRatio);
         }
     };
     loadedImg.src = imageSrc;
@@ -438,8 +541,8 @@ function openCropModal({ imageSrc, fileName, onApply }) {
     applyBtn.onclick = () => {
         if (isUsingCropperJs && currentCropperInstance) {
             const outCanvas = currentCropperInstance.getCroppedCanvas({
-                width: 800,
-                height: 800,
+                width: outWidth,
+                height: outHeight,
                 imageSmoothingQuality: 'high',
             });
             outCanvas.toBlob(
@@ -452,7 +555,7 @@ function openCropModal({ imageSrc, fileName, onApply }) {
                 0.92
             );
         } else if (currentCanvasState) {
-            const outCanvas = currentCanvasState.generateCroppedCanvas(800, 800);
+            const outCanvas = currentCanvasState.generateCroppedCanvas(outWidth, outHeight);
             outCanvas.toBlob(
                 (blob) => {
                     const dataUrl = outCanvas.toDataURL('image/jpeg', 0.92);
@@ -469,16 +572,16 @@ function openCropModal({ imageSrc, fileName, onApply }) {
 /**
  * Update preview untuk Cropper.js
  */
-function updateCropperJsPreview(cropper, previewCanvas) {
+function updateCropperJsPreview(cropper, previewCanvas, outW = 160, outH = 160) {
     if (!cropper || !previewCanvas) return;
     try {
-        const mini = cropper.getCroppedCanvas({ width: 160, height: 160 });
+        const mini = cropper.getCroppedCanvas({ width: outW, height: outH });
         if (!mini) return;
-        previewCanvas.width = 160;
-        previewCanvas.height = 160;
+        previewCanvas.width = outW;
+        previewCanvas.height = outH;
         const ctx = previewCanvas.getContext('2d');
-        ctx.clearRect(0, 0, 160, 160);
-        ctx.drawImage(mini, 0, 0, 160, 160);
+        ctx.clearRect(0, 0, outW, outH);
+        ctx.drawImage(mini, 0, 0, outW, outH);
     } catch (e) {
         // Abaikan bila cropper belum siap
     }
@@ -488,7 +591,7 @@ function updateCropperJsPreview(cropper, previewCanvas) {
  * Engine Built-in Interactive HTML5 Canvas:
  * Mengizinkan drag / pan, zoom, dan rotate foto secara langsung pada canvas tanpa library eksternal.
  */
-function initCanvasPositioner(canvas, img, previewCanvas) {
+function initCanvasPositioner(canvas, img, previewCanvas, aspectRatio = 1) {
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width || 600;
@@ -497,11 +600,15 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
     // Ukur frame panduan yang terlihat agar hasil crop sama persis dengan preview.
     const frameEl = document.getElementById('cropFrameGuide');
     const frameRect = frameEl ? frameEl.getBoundingClientRect() : null;
-    const cropBoxSize = frameRect ? frameRect.width : Math.min(canvas.width, canvas.height) * 0.75;
+    const cropBoxW = frameRect ? frameRect.width : Math.min(canvas.width, canvas.height) * 0.8;
+    const cropBoxH = frameRect ? frameRect.height : (cropBoxW / aspectRatio);
 
     const state = {
         img,
-        fitScale: Math.max(cropBoxSize / img.width, cropBoxSize / img.height) * 1.1,
+        aspectRatio,
+        cropBoxW,
+        cropBoxH,
+        fitScale: Math.max(cropBoxW / img.width, cropBoxH / img.height) * 1.05,
         scale: 1,
         offsetX: 0,
         offsetY: 0,
@@ -509,7 +616,7 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
         isDragging: false,
         startX: 0,
         startY: 0,
-        cropSize: cropBoxSize,
+        cropSize: cropBoxW,
         reset: function () {
             this.scale = 1;
             this.offsetX = 0;
@@ -533,7 +640,7 @@ function initCanvasPositioner(canvas, img, previewCanvas) {
             oCtx.fillRect(0, 0, targetW, targetH);
 
             // Skala dari crop frame di layar ke target output
-            const scaleToOut = targetW / this.cropSize;
+            const scaleToOut = targetW / this.cropBoxW;
 
             oCtx.save();
             oCtx.translate(targetW / 2, targetH / 2);
@@ -605,15 +712,18 @@ function drawWorkspace(ctx, canvas, state) {
 
 function drawPreview(previewCanvas, state) {
     if (!previewCanvas) return;
-    previewCanvas.width = 160;
-    previewCanvas.height = 160;
+    const aspect = state.aspectRatio || 1;
+    const outW = 160;
+    const outH = Math.round(160 / aspect);
+    previewCanvas.width = outW;
+    previewCanvas.height = outH;
     const pCtx = previewCanvas.getContext('2d');
-    pCtx.clearRect(0, 0, 160, 160);
+    pCtx.clearRect(0, 0, outW, outH);
 
-    const scaleToOut = 160 / state.cropSize;
+    const scaleToOut = outW / (state.cropBoxW || state.cropSize || 160);
 
     pCtx.save();
-    pCtx.translate(80, 80);
+    pCtx.translate(outW / 2, outH / 2);
     pCtx.rotate((state.rotation * Math.PI) / 180);
 
     const effectiveW = state.img.width * state.fitScale * state.scale * scaleToOut;

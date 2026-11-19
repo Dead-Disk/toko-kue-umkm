@@ -19,11 +19,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Apakah user adalah owner atau admin (pemilik toko)?
+     */
+    public function isOwner(): bool
+    {
+        return in_array($this->role, ['owner', 'admin'], true);
+    }
+
+    /**
      * Apakah user adalah admin (pemilik toko)?
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'owner'], true);
     }
 
     /**

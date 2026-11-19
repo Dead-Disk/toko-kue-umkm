@@ -6,6 +6,7 @@ use App\Enums\MetodePembayaran;
 use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
+use App\Models\Banner;
 use App\Models\CakeOption;
 use App\Models\Category;
 use App\Models\Order;
@@ -33,12 +34,40 @@ class CustomerController extends Controller
     {
         $categories = Category::whereHas('products')->with('products')->get();
         $produks = $this->topProducts();
+        $storeSetting = StoreSetting::current();
+
+        $activeBanners = Banner::query()
+            ->where('is_active', true)
+            ->orderBy('urutan')
+            ->get();
+
+        if ($activeBanners->isNotEmpty()) {
+            $banners = $activeBanners;
+        } elseif ($storeSetting->hasBanner()) {
+            $banners = collect([
+                (object) [
+                    'id' => 'store-banner',
+                    'judul' => null,
+                    'subjudul' => null,
+                    'gambar' => $storeSetting->banner_path,
+                    'gambar_url' => $storeSetting->bannerUrl(),
+                    'link' => null,
+                    'badge' => null,
+                    'scale' => $storeSetting->banner_scale ?? 'cover',
+                    'urutan' => 0,
+                    'is_active' => true,
+                ],
+            ]);
+        } else {
+            $banners = collect();
+        }
 
         return view('customer.beranda.index', [
             'categories' => $categories,
             'produks' => $produks,
             'topProducts' => $produks,
-            'storeSetting' => StoreSetting::current(),
+            'storeSetting' => $storeSetting,
+            'banners' => $banners,
         ]);
     }
 

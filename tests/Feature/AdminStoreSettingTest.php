@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Banner;
 use App\Models\StoreSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,6 +36,10 @@ class AdminStoreSettingTest extends TestCase
         $response->assertSee('Atur Posisi & Crop', false);
         $response->assertSee('cropper.min.js', false);
         $response->assertSee('name="qris_image"', false);
+        $response->assertSee('Banner Toko (Beranda)');
+        $response->assertSee('name="banner"', false);
+        $response->assertSee('name="cropped_banner_base64"', false);
+        $response->assertSee('id="bannerCropBtn"', false);
     }
 
     public function test_admin_can_update_store_profile_and_bank_details(): void
@@ -294,5 +299,142 @@ class AdminStoreSettingTest extends TestCase
         $this->actingAs($staff)
             ->put(route('admin.settings.update'), ['store_name' => 'Toko'])
             ->assertForbidden();
+    }
+
+    public function test_admin_can_upload_a_store_banner_image(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'banner' => UploadedFile::fake()->create('banner-toko.png', 50, 'image/png'),
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+        $this->assertNotNull($setting->banner_path);
+        $this->assertStringStartsWith('banner/', $setting->banner_path);
+        Storage::disk('public')->assertExists($setting->banner_path);
+    }
+
+    public function test_admin_can_remove_the_store_banner(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('banner/lama.png', 'gambar');
+        $admin = User::factory()->create();
+        StoreSetting::create([
+            'store_name' => 'Toko Kue',
+            'banner_path' => 'banner/lama.png',
+        ]);
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue',
+            'hapus_banner' => '1',
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $this->assertNull(StoreSetting::firstOrFail()->banner_path);
+        Storage::disk('public')->assertMissing('banner/lama.png');
+    }
+
+    public function test_customer_beranda_renders_banner_from_store_settings(): void
+    {
+        StoreSetting::create([
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner_path' => 'banner/hero.png',
+        ]);
+
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee(asset('storage/banner/hero.png'), false);
+        $response->assertDontSee('tidak ada banner');
+    }
+
+    public function test_admin_can_update_banner_scale_and_size_and_duration_in_store_settings(): void
+    {
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner_scale' => 'contain',
+            'banner_size' => '16:9',
+            'banner_slide_duration' => 5,
+            'banner_auto_slide' => 1,
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $setting = StoreSetting::firstOrFail();
+        $this->assertSame('contain', $setting->banner_scale);
+        $this->assertSame('16:9', $setting->banner_size);
+        $this->assertSame(5, $setting->banner_slide_duration);
+        $this->assertTrue($setting->banner_auto_slide);
+    }
+
+    public function test_admin_can_upload_multiple_banners_and_reorder_them(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        // Upload banner 1
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner' => UploadedFile::fake()->create('banner-pertama.png', 50, 'image/png'),
+        ])->assertRedirect(route('admin.settings.index'));
+
+        // Upload banner 2
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner' => UploadedFile::fake()->create('banner-kedua.png', 50, 'image/png'),
+        ])->assertRedirect(route('admin.settings.index'));
+
+        $this->assertDatabaseCount('banners', 2);
+        $banner1 = Banner::first();
+        $banner2 = Banner::skip(1)->first();
+
+        $this->assertSame(1, $banner1->urutan);
+        $this->assertSame(2, $banner2->urutan);
+
+        // Geser banner 2 naik ke urutan pertama
+        $this->actingAs($admin)
+            ->post(route('admin.settings.banners.move-up', $banner2->id))
+            ->assertRedirect(route('admin.settings.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(1, $banner2->fresh()->urutan);
+        $this->assertSame(2, $banner1->fresh()->urutan);
+
+        // Geser banner 2 turun kembali ke urutan kedua
+        $this->actingAs($admin)
+            ->post(route('admin.settings.banners.move-down', $banner2->id))
+            ->assertRedirect(route('admin.settings.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(2, $banner2->fresh()->urutan);
+        $this->assertSame(1, $banner1->fresh()->urutan);
+    }
+
+    public function test_admin_can_delete_individual_banner_from_store_settings(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner' => UploadedFile::fake()->create('banner-test.png', 50, 'image/png'),
+        ]);
+
+        $banner = Banner::firstOrFail();
+
+        $this->actingAs($admin)
+            ->delete(route('admin.settings.banners.destroy', $banner->id))
+            ->assertRedirect(route('admin.settings.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('banners', ['id' => $banner->id]);
     }
 }

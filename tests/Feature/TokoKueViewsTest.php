@@ -68,6 +68,37 @@ class TokoKueViewsTest extends TestCase
         $response->assertSee(route('customer.page', 'tentang-kami'), false);
     }
 
+    public function test_customer_landing_page_renders_empty_state_when_no_banners_available(): void
+    {
+        $response = $this->get(route('customer.index'));
+
+        $response->assertOk();
+        $response->assertSee('tidak ada banner');
+        $response->assertSee('Saat ini belum ada banner yang ditampilkan.');
+    }
+
+    public function test_customer_landing_page_renders_active_banners_when_provided(): void
+    {
+        $view = $this->withViewErrors([])->view('customer.beranda.index', [
+            'categories' => collect(),
+            'produks' => collect(),
+            'topProducts' => collect(),
+            'storeSetting' => StoreSetting::current(),
+            'banners' => [
+                [
+                    'title' => 'Promo Diskon Kemerdekaan',
+                    'subtitle' => 'Diskon 25% untuk semua bolu',
+                    'image' => 'https://example.com/promo.png',
+                    'link' => 'https://example.com/promo',
+                    'badge' => 'Spesial',
+                ],
+            ],
+        ]);
+
+        $view->assertSee('https://example.com/promo.png', false);
+        $view->assertDontSee('tidak ada banner');
+    }
+
     public function test_navbar_renders_the_uploaded_store_logo(): void
     {
         StoreSetting::factory()->withLogo()->create([

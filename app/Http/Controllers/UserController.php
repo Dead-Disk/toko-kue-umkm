@@ -17,7 +17,7 @@ class UserController extends Controller
      *
      * @var list<string>
      */
-    private const ROLES = ['admin', 'staff'];
+    private const ROLES = ['owner', 'admin', 'staff'];
 
     /**
      * Daftar semua akun admin/staf.

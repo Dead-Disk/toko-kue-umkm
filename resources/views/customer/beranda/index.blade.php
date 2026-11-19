@@ -73,6 +73,11 @@
             </div>
         </section>
 
+        {{-- Sistem Banner Sementara / Carousel Promosi --}}
+        <section aria-label="Banner Promosi" class="w-full">
+            <x-banner-carousel :banners="$banners ?? collect()" :setting="$storeSetting ?? null" preview-id="customerBanner" />
+        </section>
+
         {{-- 2. Section: Katalog Kue (Data Murni dari $categories) --}}
         <section class="space-y-2.5 sm:space-y-3.5 lg:space-y-5">
             <div class="flex items-center justify-between">

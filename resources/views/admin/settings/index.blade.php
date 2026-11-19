@@ -440,6 +440,276 @@
                     </div>
                 </div>
 
+                <!-- Card: Multi-Banner Toko (Beranda) -->
+                <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-5 sm:p-7">
+                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-stone-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-[#5A121A] tracking-tight">Multi-Banner Toko (Beranda)</h2>
+                                <p class="text-xs text-stone-500">Unggah banner toko sebanyak apa pun, atur urutan tampilan, dan timer geser otomatis</p>
+                            </div>
+                        </div>
+
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border {{ $banners->isNotEmpty() ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-stone-100 text-stone-600 border-stone-200' }}">
+                            <span class="w-2 h-2 rounded-full {{ $banners->isNotEmpty() ? 'bg-emerald-500 animate-pulse' : 'bg-stone-400' }}"></span>
+                            {{ $banners->count() }} Banner Aktif
+                        </span>
+                    </div>
+
+                    <!-- Live Carousel Preview -->
+                    <div class="mb-6 p-4 rounded-xl bg-stone-50 border border-stone-200/80">
+                        <div class="flex items-center justify-between mb-3">
+                            <p class="text-xs font-semibold text-stone-700 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                Pratinjau Tampilan Beranda Pembeli:
+                            </p>
+                            <span id="bannerCanvasBadge" class="text-[10px] font-semibold text-stone-500 bg-white px-2.5 py-0.5 rounded-full border border-stone-200">
+                                {{ $setting->banner_size ?? '21:9' }} · {{ $setting->banner_scale ?? 'cover' }} · Geser per {{ $setting->banner_slide_duration ?? 5 }} Detik
+                            </span>
+                        </div>
+                        <div id="bannerPreviewWrapper" class="w-full">
+                            <x-banner-carousel :banners="$banners" :setting="$setting" preview-id="adminSettingsBannerPreview" />
+                        </div>
+                    </div>
+
+                    <!-- Daftar Multi-Banner & Pengaturan Urutan -->
+                    <div class="mb-6 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                                <span>Daftar Urutan Banner</span>
+                                <span class="text-stone-400 normal-case font-normal">(Bisa naik/turunkan urutan &amp; hapus banner)</span>
+                            </h3>
+                            @if ($banners->isNotEmpty())
+                                <span class="text-[11px] text-stone-500">Urutan paling atas tampil pertama</span>
+                            @endif
+                        </div>
+
+                        @if ($banners->isNotEmpty())
+                            <div class="space-y-3">
+                                @foreach ($banners as $index => $b)
+                                    <div class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-stone-200 bg-white shadow-2xs hover:border-[#6B0F1A]/40 transition-all space-y-2.5">
+                                        <!-- Header Baris Banner: Badge Urutan & Tombol Aksi -->
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="w-6 h-6 rounded-full bg-[#6B0F1A] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
+                                                    {{ $index + 1 }}
+                                                </span>
+                                                <span class="text-xs font-bold text-stone-800">
+                                                    Banner ke-{{ $index + 1 }}
+                                                </span>
+                                                <span class="text-[10px] text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full font-medium">
+                                                    Urutan #{{ $b->urutan }}
+                                                </span>
+                                            </div>
+
+                                            <!-- Tombol Aksi Geser Urutan & Hapus -->
+                                            <div class="flex items-center gap-1.5 shrink-0">
+                                                <!-- Tombol Geser Naik -->
+                                                <button type="submit"
+                                                        form="moveUpBanner-{{ $b->id }}"
+                                                        title="Pindahkan urutan ke atas"
+                                                        {{ $loop->first ? 'disabled' : '' }}
+                                                        class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition {{ $loop->first ? 'border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50' : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs active:bg-stone-100' }}">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                                                    <span class="text-[11px]">Naik</span>
+                                                </button>
+
+                                                <!-- Tombol Geser Turun -->
+                                                <button type="submit"
+                                                        form="moveDownBanner-{{ $b->id }}"
+                                                        title="Pindahkan urutan ke bawah"
+                                                        {{ $loop->last ? 'disabled' : '' }}
+                                                        class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition {{ $loop->last ? 'border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50' : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs active:bg-stone-100' }}">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                                    <span class="text-[11px]">Turun</span>
+                                                </button>
+
+                                                <!-- Tombol Hapus Banner -->
+                                                <button type="submit"
+                                                        form="deleteBanner-{{ $b->id }}"
+                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus banner ini?');"
+                                                        title="Hapus banner ini"
+                                                        class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-1 transition cursor-pointer shadow-2xs active:bg-rose-200">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    <span class="text-[11px]">Hapus</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Preview Gambar Banner Sesuai Rasio Canvas -->
+                                        <div class="w-full {{ $setting->bannerAspectRatioClass() }} rounded-xl overflow-hidden border border-stone-200 bg-stone-100 relative">
+                                            <img src="{{ $b->gambar_url }}"
+                                                 alt="Banner ke-{{ $index + 1 }}"
+                                                 class="w-full h-full {{ $setting->bannerScaleClass() }}">
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="p-6 rounded-xl border border-dashed border-stone-200 text-center bg-stone-50/50">
+                                <p class="text-xs font-medium text-stone-500">
+                                    Belum ada banner di daftar. Silakan unggah gambar di bawah untuk menambahkan banner toko.
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Area Unggah Banner Baru -->
+                    <div class="space-y-4 pt-4 border-t border-stone-100">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <label for="banner" class="block text-xs font-bold text-stone-800">
+                                    + Tambah Banner Baru
+                                </label>
+                                <p class="text-[11px] text-stone-500">Unggah foto banner baru dan potong presisi sesuai canvas pembeli</p>
+                            </div>
+                            <button type="button"
+                                    id="bannerCropBtn"
+                                    class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg border border-[#6B0F1A]/20 bg-rose-50 hover:bg-rose-100 text-[#6B0F1A] cursor-pointer shadow-xs transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 3v14a2 2 0 002 2h14M17 21v-4a2 2 0 00-2-2H3"/>
+                                </svg>
+                                <span>Atur Posisi & Scale Banner</span>
+                            </button>
+                        </div>
+
+                        <div class="relative border-2 border-dashed border-stone-200 hover:border-[#6B0F1A]/40 rounded-xl p-4 text-center transition-colors bg-stone-50/50">
+                            <input type="file"
+                                   id="banner"
+                                   name="banner"
+                                   accept="image/jpeg,image/png,image/webp"
+                                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <input type="hidden"
+                                   name="cropped_banner_base64"
+                                   id="bannerCroppedBase64">
+
+                            <div class="space-y-1">
+                                <div class="w-10 h-10 rounded-full bg-rose-50 text-[#6B0F1A] mx-auto flex items-center justify-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-semibold text-stone-700">
+                                    Klik atau seret file banner ke sini
+                                </p>
+                                <p class="text-[11px] text-stone-400">
+                                    Format JPG, PNG, atau WEBP. Maksimal 4 MB. Jendela atur posisi & scale (canvas 21:9) akan terbuka otomatis.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Mini Preview Gambar yang Baru Dipilih Sebelum Disimpan -->
+                        <div id="newBannerPendingContainer" class="hidden p-3 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-20 {{ $setting->bannerAspectRatioClass() }} rounded-lg overflow-hidden border border-emerald-200 bg-white shrink-0">
+                                    <img id="bannerPreviewImg" src="" alt="Pratinjau Baru" class="w-full h-full {{ $setting->bannerScaleClass() }}">
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-emerald-800">Banner Baru Siap Ditambahkan!</p>
+                                    <p class="text-[10px] text-emerald-600">Klik "Simpan Pengaturan" di bawah untuk menyimpan banner ini ke dalam daftar.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pengaturan Skala Tampilan & Ukuran Banner -->
+                        <div class="pt-4 border-t border-stone-100 space-y-4">
+                            <!-- Ukuran Canvas (Aspek Rasio) -->
+                            <div>
+                                <label class="block text-xs font-bold text-stone-700 mb-2">
+                                    Ukuran / Aspek Rasio Canvas Banner
+                                </label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    @php
+                                        $selectedSize = old('banner_size', $setting->banner_size ?? '21:9');
+                                        $sizeOptions = [
+                                            ['value' => '21:9', 'label' => '21:9 (Ultra-wide)', 'hint' => 'Rekomendasi'],
+                                            ['value' => '16:9', 'label' => '16:9 (Standar)', 'hint' => 'Landscape'],
+                                            ['value' => '16:7', 'label' => '16:7 (Wide)', 'hint' => 'Proporsional'],
+                                            ['value' => '4:1', 'label' => '4:1 (Slim Ribbon)', 'hint' => 'Ramping'],
+                                        ];
+                                    @endphp
+                                    @foreach ($sizeOptions as $opt)
+                                        <label class="flex flex-col p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50/80 cursor-pointer transition has-[:checked]:border-[#6B0F1A] has-[:checked]:bg-rose-50/40">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <input type="radio"
+                                                       name="banner_size"
+                                                       value="{{ $opt['value'] }}"
+                                                       {{ $selectedSize === $opt['value'] ? 'checked' : '' }}
+                                                       class="text-[#6B0F1A] focus:ring-[#6B0F1A] border-stone-300">
+                                                <span class="text-[9px] font-medium text-stone-400">{{ $opt['hint'] }}</span>
+                                            </div>
+                                            <span class="text-xs font-semibold text-stone-800">{{ $opt['label'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Skala Gambar (Object Fit) -->
+                            <div>
+                                <label class="block text-xs font-bold text-stone-700 mb-2">
+                                    Skala Tampilan Gambar (Object Fit)
+                                </label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    @php
+                                        $selectedScale = old('banner_scale', $setting->banner_scale ?? 'cover');
+                                        $scaleOptions = [
+                                            ['value' => 'cover', 'label' => 'Cover (Penuh)', 'desc' => 'Crop proporsional tanpa ruang kosong'],
+                                            ['value' => 'contain', 'label' => 'Contain (Muat Utuh)', 'desc' => 'Seluruh gambar tampil tanpa terpotong'],
+                                            ['value' => 'fill', 'label' => 'Fill (Regang)', 'desc' => 'Rentangkan gambar penuhi canvas'],
+                                        ];
+                                    @endphp
+                                    @foreach ($scaleOptions as $opt)
+                                        <label class="flex flex-col p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50/80 cursor-pointer transition has-[:checked]:border-[#6B0F1A] has-[:checked]:bg-rose-50/40">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <input type="radio"
+                                                       name="banner_scale"
+                                                       value="{{ $opt['value'] }}"
+                                                       {{ $selectedScale === $opt['value'] ? 'checked' : '' }}
+                                                       class="text-[#6B0F1A] focus:ring-[#6B0F1A] border-stone-300">
+                                                <span class="text-xs font-semibold text-stone-800">{{ $opt['label'] }}</span>
+                                            </div>
+                                            <span class="text-[10px] text-stone-500 leading-tight">{{ $opt['desc'] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Durasi Geser / Auto Slide -->
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                                <div class="flex items-center gap-2">
+                                    <label for="banner_slide_duration" class="text-xs font-bold text-stone-700 whitespace-nowrap">
+                                        Waktu Geser (Slide Timer):
+                                    </label>
+                                    <div class="flex items-center gap-1.5">
+                                        <input type="number"
+                                               id="banner_slide_duration"
+                                               name="banner_slide_duration"
+                                               min="1"
+                                               max="60"
+                                               value="{{ old('banner_slide_duration', $setting->banner_slide_duration ?? 5) }}"
+                                               class="w-16 px-2.5 py-1 text-xs sm:text-sm font-semibold rounded-lg border border-stone-200 text-center focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A]">
+                                        <span class="text-xs text-stone-500 font-medium">detik</span>
+                                    </div>
+                                </div>
+
+                                <label class="inline-flex items-center gap-2 text-xs font-semibold text-stone-700 cursor-pointer">
+                                    <input type="checkbox"
+                                           name="banner_auto_slide"
+                                           value="1"
+                                           {{ old('banner_auto_slide', $setting->banner_auto_slide ?? true) ? 'checked' : '' }}
+                                           class="rounded border-stone-300 text-[#6B0F1A] focus:ring-[#6B0F1A]">
+                                    <span>Aktifkan geser otomatis (auto-slide)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Card 3: QRIS -->
                 <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-5 sm:p-7">
                     <div class="flex items-center justify-between pb-4 mb-5 border-b border-stone-100">
@@ -599,7 +869,21 @@
         </div>
     </form>
 
-    <!-- Script for Live QRIS Image Preview -->
+    {{-- Hidden Helper Forms for Multi-Banner Operations (Move Up / Down / Delete) --}}
+    @foreach ($banners as $b)
+        <form id="moveUpBanner-{{ $b->id }}" action="{{ route('admin.settings.banners.move-up', $b->id) }}" method="POST" class="hidden">
+            @csrf
+        </form>
+        <form id="moveDownBanner-{{ $b->id }}" action="{{ route('admin.settings.banners.move-down', $b->id) }}" method="POST" class="hidden">
+            @csrf
+        </form>
+        <form id="deleteBanner-{{ $b->id }}" action="{{ route('admin.settings.banners.destroy', $b->id) }}" method="POST" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endforeach
+
+    <!-- Script for Live QRIS & Banner Preview -->
     <script>
         function previewQrisImage(event) {
             const input = event.target;
@@ -622,5 +906,54 @@
                 reader.readAsDataURL(file);
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const wrapper = document.getElementById('bannerPreviewWrapper');
+            const img = document.getElementById('bannerPreviewImg');
+            const badge = document.getElementById('bannerCanvasBadge');
+            const emptyLabel = document.getElementById('emptyStateRatioLabel');
+
+            const sizeRadios = document.querySelectorAll('input[name="banner_size"]');
+            const scaleRadios = document.querySelectorAll('input[name="banner_scale"]');
+
+            const aspectClassMap = {
+                '21:9': 'aspect-[21/9]',
+                '16:9': 'aspect-[16/9]',
+                '16:7': 'aspect-[16/7]',
+                '4:1': 'aspect-[4/1]',
+            };
+
+            const scaleClassMap = {
+                'cover': 'object-cover',
+                'contain': 'object-contain',
+                'fill': 'object-fill',
+            };
+
+            function updateLiveBannerPreview() {
+                const checkedSize = document.querySelector('input[name="banner_size"]:checked')?.value || '21:9';
+                const checkedScale = document.querySelector('input[name="banner_scale"]:checked')?.value || 'cover';
+
+                if (wrapper) {
+                    Object.values(aspectClassMap).forEach(cls => wrapper.classList.remove(cls));
+                    wrapper.classList.add(aspectClassMap[checkedSize] || 'aspect-[21/9]');
+                }
+
+                if (img) {
+                    Object.values(scaleClassMap).forEach(cls => img.classList.remove(cls));
+                    img.classList.add(scaleClassMap[checkedScale] || 'object-cover');
+                }
+
+                if (badge) {
+                    badge.textContent = `${checkedSize} · ${checkedScale}`;
+                }
+
+                if (emptyLabel) {
+                    emptyLabel.textContent = checkedSize;
+                }
+            }
+
+            sizeRadios.forEach(radio => radio.addEventListener('change', updateLiveBannerPreview));
+            scaleRadios.forEach(radio => radio.addEventListener('change', updateLiveBannerPreview));
+        });
     </script>
 @endsection
