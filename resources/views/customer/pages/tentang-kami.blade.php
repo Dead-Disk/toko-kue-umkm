@@ -69,8 +69,11 @@
                         {{ $storeSetting->store_address ?? 'Jl. Letjend Suprapto Gang 1 No. 4, Kepatihan, Tulungagung, Jawa Timur' }}
                     </p>
                 </div>
-                <a href="{{ route('customer.produk.index') }}" class="bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs sm:text-sm lg:text-base font-semibold px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 rounded-full transition shadow-xs whitespace-nowrap">
-                    Lihat Katalog Kue →
+                <a href="https://maps.app.goo.gl/ucfkVK7QnMgQ1GGo6"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs sm:text-sm lg:text-base font-semibold px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 rounded-full transition shadow-xs whitespace-nowrap">
+                    Lihat di Maps →
                 </a>
             </div>
         </div>
