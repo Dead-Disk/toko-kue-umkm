@@ -83,150 +83,150 @@
         </div>
 
         <!-- Range Info Banner -->
-        <div class="flex items-center justify-between p-3.5 sm:px-4 rounded-xl bg-amber-50/70 border border-amber-200/60 text-amber-900 text-xs font-medium">
-            <div class="flex items-center gap-2">
+        <div class="flex items-center justify-between gap-2 p-3.5 sm:px-4 rounded-xl bg-amber-50/70 border border-amber-200/60 text-amber-900 text-xs font-medium w-full max-w-full min-w-0">
+            <div class="flex items-center gap-2 min-w-0">
                 <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <span>Menampilkan data periode: <strong class="font-bold text-[#6B0F1A]">{{ $periodeLabel }}</strong></span>
+                <span class="truncate">Menampilkan data periode: <strong class="font-bold text-[#6B0F1A]">{{ $periodeLabel }}</strong></span>
             </div>
             @if ($periode === 'kustom')
                 <a href="{{ route('admin.reports.index', ['periode' => 'bulanan', 'tab' => $tab]) }}"
-                   class="text-amber-700 hover:text-amber-900 underline text-[11px] font-semibold">
+                   class="text-amber-700 hover:text-amber-900 underline text-[11px] font-semibold shrink-0">
                     Reset ke Bulanan
                 </a>
             @endif
         </div>
 
         <!-- Tab Navigasi: Laporan Penjualan vs Laporan Stok -->
-        <div class="border-b border-stone-200/80 print:hidden">
-            <nav class="flex gap-4 sm:gap-8 -mb-px" aria-label="Tabs">
+        <div class="border-b border-stone-200/80 print:hidden overflow-x-auto max-w-full min-w-0">
+            <nav class="flex gap-2 sm:gap-8 -mb-px min-w-0" aria-label="Tabs">
                 <a href="{{ route('admin.reports.index', ['tab' => 'penjualan', 'periode' => $periode, 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}"
-                   class="inline-flex items-center gap-2.5 py-3 border-b-2 text-sm font-bold transition-all {{ $tab === 'penjualan' ? 'border-[#6B0F1A] text-[#6B0F1A]' : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="inline-flex items-center gap-1.5 sm:gap-2.5 py-2.5 sm:py-3 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap transition-all {{ $tab === 'penjualan' ? 'border-[#6B0F1A] text-[#6B0F1A]' : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300' }}">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <span>Laporan Penjualan</span>
-                    <span class="px-2 py-0.5 rounded-full text-[11px] {{ $tab === 'penjualan' ? 'bg-[#6B0F1A] text-white' : 'bg-stone-200 text-stone-700' }}">
+                    <span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs leading-none shrink-0 font-semibold {{ $tab === 'penjualan' ? 'bg-[#6B0F1A] text-white' : 'bg-stone-200 text-stone-700' }}">
                         {{ $totalTransaksi }} Transaksi
                     </span>
                 </a>
 
                 <a href="{{ route('admin.reports.index', ['tab' => 'stok', 'periode' => $periode, 'start_date' => request('start_date'), 'end_date' => request('end_date')]) }}"
-                   class="inline-flex items-center gap-2.5 py-3 border-b-2 text-sm font-bold transition-all {{ $tab === 'stok' ? 'border-[#6B0F1A] text-[#6B0F1A]' : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   class="inline-flex items-center gap-1.5 sm:gap-2.5 py-2.5 sm:py-3 border-b-2 text-xs sm:text-sm font-bold whitespace-nowrap transition-all {{ $tab === 'stok' ? 'border-[#6B0F1A] text-[#6B0F1A]' : 'border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300' }}">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                     </svg>
                     <span>Laporan Stok</span>
-                    <span class="px-2 py-0.5 rounded-full text-[11px] {{ $tab === 'stok' ? 'bg-[#6B0F1A] text-white' : 'bg-stone-200 text-stone-700' }}">
+                    <span class="px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs leading-none shrink-0 font-semibold {{ $tab === 'stok' ? 'bg-[#6B0F1A] text-white' : 'bg-stone-200 text-stone-700' }}">
                         {{ $totalSisaStok }} pcs
                     </span>
                 </a>
             </nav>
         </div>
 
-        <!-- 4 Top Stat Cards (Sesuai Ketentuan Feature Request: Omzet, Produk Terjual, Sisa Stok, dll) -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <!-- 4 Top Stat Cards (Omzet, Produk Terjual, Sisa Stok, dll) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 w-full max-w-full min-w-0">
             <!-- Stat 1: Total Omzet -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0 font-bold text-lg">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0 font-bold text-xs sm:text-lg">
                         Rp
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-stone-500 font-medium">Total Omzet</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Total Omzet">Total Omzet</p>
+                        <p class="text-base sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
                             Rp{{ number_format($totalOmzet, 0, ',', '.') }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                    <span>Pendapatan periode terpilih</span>
-                    <span class="font-semibold text-[#6B0F1A]">{{ $totalTransaksi }} pesanan</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-stone-500 min-w-0 leading-tight">
+                    <span class="truncate leading-tight">Pendapatan periode</span>
+                    <span class="font-semibold text-[#6B0F1A] shrink-0 leading-tight">{{ $totalTransaksi }} pesanan</span>
                 </div>
             </div>
 
             <!-- Stat 2: Produk Terjual -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-stone-500 font-medium">Produk Terjual</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
-                            {{ number_format($totalProdukTerjual, 0, ',', '.') }} <span class="text-sm font-semibold text-stone-500">pcs</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Produk Terjual">Produk Terjual</p>
+                        <p class="text-base sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
+                            {{ number_format($totalProdukTerjual, 0, ',', '.') }} <span class="text-xs sm:text-sm font-medium text-stone-500">pcs</span>
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                    <span>Total kuantitas barang keluar</span>
-                    <span class="font-semibold text-emerald-600">Stok Keluar</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-stone-500 min-w-0 leading-tight">
+                    <span class="truncate leading-tight">Kuantitas keluar</span>
+                    <span class="font-semibold text-emerald-600 shrink-0 leading-tight">Stok Keluar</span>
                 </div>
             </div>
 
             <!-- Stat 3: Sisa Stok Fisik -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                         </svg>
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-stone-500 font-medium">Total Sisa Stok</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
-                            {{ number_format($totalSisaStok, 0, ',', '.') }} <span class="text-sm font-semibold text-stone-500">pcs</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Total Sisa Stok">Total Sisa Stok</p>
+                        <p class="text-base sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
+                            {{ number_format($totalSisaStok, 0, ',', '.') }} <span class="text-xs sm:text-sm font-medium text-stone-500">pcs</span>
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                    <span>Stok tersedia saat ini</span>
-                    <span class="font-semibold {{ $totalProdukHabis > 0 ? 'text-rose-600' : 'text-emerald-600' }}">
-                        {{ $totalProdukHabis }} kritis / habis
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-stone-500 min-w-0 leading-tight">
+                    <span class="truncate leading-tight">Stok tersedia</span>
+                    <span class="font-semibold {{ $totalProdukHabis > 0 ? 'text-rose-600' : 'text-emerald-600' }} shrink-0 leading-tight">
+                        {{ $totalProdukHabis }} kritis
                     </span>
                 </div>
             </div>
 
             <!-- Stat 4: Kontekstual Berdasarkan Tab -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
                 @if ($tab === 'stok')
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700 shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700 shrink-0">
+                            <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"/>
                             </svg>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs text-stone-500 font-medium">Stok Masuk (Restok)</p>
-                            <p class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
-                                +{{ number_format($totalStokMasuk, 0, ',', '.') }} <span class="text-sm font-semibold text-stone-500">pcs</span>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Stok Masuk">Stok Masuk</p>
+                            <p class="text-base sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
+                                +{{ number_format($totalStokMasuk, 0, ',', '.') }} <span class="text-xs sm:text-sm font-medium text-stone-500">pcs</span>
                             </p>
                         </div>
                     </div>
-                    <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                        <span>Penambahan di periode ini</span>
-                        <span class="font-semibold text-teal-700">{{ $totalProdukReady }} produk ready</span>
+                    <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-stone-500 min-w-0 leading-tight">
+                        <span class="truncate leading-tight">Penambahan periode</span>
+                        <span class="font-semibold text-teal-700 shrink-0 leading-tight">{{ $totalProdukReady }} ready</span>
                     </div>
                 @else
-                    <div class="flex items-center gap-3.5">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 shrink-0">
+                            <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs text-stone-500 font-medium">Rata-rata Transaksi</p>
-                            <p class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Rata-rata Transaksi">Rata-rata Transaksi</p>
+                            <p class="text-base sm:text-2xl font-extrabold text-stone-900 leading-tight truncate">
                                 Rp{{ number_format($rataRataTransaksi, 0, ',', '.') }}
                             </p>
                         </div>
                     </div>
-                    <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-                        <span>Nilai pesanan per transaksi</span>
-                        <span class="font-semibold text-indigo-700">{{ $totalTransaksi }} pesanan</span>
+                    <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-stone-500 min-w-0 leading-tight">
+                        <span class="truncate leading-tight">Nilai per transaksi</span>
+                        <span class="font-semibold text-indigo-700 shrink-0 leading-tight">{{ $totalTransaksi }} pesanan</span>
                     </div>
                 @endif
             </div>

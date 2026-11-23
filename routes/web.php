@@ -144,6 +144,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         // Pengaturan toko: profil, rekening bank, dan QRIS (single-row).
         Route::get('settings', [AdminStoreSettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [AdminStoreSettingController::class, 'update'])->name('settings.update');
+        Route::post('settings/banners/reorder', [AdminStoreSettingController::class, 'reorderBanners'])->name('settings.banners.reorder');
         Route::post('settings/banners/{banner}/move-up', [AdminStoreSettingController::class, 'moveUpBanner'])->name('settings.banners.move-up');
         Route::post('settings/banners/{banner}/move-down', [AdminStoreSettingController::class, 'moveDownBanner'])->name('settings.banners.move-down');
         Route::delete('settings/banners/{banner}', [AdminStoreSettingController::class, 'deleteBannerItem'])->name('settings.banners.destroy');
