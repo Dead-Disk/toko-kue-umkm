@@ -442,7 +442,7 @@
 
                 <!-- Card: Multi-Banner Toko (Beranda) -->
                 <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-5 sm:p-7">
-                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-stone-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-5 border-b border-stone-100">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -455,7 +455,7 @@
                             </div>
                         </div>
 
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border {{ $banners->isNotEmpty() ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-stone-100 text-stone-600 border-stone-200' }}">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border shrink-0 w-fit {{ $banners->isNotEmpty() ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-stone-100 text-stone-600 border-stone-200' }}">
                             <span class="w-2 h-2 rounded-full {{ $banners->isNotEmpty() ? 'bg-emerald-500 animate-pulse' : 'bg-stone-400' }}"></span>
                             {{ $banners->count() }} Banner Aktif
                         </span>
@@ -463,12 +463,12 @@
 
                     <!-- Live Carousel Preview -->
                     <div class="mb-6 p-4 rounded-xl bg-stone-50 border border-stone-200/80">
-                        <div class="flex items-center justify-between mb-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 mb-3">
                             <p class="text-xs font-semibold text-stone-700 flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#6B0F1A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                 Pratinjau Tampilan Beranda Pembeli:
                             </p>
-                            <span id="bannerCanvasBadge" class="text-[10px] font-semibold text-stone-500 bg-white px-2.5 py-0.5 rounded-full border border-stone-200">
+                            <span id="bannerCanvasBadge" class="text-[10px] font-semibold text-stone-500 bg-white px-2.5 py-0.5 rounded-full border border-stone-200 w-fit">
                                 {{ $setting->banner_size ?? '21:9' }} · {{ $setting->banner_scale ?? 'cover' }} · Geser per {{ $setting->banner_slide_duration ?? 5 }} Detik
                             </span>
                         </div>
@@ -479,65 +479,40 @@
 
                     <!-- Daftar Multi-Banner & Pengaturan Urutan -->
                     <div class="mb-6 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                            <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider flex flex-wrap items-center gap-1.5">
                                 <span>Daftar Urutan Banner</span>
-                                <span class="text-stone-400 normal-case font-normal">(Bisa naik/turunkan urutan &amp; hapus banner)</span>
+                                <span class="text-stone-400 normal-case font-normal text-[11px] sm:text-xs">(Tahan &amp; geser untuk atur urutan)</span>
                             </h3>
-                            @if ($banners->isNotEmpty())
-                                <span class="text-[11px] text-stone-500">Urutan paling atas tampil pertama</span>
-                            @endif
+                            <div class="flex items-center gap-2">
+                                <span id="bannerReorderStatus" class="hidden text-[11px] font-medium text-emerald-600 transition-opacity">
+                                    Urutan tersimpan ✓
+                                </span>
+                                @if ($banners->isNotEmpty())
+                                    <span class="text-[10px] sm:text-[11px] text-stone-500">Urutan paling atas tampil pertama</span>
+                                @endif
+                            </div>
                         </div>
 
                         @if ($banners->isNotEmpty())
-                            <div class="space-y-3">
+                            <div id="bannerListContainer" class="space-y-3">
                                 @foreach ($banners as $index => $b)
-                                    <div class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-stone-200 bg-white shadow-2xs hover:border-[#6B0F1A]/40 transition-all space-y-2.5">
-                                        <!-- Header Baris Banner: Badge Urutan & Tombol Aksi -->
-                                        <div class="flex items-center justify-between gap-2">
-                                            <div class="flex items-center gap-2">
-                                                <span class="w-6 h-6 rounded-full bg-[#6B0F1A] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
+                                    <div class="banner-item p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-stone-200 bg-white shadow-2xs hover:border-[#6B0F1A]/40 transition-all space-y-2.5 min-w-0 max-w-full relative"
+                                         data-id="{{ $b->id }}">
+                                        <input type="hidden" name="banner_orders[{{ $b->id }}]" class="banner-order-input" value="{{ $index + 1 }}">
+
+                                        <!-- Header Baris Banner: Badge Urutan & Judul -->
+                                        <div class="flex items-center justify-between gap-2 min-w-0 max-w-full">
+                                            <div class="flex items-center gap-2 flex-wrap min-w-0">
+                                                <span class="banner-number-badge w-6 h-6 rounded-full bg-[#6B0F1A] text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
                                                     {{ $index + 1 }}
                                                 </span>
-                                                <span class="text-xs font-bold text-stone-800">
+                                                <span class="banner-title-text text-xs font-bold text-stone-800 truncate">
                                                     Banner ke-{{ $index + 1 }}
                                                 </span>
-                                                <span class="text-[10px] text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full font-medium">
+                                                <span class="banner-order-badge text-[10px] text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full font-medium shrink-0">
                                                     Urutan #{{ $b->urutan }}
                                                 </span>
-                                            </div>
-
-                                            <!-- Tombol Aksi Geser Urutan & Hapus -->
-                                            <div class="flex items-center gap-1.5 shrink-0">
-                                                <!-- Tombol Geser Naik -->
-                                                <button type="submit"
-                                                        form="moveUpBanner-{{ $b->id }}"
-                                                        title="Pindahkan urutan ke atas"
-                                                        {{ $loop->first ? 'disabled' : '' }}
-                                                        class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition {{ $loop->first ? 'border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50' : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs active:bg-stone-100' }}">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
-                                                    <span class="text-[11px]">Naik</span>
-                                                </button>
-
-                                                <!-- Tombol Geser Turun -->
-                                                <button type="submit"
-                                                        form="moveDownBanner-{{ $b->id }}"
-                                                        title="Pindahkan urutan ke bawah"
-                                                        {{ $loop->last ? 'disabled' : '' }}
-                                                        class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition {{ $loop->last ? 'border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50' : 'border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shadow-2xs active:bg-stone-100' }}">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                                    <span class="text-[11px]">Turun</span>
-                                                </button>
-
-                                                <!-- Tombol Hapus Banner -->
-                                                <button type="submit"
-                                                        form="deleteBanner-{{ $b->id }}"
-                                                        onclick="return confirm('Apakah Anda yakin ingin menghapus banner ini?');"
-                                                        title="Hapus banner ini"
-                                                        class="px-2.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-1 transition cursor-pointer shadow-2xs active:bg-rose-200">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                                    <span class="text-[11px]">Hapus</span>
-                                                </button>
                                             </div>
                                         </div>
 
@@ -546,6 +521,34 @@
                                             <img src="{{ $b->gambar_url }}"
                                                  alt="Banner ke-{{ $index + 1 }}"
                                                  class="w-full h-full {{ $setting->bannerScaleClass() }}">
+                                        </div>
+
+                                        <!-- Kontrol Urutan / Aksi di Kanan Bawah Blok Banner -->
+                                        <div class="flex justify-end items-center gap-2 mt-2 pt-2 border-t border-stone-100 min-w-0 max-w-full">
+                                            <!-- Drag Handle Geser Urutan -->
+                                            <div role="button"
+                                                 tabindex="0"
+                                                 class="banner-drag-handle inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 active:bg-stone-200 text-stone-700 text-xs font-semibold cursor-grab active:cursor-grabbing select-none transition shadow-2xs"
+                                                 style="touch-action: none;"
+                                                 title="Tahan dan geser untuk mengatur urutan"
+                                                 aria-label="Tahan dan geser untuk mengatur urutan banner ke-{{ $index + 1 }}">
+                                                <svg class="w-3.5 h-3.5 text-stone-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                                                </svg>
+                                                <span class="text-[11px]">Tahan &amp; Geser</span>
+                                            </div>
+
+                                            <!-- Tombol Hapus Banner -->
+                                            <button type="submit"
+                                                    form="deleteBanner-{{ $b->id }}"
+                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus banner ini?');"
+                                                    title="Hapus banner ini"
+                                                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition cursor-pointer shadow-2xs active:bg-rose-200">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                <span class="text-[11px]">Hapus</span>
+                                            </button>
                                         </div>
                                     </div>
                                 @endforeach
@@ -604,7 +607,7 @@
                         </div>
 
                         <!-- Mini Preview Gambar yang Baru Dipilih Sebelum Disimpan -->
-                        <div id="newBannerPendingContainer" class="hidden p-3 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-center justify-between gap-3">
+                        <div id="newBannerPendingContainer" class="hidden p-3 rounded-xl border border-emerald-200 bg-emerald-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-20 {{ $setting->bannerAspectRatioClass() }} rounded-lg overflow-hidden border border-emerald-200 bg-white shrink-0">
                                     <img id="bannerPreviewImg" src="" alt="Pratinjau Baru" class="w-full h-full {{ $setting->bannerScaleClass() }}">
@@ -954,6 +957,192 @@
 
             sizeRadios.forEach(radio => radio.addEventListener('change', updateLiveBannerPreview));
             scaleRadios.forEach(radio => radio.addEventListener('change', updateLiveBannerPreview));
+
+            // Inisialisasi Drag and Drop untuk Daftar Urutan Banner
+            function initBannerDragAndDrop() {
+                const container = document.getElementById('bannerListContainer');
+                if (!container) return;
+
+                const handles = container.querySelectorAll('.banner-drag-handle');
+                if (!handles.length) return;
+
+                let isDragging = false;
+                let draggedItem = null;
+                let initialOrder = [];
+                let activePointerId = null;
+
+                function getBannerIds() {
+                    return Array.from(container.querySelectorAll('.banner-item')).map(el => el.dataset.id);
+                }
+
+                function updateBannerNumbering() {
+                    const items = container.querySelectorAll('.banner-item');
+                    items.forEach((item, index) => {
+                        const num = index + 1;
+                        const numBadge = item.querySelector('.banner-number-badge');
+                        const titleText = item.querySelector('.banner-title-text');
+                        const orderBadge = item.querySelector('.banner-order-badge');
+                        const orderInput = item.querySelector('.banner-order-input');
+
+                        if (numBadge) numBadge.textContent = num;
+                        if (titleText) titleText.textContent = `Banner ke-${num}`;
+                        if (orderBadge) orderBadge.textContent = `Urutan #${num}`;
+                        if (orderInput) orderInput.value = num;
+                    });
+                }
+
+                function revertBannerOrder(order) {
+                    if (!container || !order) return;
+                    order.forEach(id => {
+                        const item = container.querySelector(`.banner-item[data-id="${id}"]`);
+                        if (item) container.appendChild(item);
+                    });
+                }
+
+                function displayToast(message, type = 'success') {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(message, type);
+                        return;
+                    }
+
+                    const toast = document.createElement('div');
+                    toast.className = `fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold text-white transition-all transform duration-300 flex items-center gap-2 ${
+                        type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'
+                    }`;
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                }
+
+                async function saveBannerOrder(newOrder, prevOrder) {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                        || document.querySelector('input[name="_token"]')?.value;
+                    const reorderUrl = "{{ route('admin.settings.banners.reorder') }}";
+                    const statusEl = document.getElementById('bannerReorderStatus');
+
+                    if (statusEl) {
+                        statusEl.textContent = 'Menyimpan urutan...';
+                        statusEl.className = 'text-[11px] font-medium text-stone-500 animate-pulse';
+                        statusEl.classList.remove('hidden');
+                    }
+
+                    try {
+                        const response = await fetch(reorderUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                            },
+                            body: JSON.stringify({
+                                orders: newOrder.map(Number),
+                            }),
+                        });
+
+                        const data = await response.json().catch(() => null);
+
+                        if (!response.ok || !data?.success) {
+                            throw new Error(data?.message || 'Gagal menyimpan urutan banner.');
+                        }
+
+                        if (statusEl) {
+                            statusEl.textContent = 'Urutan tersimpan ✓';
+                            statusEl.className = 'text-[11px] font-medium text-emerald-600 transition-opacity';
+                            setTimeout(() => {
+                                statusEl.classList.add('hidden');
+                            }, 3000);
+                        }
+
+                        displayToast(data.message || 'Urutan banner berhasil disimpan.', 'success');
+                    } catch (err) {
+                        console.error('Reorder error:', err);
+                        if (statusEl) {
+                            statusEl.textContent = 'Gagal menyimpan urutan ✕';
+                            statusEl.className = 'text-[11px] font-medium text-rose-600';
+                            setTimeout(() => {
+                                statusEl.classList.add('hidden');
+                            }, 4000);
+                        }
+
+                        displayToast(err.message || 'Gagal menyimpan urutan banner. Silakan coba lagi.', 'error');
+                        revertBannerOrder(prevOrder);
+                        updateBannerNumbering();
+                    }
+                }
+
+                handles.forEach(handle => {
+                    handle.addEventListener('pointerdown', function (e) {
+                        if (e.pointerType === 'mouse' && e.button !== 0) return;
+                        const item = handle.closest('.banner-item');
+                        if (!item) return;
+
+                        isDragging = true;
+                        draggedItem = item;
+                        initialOrder = getBannerIds();
+                        activePointerId = e.pointerId;
+
+                        try {
+                            handle.setPointerCapture(e.pointerId);
+                        } catch (_) {}
+
+                        draggedItem.classList.add('is-dragging', 'shadow-lg', 'border-[#6B0F1A]', 'ring-2', 'ring-[#6B0F1A]/30', 'scale-[1.01]', 'z-30');
+                        draggedItem.style.transition = 'none';
+                        document.body.classList.add('select-none');
+                    });
+                });
+
+                function handlePointerMove(e) {
+                    if (!isDragging || !draggedItem) return;
+
+                    const siblings = [...container.querySelectorAll('.banner-item:not(.is-dragging)')];
+                    const nextSibling = siblings.find(sibling => {
+                        const rect = sibling.getBoundingClientRect();
+                        return e.clientY < rect.top + rect.height / 2;
+                    });
+
+                    if (nextSibling) {
+                        container.insertBefore(draggedItem, nextSibling);
+                    } else {
+                        container.appendChild(draggedItem);
+                    }
+                }
+
+                function handlePointerEnd(e) {
+                    if (!isDragging || !draggedItem) return;
+
+                    if (activePointerId !== null) {
+                        const handle = draggedItem.querySelector('.banner-drag-handle');
+                        if (handle && handle.hasPointerCapture(activePointerId)) {
+                            try {
+                                handle.releasePointerCapture(activePointerId);
+                            } catch (_) {}
+                        }
+                    }
+
+                    draggedItem.classList.remove('is-dragging', 'shadow-lg', 'border-[#6B0F1A]', 'ring-2', 'ring-[#6B0F1A]/30', 'scale-[1.01]', 'z-30');
+                    draggedItem.style.transition = '';
+                    document.body.classList.remove('select-none');
+
+                    const newOrder = getBannerIds();
+                    isDragging = false;
+                    draggedItem = null;
+                    activePointerId = null;
+
+                    if (JSON.stringify(initialOrder) !== JSON.stringify(newOrder)) {
+                        updateBannerNumbering();
+                        saveBannerOrder(newOrder, initialOrder);
+                    }
+                }
+
+                window.addEventListener('pointermove', handlePointerMove);
+                window.addEventListener('pointerup', handlePointerEnd);
+                window.addEventListener('pointercancel', handlePointerEnd);
+            }
+
+            initBannerDragAndDrop();
         });
     </script>
 @endsection

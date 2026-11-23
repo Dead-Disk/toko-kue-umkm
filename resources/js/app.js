@@ -6,7 +6,11 @@ import { initNavbarSearch } from './modules/navbar-search';
 import { initPaymentDetails } from './modules/payment-details';
 import { initProductImageCropper } from './modules/product-image-cropper';
 import { initStaffProductStock } from './modules/staff-product-stock';
-import { initToasts } from './modules/toast';
+import { initToasts, showToast } from './modules/toast';
+
+if (typeof window !== 'undefined') {
+    window.showToast = showToast;
+}
 
 initCashierPos();
 initConfirmActions();

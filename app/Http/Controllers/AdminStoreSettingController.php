@@ -6,6 +6,7 @@ use App\Http\Controllers\Concerns\StoresBase64Images;
 use App\Models\ActivityLog;
 use App\Models\Banner;
 use App\Models\StoreSetting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -141,6 +142,41 @@ class AdminStoreSettingController extends Controller
         return redirect()
             ->route('admin.settings.index')
             ->with('success', 'Pengaturan toko berhasil disimpan.');
+    }
+
+    /**
+     * Perbarui urutan banner melalui drag-and-drop.
+     */
+    public function reorderBanners(Request $request): JsonResponse|RedirectResponse
+    {
+        $data = $request->validate([
+            'orders' => ['nullable', 'array'],
+            'orders.*' => ['integer', 'exists:banners,id'],
+            'banner_orders' => ['nullable', 'array'],
+            'banner_orders.*' => ['nullable', 'integer'],
+        ]);
+
+        if (! empty($data['orders'])) {
+            foreach ($data['orders'] as $index => $bannerId) {
+                Banner::where('id', $bannerId)->update(['urutan' => $index + 1]);
+            }
+        } elseif (! empty($data['banner_orders'])) {
+            foreach ($data['banner_orders'] as $bannerId => $urutan) {
+                Banner::where('id', $bannerId)->update(['urutan' => (int) $urutan]);
+            }
+        }
+
+        ActivityLog::record('ubah', 'Mengubah urutan banner via drag-and-drop');
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Urutan banner berhasil disimpan.',
+            ]);
+        }
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'Urutan banner berhasil disimpan.');
     }
 
     /**

@@ -41,53 +41,24 @@
 
 @section('content')
     <!-- Top Header & Breadcrumb -->
-    <div class="no-print mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2 text-xs text-stone-500 mb-1">
-                <a href="{{ route('admin.dashboard') }}" class="hover:text-[#6B0F1A] transition-colors">Beranda</a>
-                <span>/</span>
-                <span class="text-stone-800 font-semibold">Kasir / POS</span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-[#5A121A] tracking-tight">
-                Kasir / POS Offline
-            </h1>
-            <p class="text-stone-500 text-xs sm:text-sm mt-1">
-                Pencatatan transaksi tunai langsung di toko secara cepat.
-            </p>
+    <div class="no-print mb-5 sm:mb-6">
+        <div class="flex items-center gap-2 text-xs text-stone-500 mb-1">
+            <a href="{{ route('admin.dashboard') }}" class="hover:text-[#6B0F1A] transition-colors">Beranda</a>
+            <span>/</span>
+            <span class="text-stone-800 font-semibold">Kasir / POS</span>
         </div>
-
-        {{-- Navigasi Quick Links Pills --}}
-        <nav class="flex flex-wrap items-center gap-2">
-            <a href="{{ route('admin.dashboard') }}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white text-stone-600 border border-stone-200 hover:text-[#6B0F1A] hover:border-[#6B0F1A]/40 transition shadow-2xs">
-                <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="{{ route('admin.pesanan.index') }}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white text-stone-600 border border-stone-200 hover:text-[#6B0F1A] hover:border-[#6B0F1A]/40 transition shadow-2xs">
-                <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>
-                <span>Pesanan Masuk</span>
-            </a>
-
-            <a href="{{ route('admin.produk.index') }}"
-               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white text-stone-600 border border-stone-200 hover:text-[#6B0F1A] hover:border-[#6B0F1A]/40 transition shadow-2xs">
-                <svg class="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                </svg>
-                <span>Daftar Produk</span>
-            </a>
-        </nav>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#5A121A] tracking-tight">
+            Kasir / POS Offline
+        </h1>
+        <p class="text-stone-500 text-xs sm:text-sm mt-1">
+            Pencatatan transaksi tunai langsung di toko secara cepat.
+        </p>
     </div>
 
     {{-- Toast alerts --}}
     @if (session('success'))
         <div data-toast-message="{{ session('success') }}" data-toast-type="success" hidden></div>
-        <div class="no-print mb-6 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs sm:text-sm flex items-center justify-between shadow-2xs">
+        <div class="no-print mb-5 sm:mb-6 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs sm:text-sm flex items-center justify-between shadow-2xs">
             <div class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
@@ -99,7 +70,7 @@
 
     @if (session('error'))
         <div data-toast-message="{{ session('error') }}" data-toast-type="error" hidden></div>
-        <div class="no-print mb-6 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-2xs">
+        <div class="no-print mb-5 sm:mb-6 p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm flex items-center gap-2 shadow-2xs">
             <svg class="w-4 h-4 text-rose-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
             </svg>
@@ -108,10 +79,10 @@
     @endif
 
     {{-- Main Layout Grid --}}
-    <div class="no-print grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="no-print grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start w-full max-w-full min-w-0">
 
         {{-- Form Transaksi Kasir (Main Container Card) --}}
-        <section class="lg:col-span-7 bg-white rounded-2xl shadow-md border border-stone-200/70 p-5 sm:p-6 space-y-5">
+        <section class="lg:col-span-7 bg-white rounded-2xl shadow-md border border-stone-200/70 p-4 sm:p-6 space-y-4 sm:space-y-5 min-w-0">
             <div class="flex items-center justify-between border-b border-stone-100 pb-3">
                 <h2 class="text-base sm:text-lg font-bold text-stone-800 flex items-center gap-2">
                     <span class="w-7 h-7 rounded-xl bg-[#6B0F1A] text-white flex items-center justify-center text-xs">
@@ -360,7 +331,7 @@
         </section>
 
         {{-- Daftar Produk Tersedia (Side Card) --}}
-        <section class="lg:col-span-5 bg-white rounded-2xl shadow-md border border-stone-200/70 p-5 sm:p-6 space-y-4">
+        <section class="lg:col-span-5 bg-white rounded-2xl shadow-md border border-stone-200/70 p-4 sm:p-6 space-y-4 min-w-0">
             <div class="border-b border-stone-100 pb-3 flex items-center justify-between">
                 <h2 class="text-base font-bold text-stone-800 flex items-center gap-2">
                     <span class="w-6 h-6 rounded-lg bg-stone-100 text-[#6B0F1A] flex items-center justify-center text-xs">

@@ -437,4 +437,40 @@ class AdminStoreSettingTest extends TestCase
 
         $this->assertDatabaseMissing('banners', ['id' => $banner->id]);
     }
+
+    public function test_admin_can_reorder_banners_via_ajax_drag_and_drop(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner' => UploadedFile::fake()->create('banner-1.png', 50, 'image/png'),
+        ]);
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'store_name' => 'Toko Kue Nak Mbarep',
+            'banner' => UploadedFile::fake()->create('banner-2.png', 50, 'image/png'),
+        ]);
+
+        $banner1 = Banner::first();
+        $banner2 = Banner::skip(1)->first();
+
+        $this->assertSame(1, $banner1->urutan);
+        $this->assertSame(2, $banner2->urutan);
+
+        $response = $this->actingAs($admin)
+            ->postJson(route('admin.settings.banners.reorder'), [
+                'orders' => [$banner2->id, $banner1->id],
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Urutan banner berhasil disimpan.',
+            ]);
+
+        $this->assertSame(1, $banner2->fresh()->urutan);
+        $this->assertSame(2, $banner1->fresh()->urutan);
+    }
 }
