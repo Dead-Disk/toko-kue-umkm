@@ -143,85 +143,85 @@
             $topCategory = $categories->sortByDesc('products_count')->first();
         @endphp
 
-        <!-- 4 Stat Cards Row -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- 4 Stat Cards Row (Desktop 4 cols, Tablet/Mobile 2x2 grid) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
             <!-- Stat 1: Total Kategori -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Total Kategori</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Total Kategori">Total Kategori</p>
+                        <p class="text-base sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalKategori }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <span>Kelompok katalog aktif</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <span class="truncate leading-tight">Kelompok katalog aktif</span>
                 </div>
             </div>
 
             <!-- Stat 2: Total Produk Terhubung -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Total Produk</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Total Produk">Total Produk</p>
+                        <p class="text-base sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalProdukKategori }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <span>Tersebar di kategori</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <span class="truncate leading-tight">Tersebar di kategori</span>
                 </div>
             </div>
 
             <!-- Stat 3: Varian Custom Cake -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Varian Custom</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Varian Custom">Varian Custom</p>
+                        <p class="text-base sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalVarian }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-sky-600">
-                    <span>Bentuk &amp; ukuran custom cake</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-sky-600 min-w-0">
+                    <span class="truncate leading-tight">Bentuk &amp; ukuran custom</span>
                 </div>
             </div>
 
-            <!-- Stat 4: Kategori Terpopuler -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Stat 4: Kategori Teratas -->
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                         </svg>
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-stone-500 font-medium">Kategori Teratas</p>
-                        <p class="text-lg font-bold text-stone-900 leading-tight truncate">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Kategori Teratas">Kategori Teratas</p>
+                        <p class="text-sm sm:text-xl font-bold text-stone-900 leading-tight truncate" title="{{ $topCategory?->nama_kategori ?? '-' }}">
                             {{ $topCategory?->nama_kategori ?? '-' }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <span>{{ $topCategory?->products_count ?? 0 }} produk aktif</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <span class="truncate leading-tight">{{ $topCategory?->products_count ?? 0 }} produk aktif</span>
                 </div>
             </div>
         </section>
@@ -275,18 +275,22 @@
                 </div>
 
                 <!-- Visual Category Cards Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
                     @forelse ($categories as $category)
-                        <div class="bg-stone-50/70 rounded-2xl p-4 border border-stone-200/70 hover:border-rose-200 hover:bg-rose-50/30 transition-all flex flex-col justify-between group">
-                            <div class="flex items-start justify-between gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-xl bg-[#FAF2EE] p-1.5 border border-stone-200/70 shadow-xs flex items-center justify-center shrink-0">
+                        <div class="bg-stone-50/70 rounded-2xl p-3.5 sm:p-4 border border-stone-200/70 hover:border-rose-200 hover:bg-rose-50/30 transition-all flex flex-col justify-between group min-w-0">
+                            {{-- Top row: icon + name + badge (all inline on mobile) --}}
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#FAF2EE] p-1.5 border border-stone-200/70 shadow-xs flex items-center justify-center shrink-0">
                                     @if ($category->foto_url)
                                         <img src="{{ $category->foto_url }}" alt="{{ $category->nama_kategori }}" class="w-full h-full object-cover rounded-lg">
                                     @else
                                         <x-category-icon :category="$category" class="w-full h-full" />
                                     @endif
                                 </div>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-stone-600 border border-stone-200/80">
+                                <h3 class="font-semibold text-sm text-stone-900 group-hover:text-[#6B0F1A] transition-colors truncate flex-1 min-w-0 leading-tight">
+                                    {{ $category->nama_kategori }}
+                                </h3>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-stone-600 border border-stone-200/80 shrink-0 whitespace-nowrap">
                                     {{ $category->products_count }} Produk
                                     @if ($category->trashed_products_count > 0)
                                         · {{ $category->trashed_products_count }} Dihapus
@@ -294,16 +298,7 @@
                                 </span>
                             </div>
 
-                            <div>
-                                <h3 class="font-bold text-sm text-stone-900 group-hover:text-[#6B0F1A] transition-colors">
-                                    {{ $category->nama_kategori }}
-                                </h3>
-                                <p class="text-[11px] text-stone-400 font-mono mt-0.5">
-                                    slug: {{ $category->slug }}
-                                </p>
-                            </div>
-
-                            <div class="pt-3 mt-3 border-t border-stone-200/50 flex items-center justify-between">
+                            <div class="pt-2.5 mt-2.5 sm:pt-3 sm:mt-3 border-t border-stone-200/50 flex items-center justify-between">
                                 <a href="{{ route('admin.produk.index', ['category_id' => $category->id]) }}"
                                    class="text-[11px] text-stone-500 hover:text-[#6B0F1A] font-semibold flex items-center gap-1 transition-colors">
                                     <span>Lihat Produk</span>
@@ -341,71 +336,6 @@
                             Belum ada kategori yang dibuat.
                         </div>
                     @endforelse
-                </div>
-
-                <!-- Table View of Categories -->
-                <div class="mt-6">
-                    <h3 class="text-xs font-bold text-stone-700 uppercase tracking-wider mb-3">
-                        Tabel Rincian Kategori
-                    </h3>
-                    <div class="overflow-x-auto rounded-xl border border-stone-200/70">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-stone-50 text-stone-600 font-semibold border-b border-stone-200/70">
-                                    <th class="py-3 px-4 w-12 text-center">No</th>
-                                    <th class="py-3 px-4">Nama Kategori</th>
-                                    <th class="py-3 px-4">Slug</th>
-                                    <th class="py-3 px-4 text-center">Jumlah Produk</th>
-                                    <th class="py-3 px-4 text-center w-28">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-stone-100">
-                                @forelse ($categories as $category)
-                                    <tr class="hover:bg-stone-50/70 transition-colors">
-                                        <td class="py-3 px-4 text-center text-stone-500 font-mono text-[11px]">
-                                            {{ $loop->iteration }}
-                                        </td>
-                                        <td class="py-3 px-4 font-bold text-stone-800">
-                                            {{ $category->nama_kategori }}
-                                        </td>
-                                        <td class="py-3 px-4 text-stone-500 font-mono text-[11px]">
-                                            {{ $category->slug }}
-                                        </td>
-                                        <td class="py-3 px-4 text-center">
-                                            <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-[#6B0F1A]">
-                                                {{ $category->products_count }}
-                                            </span>
-                                        </td>
-                                        <td class="py-3 px-4 text-center whitespace-nowrap">
-                                            <div class="inline-flex items-center gap-1.5">
-                                                <a href="{{ route('admin.kategori.edit', $category) }}"
-                                                   class="px-2.5 py-1 text-[11px] font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors">
-                                                    Edit
-                                                </a>
-                                                <form action="{{ route('admin.kategori.destroy', $category) }}"
-                                                      method="POST"
-                                                      onsubmit="return confirm('Hapus kategori ini?')"
-                                                      class="inline-block">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                            class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
-                                                        Hapus
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="py-8 text-center text-stone-400">
-                                            Belum ada kategori kue.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
             </div>

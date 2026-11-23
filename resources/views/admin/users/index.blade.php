@@ -144,85 +144,85 @@
             </div>
         @endif
 
-        <!-- 4 Stat Cards Row -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- 4 Stat Cards Row (Desktop 4 cols, Tablet/Mobile 2x2 grid) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
             <!-- Stat 1: Total Pengguna -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Total Akun</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Total Akun">Total Akun</p>
+                        <p class="text-base sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalUsers ?? count($users) }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <span>Pengguna terdaftar</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <span class="truncate leading-tight">Pengguna terdaftar</span>
                 </div>
             </div>
 
             <!-- Stat 2: Administrator -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Administrator</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Administrator">Administrator</p>
+                        <p class="text-base sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalAdmin ?? $users->where('role', 'admin')->count() }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-purple-600">
-                    <span>Akses penuh sistem</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-purple-600 min-w-0">
+                    <span class="truncate leading-tight">Akses penuh sistem</span>
                 </div>
             </div>
 
             <!-- Stat 3: Staf Toko -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Staf Toko</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Staf Toko">Staf Toko</p>
+                        <p class="text-base sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalStaff ?? $users->where('role', 'staff')->count() }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-sky-600">
-                    <span>Kasir &amp; operasional</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-sky-600 min-w-0">
+                    <span class="truncate leading-tight">Kasir &amp; operasional</span>
                 </div>
             </div>
 
             <!-- Stat 4: Akun Anda -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow min-w-0 flex flex-col justify-between">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-xs text-stone-500 font-medium">Akun Anda Saat Ini</p>
-                        <p class="text-sm font-bold text-stone-900 leading-tight truncate">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Akun Anda Saat Ini">Akun Anda</p>
+                        <p class="text-xs sm:text-lg font-bold text-stone-900 leading-tight truncate" title="{{ auth()->user()->name ?? 'Admin' }}">
                             {{ auth()->user()->name ?? 'Admin' }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <span class="capitalize">Role: {{ auth()->user()->role ?? 'admin' }}</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <span class="capitalize truncate leading-tight">Role: {{ auth()->user()->role ?? 'admin' }}</span>
                 </div>
             </div>
         </section>

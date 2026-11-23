@@ -158,188 +158,175 @@
             </div>
         @endif
 
-        <!-- 4 Stat Cards Row (Desktop 4 cols, Tablet 2 cols, Mobile 1 col) -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- 4 Stat Cards Row (Desktop 4 cols, Tablet/Mobile 2x2 grid) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6">
             <!-- Stat 1: Total Pesanan -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('admin.pesanan.index', array_filter(['type' => $filterTipe?->value ?? request('type'), 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
+               class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border transition-all min-w-0 flex flex-col justify-between hover:shadow-md {{ empty($filter) && !request('status') ? 'border-[#6B0F1A] ring-2 ring-[#6B0F1A]/20' : 'border-stone-200/60 hover:border-stone-300' }}">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-[#6B0F1A] shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Total Pesanan</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Total Pesanan">Total Pesanan</p>
+                        <p class="text-lg sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $totalPesanan > 0 ? $totalPesanan : 128 }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                     </svg>
-                    <span>12% dari bulan lalu</span>
+                    <span class="truncate leading-tight">12% dari bulan lalu</span>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat 2: Pesanan Baru (Pending) -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('admin.pesanan.index', array_filter(['status' => 'pending', 'type' => $filterTipe?->value ?? request('type'), 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
+               class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border transition-all min-w-0 flex flex-col justify-between hover:shadow-md {{ ($filter ?? request('status')) === 'pending' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-stone-200/60 hover:border-stone-300' }}">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <div>
-                        <div class="flex items-center gap-1.5">
-                            <p class="text-xs text-stone-500 font-medium">Pesanan Baru</p>
-                            <span class="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse"></span>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Pesanan Baru">Pesanan Baru</p>
+                            <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500 inline-block animate-pulse shrink-0"></span>
                         </div>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                        <p class="text-lg sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $pesananBaru > 0 ? $pesananBaru : 18 }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-amber-600">
-                    <span>Perlu konfirmasi masuk</span>
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-amber-600 min-w-0">
+                    <span class="truncate leading-tight">Perlu konfirmasi masuk</span>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat 3: Pesanan Diproses -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('admin.pesanan.index', array_filter(['status' => 'proses', 'type' => $filterTipe?->value ?? request('type'), 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
+               class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border transition-all min-w-0 flex flex-col justify-between hover:shadow-md {{ ($filter ?? request('status')) === 'proses' ? 'border-sky-500 ring-2 ring-sky-500/20' : 'border-stone-200/60 hover:border-stone-300' }}">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Pesanan Diproses</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Pesanan Diproses">Pesanan Diproses</p>
+                        <p class="text-lg sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $pesananProses > 0 ? $pesananProses : 42 }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                     </svg>
-                    <span>8% dari bulan lalu</span>
+                    <span class="truncate leading-tight">8% dari bulan lalu</span>
                 </div>
-            </div>
+            </a>
 
             <!-- Stat 4: Pesanan Selesai -->
-            <div class="bg-white rounded-2xl p-5 shadow-xs border border-stone-200/60 hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3.5">
-                    <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('admin.pesanan.index', array_filter(['status' => 'selesai', 'type' => $filterTipe?->value ?? request('type'), 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
+               class="bg-white rounded-2xl p-3 sm:p-5 shadow-xs border transition-all min-w-0 flex flex-col justify-between hover:shadow-md {{ ($filter ?? request('status')) === 'selesai' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-stone-200/60 hover:border-stone-300' }}">
+                <div class="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                    <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                        <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <div>
-                        <p class="text-xs text-stone-500 font-medium">Pesanan Selesai</p>
-                        <p class="text-2xl font-bold text-stone-900 leading-tight">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[11px] sm:text-xs text-stone-500 font-medium truncate leading-tight" title="Pesanan Selesai">Pesanan Selesai</p>
+                        <p class="text-lg sm:text-2xl font-bold text-stone-900 leading-tight truncate">
                             {{ $pesananSelesai > 0 ? $pesananSelesai : 68 }}
                         </p>
                     </div>
                 </div>
-                <div class="mt-3.5 pt-3 border-t border-stone-100 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="mt-2.5 sm:mt-3.5 pt-2 sm:pt-3 border-t border-stone-100 flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-emerald-600 min-w-0">
+                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                     </svg>
-                    <span>10% dari bulan lalu</span>
+                    <span class="truncate leading-tight">10% dari bulan lalu</span>
                 </div>
-            </div>
+            </a>
         </section>
 
         <!-- Filter Card Container -->
-        <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-4 sm:p-5 mb-6 space-y-4">
+        <div class="bg-white rounded-2xl shadow-xs border border-stone-200/60 p-4 sm:p-5 mb-6 space-y-4 w-full max-w-full min-w-0">
 
-            <!-- Filter Status & Tipe Quick Pills -->
-            <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-stone-100">
-                <!-- Status Tabs -->
-                @php
-                    $tabStatus = [
-                        '' => 'Semua',
-                        'pending' => 'Pesanan Masuk (Pending)',
-                        'proses' => 'Dalam Proses',
-                        'selesai' => 'Selesai',
-                        'ditolak-batal' => 'Ditolak / Batal',
-                    ];
-                @endphp
+            <!-- Tipe Pesanan Tabs -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-stone-100 w-full min-w-0">
+                <span class="text-xs font-semibold text-stone-500">Tipe Pesanan:</span>
                 <div class="flex flex-wrap items-center gap-1.5">
-                    @foreach ($tabStatus as $nilai => $label)
-                        @php
-                            $isActive = $filter === ($nilai ?: null);
-                        @endphp
-                        <a href="{{ route('admin.pesanan.index', array_filter(['status' => $nilai, 'type' => $filterTipe?->value, 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
-                           class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $isActive ? 'bg-[#6B0F1A] text-white shadow-xs' : 'bg-stone-100 hover:bg-stone-200/70 text-stone-600' }}">
-                            @if ($isActive)
-                                <strong>{{ $label }}</strong>
-                            @else
-                                {{ $label }}
-                            @endif
-                        </a>
-                    @endforeach
-                </div>
-
-                <!-- Tipe Pesanan Tabs -->
-                <div class="flex items-center gap-1.5">
                     @foreach (['' => 'Semua Tipe', 'reguler' => 'Kue Reguler', 'custom' => 'Custom Cake'] as $nilai => $label)
                         @php
-                            $isActiveTipe = ($filterTipe?->value) === ($nilai ?: null);
+                            $isActiveTipe = ($filterTipe?->value ?? request('type')) === ($nilai ?: null);
                         @endphp
-                        <a href="{{ route('admin.pesanan.index', array_filter(['status' => $filter, 'type' => $nilai, 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
+                        <a href="{{ route('admin.pesanan.index', array_filter(['status' => $filter ?? request('status'), 'type' => $nilai, 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran'), 'start_date' => request('start_date'), 'end_date' => request('end_date')])) }}"
                            class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $isActiveTipe ? 'bg-amber-600 text-white shadow-xs' : 'bg-stone-100 hover:bg-stone-200/70 text-stone-600' }}">
-                            @if ($isActiveTipe)
-                                <strong>{{ $label }}</strong>
-                            @else
-                                {{ $label }}
-                            @endif
+                            {{ $label }}
                         </a>
                     @endforeach
                 </div>
             </div>
 
             <!-- Search, Status, Payment & Date Inputs Form -->
-            <form action="{{ route('admin.pesanan.index') }}" method="GET" class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
-                @if ($filter !== null)
-                    <input type="hidden" name="status" value="{{ $filter }}">
-                @endif
-                @if ($filterTipe !== null)
-                    <input type="hidden" name="type" value="{{ $filterTipe->value }}">
+            <form id="orderFilterForm" action="{{ route('admin.pesanan.index') }}" method="GET" class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full min-w-0">
+                @if ($filterTipe !== null || request('type'))
+                    <input type="hidden" name="type" value="{{ $filterTipe?->value ?? request('type') }}">
                 @endif
 
                 <!-- Search Input -->
-                <div class="relative flex-1">
+                <div class="relative flex-1 min-w-0">
                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </span>
                     <input type="text"
+                           id="filter_search"
                            name="search"
                            value="{{ request('search') }}"
                            placeholder="Cari nama pelanggan, nomor pesanan..."
-                           class="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] transition-all">
+                           autocomplete="off"
+                           class="w-full pl-10 pr-9 py-2.5 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] transition-all">
+                    @if (request('search'))
+                        <button type="button"
+                                id="clearSearchBtn"
+                                title="Hapus pencarian"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    @endif
                 </div>
 
-                <!-- Dropdown Status (Optional if not using tab) -->
-                <div class="w-full lg:w-44">
-                    <select name="status" class="w-full py-2.5 px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700 font-medium">
+                <!-- Dropdown Status -->
+                <div class="w-full lg:w-44 shrink-0 min-w-0">
+                    @php
+                        $activeStatus = $filter ?? request('status');
+                    @endphp
+                    <select id="filter_status" name="status" class="w-full py-2.5 px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700 font-medium cursor-pointer">
                         <option value="">Semua Status</option>
-                        <option value="pending" @selected(request('status') === 'pending')>Pesanan Baru (Pending)</option>
-                        <option value="proses" @selected(request('status') === 'proses')>Diproses</option>
-                        <option value="selesai" @selected(request('status') === 'selesai')>Selesai</option>
-                        <option value="ditolak" @selected(request('status') === 'ditolak')>Ditolak</option>
-                        <option value="batal" @selected(request('status') === 'batal')>Batal</option>
+                        <option value="pending" @selected($activeStatus === 'pending')>Pesanan Masuk (Pending)</option>
+                        <option value="proses" @selected($activeStatus === 'proses')>Dalam Proses</option>
+                        <option value="selesai" @selected($activeStatus === 'selesai')>Selesai</option>
+                        <option value="ditolak" @selected($activeStatus === 'ditolak')>Ditolak</option>
+                        <option value="batal" @selected($activeStatus === 'batal')>Batal</option>
+                        <option value="ditolak-batal" @selected($activeStatus === 'ditolak-batal')>Ditolak / Batal</option>
                     </select>
                 </div>
 
                 <!-- Dropdown Metode Pembayaran -->
-                <div class="w-full lg:w-48">
-                    <select name="metode_pembayaran" class="w-full py-2.5 px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700 font-medium">
+                <div class="w-full lg:w-48 shrink-0 min-w-0">
+                    <select id="filter_metode_pembayaran" name="metode_pembayaran" class="w-full py-2.5 px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700 font-medium cursor-pointer">
                         <option value="">Semua Metode Pembayaran</option>
                         <option value="transfer_bank" @selected(request('metode_pembayaran') === 'transfer_bank')>Transfer Bank</option>
                         <option value="qris" @selected(request('metode_pembayaran') === 'qris')>QRIS</option>
@@ -348,37 +335,42 @@
                 </div>
 
                 <!-- Date Range Inputs -->
-                <div class="flex items-center gap-2">
-                    <div class="relative">
+                <div class="flex items-center gap-2 w-full lg:w-auto min-w-0">
+                    <div class="relative flex-1 lg:w-36 min-w-0">
                         <input type="date"
                                id="start_date"
                                name="start_date"
                                value="{{ request('start_date') }}"
                                title="Dari Tanggal"
-                               class="py-2 px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700">
+                               class="w-full py-2 px-2.5 sm:px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700 cursor-pointer">
                     </div>
-                    <span class="text-xs text-stone-400">-</span>
-                    <div class="relative">
+                    <span class="text-xs text-stone-400 shrink-0">-</span>
+                    <div class="relative flex-1 lg:w-36 min-w-0">
                         <input type="date"
                                id="end_date"
                                name="end_date"
                                value="{{ request('end_date') }}"
                                title="Sampai Tanggal"
-                               class="py-2 px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700">
+                               class="w-full py-2 px-2.5 sm:px-3 text-xs rounded-xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] text-stone-700 cursor-pointer">
                     </div>
                 </div>
 
                 <!-- Submit & Reset Buttons -->
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2 w-full lg:w-auto shrink-0 min-w-0">
                     <button type="submit"
-                            class="inline-flex items-center justify-center gap-1.5 bg-[#6B0F1A] hover:bg-[#520A13] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            id="orderFilterSubmitBtn"
+                            class="flex-1 lg:flex-initial inline-flex items-center justify-center gap-1.5 bg-[#6B0F1A] hover:bg-[#520A13] text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition-colors">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                         </svg>
                         <span>Filter</span>
                     </button>
-                    <a href="{{ route('admin.pesanan.index', array_filter(['status' => $filter, 'type' => $filterTipe?->value])) }}"
-                       class="px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-stone-200 hover:bg-stone-50 text-stone-600 transition-colors">
+                    @php
+                        $hasActiveFilter = request()->hasAny(['search', 'status', 'metode_pembayaran', 'start_date', 'end_date', 'type']) || $filter !== null;
+                    @endphp
+                    <a href="{{ route('admin.pesanan.index') }}"
+                       title="Reset semua filter ke kondisi awal"
+                       class="px-4 py-2.5 text-xs font-semibold rounded-xl border transition-colors text-center shrink-0 {{ $hasActiveFilter ? 'border-[#6B0F1A]/30 text-[#6B0F1A] bg-rose-50/60 hover:bg-rose-100/60' : 'border-stone-200 hover:bg-stone-50 text-stone-600' }}">
                         Reset
                     </a>
                 </div>
@@ -596,9 +588,11 @@
 
                                 <!-- Status Badge -->
                                 <td class="py-3.5 px-3.5 text-center whitespace-nowrap">
-                                    <span class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold {{ $statusBadgeClass }}">
+                                    <a href="{{ route('admin.pesanan.index', array_filter(['status' => $order->status->value, 'type' => request('type'), 'search' => request('search'), 'metode_pembayaran' => request('metode_pembayaran')])) }}"
+                                       title="Filter berdasarkan status {{ $statusLabel }}"
+                                       class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold hover:opacity-80 transition-opacity {{ $statusBadgeClass }}">
                                         {{ $statusLabel }}
-                                    </span>
+                                    </a>
                                     <span class="hidden">{{ $order->status->value }}</span>
                                 </td>
 
@@ -688,9 +682,10 @@
 
     </main>
 
-    <!-- Mobile Sidebar JavaScript -->
+    <!-- Mobile Sidebar & Auto-Filter JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Sidebar Drawer
             const openMobileBtn = document.getElementById('openMobileSidebarBtn');
             const closeMobileBtn = document.getElementById('closeMobileSidebarBtn');
             const mobileBackdrop = document.getElementById('mobileSidebarBackdrop');
@@ -713,6 +708,115 @@
             function closeMobileSidebar() {
                 mobileDrawer.classList.add('-translate-x-full');
                 setTimeout(() => mobileBackdrop.classList.add('hidden'), 300);
+            }
+
+            // Order Auto-Filter Handling
+            const filterForm = document.getElementById('orderFilterForm');
+            if (filterForm) {
+                const searchInput = document.getElementById('filter_search');
+                const clearSearchBtn = document.getElementById('clearSearchBtn');
+                const statusSelect = document.getElementById('filter_status');
+                const paymentSelect = document.getElementById('filter_metode_pembayaran');
+                const startDateInput = document.getElementById('start_date');
+                const endDateInput = document.getElementById('end_date');
+                const submitBtn = document.getElementById('orderFilterSubmitBtn');
+
+                // Restore focus to search input if it triggered the auto-filter
+                if (sessionStorage.getItem('order_search_focused') === 'true') {
+                    sessionStorage.removeItem('order_search_focused');
+                    if (searchInput) {
+                        searchInput.focus();
+                        const valLen = searchInput.value.length;
+                        searchInput.setSelectionRange(valLen, valLen);
+                    }
+                }
+
+                // Helper to trigger form submission
+                function triggerFilter(source = '') {
+                    if (source === 'search') {
+                        sessionStorage.setItem('order_search_focused', 'true');
+                    }
+                    if (typeof filterForm.requestSubmit === 'function') {
+                        filterForm.requestSubmit();
+                    } else {
+                        cleanAndSubmitForm();
+                    }
+                }
+
+                function cleanAndSubmitForm() {
+                    if (submitBtn) {
+                        submitBtn.classList.add('opacity-75', 'pointer-events-none');
+                    }
+                    const inputs = filterForm.querySelectorAll('input:not([type="hidden"]), select');
+                    inputs.forEach(input => {
+                        if (!input.value || input.value.trim() === '') {
+                            input.disabled = true;
+                        }
+                    });
+                    filterForm.submit();
+                }
+
+                // Form submit event to clean up empty parameters
+                filterForm.addEventListener('submit', function () {
+                    if (submitBtn) {
+                        submitBtn.classList.add('opacity-75', 'pointer-events-none');
+                    }
+                    const inputs = filterForm.querySelectorAll('input:not([type="hidden"]), select');
+                    inputs.forEach(input => {
+                        if (!input.value || input.value.trim() === '') {
+                            input.disabled = true;
+                        }
+                    });
+                });
+
+                // Auto-submit on change for dropdowns
+                if (statusSelect) {
+                    statusSelect.addEventListener('change', () => triggerFilter('status'));
+                }
+                if (paymentSelect) {
+                    paymentSelect.addEventListener('change', () => triggerFilter('payment'));
+                }
+
+                // Auto-submit on change for date inputs
+                if (startDateInput) {
+                    startDateInput.addEventListener('change', () => triggerFilter('date'));
+                }
+                if (endDateInput) {
+                    endDateInput.addEventListener('change', () => triggerFilter('date'));
+                }
+
+                // Clear search button
+                if (clearSearchBtn && searchInput) {
+                    clearSearchBtn.addEventListener('click', function () {
+                        searchInput.value = '';
+                        triggerFilter('search');
+                    });
+                }
+
+                // Debounce search input (400ms)
+                if (searchInput) {
+                    const initialSearchValue = searchInput.value.trim();
+                    let debounceTimer = null;
+
+                    searchInput.addEventListener('input', function () {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            if (searchInput.value.trim() !== initialSearchValue) {
+                                triggerFilter('search');
+                            }
+                        }, 400);
+                    });
+
+                    searchInput.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            clearTimeout(debounceTimer);
+                            if (searchInput.value.trim() !== initialSearchValue) {
+                                triggerFilter('search');
+                            }
+                        }
+                    });
+                }
             }
         });
     </script>

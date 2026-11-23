@@ -77,10 +77,6 @@
                                value="{{ old('nama_kategori', old('name', $category->nama_kategori)) }}"
                                required
                                class="w-full text-xs px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] transition-all">
-                        <div class="mt-2 flex items-center gap-2 text-[11px] text-stone-400">
-                            <span>Slug saat ini:</span>
-                            <code class="px-2 py-0.5 rounded bg-stone-100 text-stone-600 font-mono text-[10px]">{{ $category->slug }}</code>
-                        </div>
                     </div>
 
                     <!-- Tombol Aksi -->

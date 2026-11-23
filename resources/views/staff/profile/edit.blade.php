@@ -184,15 +184,15 @@
 
                                 <div>
                                     <label for="email" class="block text-xs font-bold text-stone-700 mb-1.5">
-                                        Alamat Email <span class="text-rose-500">*</span>
+                                        Alamat Email (Opsional)
                                     </label>
                                     <input type="email"
                                            id="email"
                                            name="email"
                                            value="{{ old('email', $user->email) }}"
-                                           required
-                                           placeholder="nama@tokokue.com"
+                                           placeholder="Opsional — kosongkan bila tidak ada"
                                            class="w-full text-xs sm:text-sm px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] transition-all">
+                                    <p class="text-[11px] text-stone-400 mt-1">Login tetap menggunakan username.</p>
                                 </div>
                             </div>
                         </div>

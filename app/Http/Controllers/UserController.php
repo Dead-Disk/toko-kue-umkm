@@ -63,10 +63,12 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
             'role' => ['required', Rule::in(self::ROLES)],
         ]);
+
+        $data['email'] = blank($data['email'] ?? null) ? null : $data['email'];
 
         $user = User::create($data);
 
@@ -97,10 +99,12 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')->ignore($user->id)],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
             'role' => ['required', Rule::in(self::ROLES)],
         ]);
+
+        $data['email'] = blank($data['email'] ?? null) ? null : $data['email'];
 
         if (blank($data['password'] ?? null)) {
             unset($data['password']);

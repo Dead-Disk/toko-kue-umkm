@@ -76,6 +76,24 @@ class AdminProfileTest extends TestCase
         $this->assertSame('baru@tokokue.test', $user->email);
     }
 
+    public function test_user_can_clear_email_on_profile(): void
+    {
+        $user = User::factory()->create([
+            'username' => 'tanpa.email',
+            'email' => 'lama@tokokue.test',
+        ]);
+
+        $response = $this->actingAs($user)->put(route('admin.profile.update'), [
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => '',
+        ]);
+
+        $response->assertRedirect(route('admin.profile.edit'));
+        $response->assertSessionHas('success');
+        $this->assertNull($user->fresh()->email);
+    }
+
     public function test_user_can_update_password_with_correct_current_password(): void
     {
         $user = User::factory()->create([
