@@ -31,14 +31,13 @@ class AdminProfileController extends PanelController
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')->ignore($user->id)],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'current_password' => ['nullable', 'required_with:password', 'current_password'],
             'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
         ], [
             'name.required' => 'Nama lengkap wajib diisi.',
             'username.required' => 'Username wajib diisi.',
             'username.unique' => 'Username sudah digunakan oleh akun lain.',
-            'email.required' => 'Email wajib diisi.',
             'email.unique' => 'Email sudah digunakan oleh akun lain.',
             'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
             'current_password.required_with' => 'Kata sandi saat ini harus diisi jika ingin mengubah kata sandi.',
@@ -49,7 +48,7 @@ class AdminProfileController extends PanelController
         $updateData = [
             'name' => $data['name'],
             'username' => $data['username'],
-            'email' => $data['email'],
+            'email' => blank($data['email'] ?? null) ? null : $data['email'],
         ];
 
         if (! empty($data['password'])) {

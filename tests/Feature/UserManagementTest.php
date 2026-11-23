@@ -55,6 +55,56 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseMissing('users', ['username' => 'staf.baru']);
     }
 
+    public function test_admin_can_create_user_without_email(): void
+    {
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'Staf Tanpa Email',
+            'username' => 'staf.tanpa.email',
+            'email' => '',
+            'password' => 'rahasia123',
+            'password_confirmation' => 'rahasia123',
+            'role' => 'staff',
+        ]);
+
+        $response->assertRedirect(route('admin.users.index'));
+        $this->assertNull(User::where('username', 'staf.tanpa.email')->firstOrFail()->email);
+    }
+
+    public function test_store_rejects_an_invalid_email(): void
+    {
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'Staf Email Salah',
+            'username' => 'staf.email.salah',
+            'email' => 'bukan-email',
+            'password' => 'rahasia123',
+            'password_confirmation' => 'rahasia123',
+            'role' => 'staff',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertDatabaseMissing('users', ['username' => 'staf.email.salah']);
+    }
+
+    public function test_admin_can_clear_email_when_updating_user(): void
+    {
+        $admin = User::factory()->create();
+        $staff = User::factory()->staff()->create(['email' => 'lama@tokokue.test']);
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $staff), [
+            'name' => $staff->name,
+            'username' => $staff->username,
+            'email' => '',
+            'role' => 'staff',
+        ]);
+
+        $response->assertRedirect(route('admin.users.index'));
+        $this->assertNull($staff->fresh()->email);
+    }
+
     public function test_staff_gets_forbidden_on_user_management(): void
     {
         $staff = User::factory()->staff()->create();
