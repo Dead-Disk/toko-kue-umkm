@@ -213,6 +213,15 @@
                            class="block w-full py-3 px-6 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-xs sm:text-sm rounded-full border border-stone-200 shadow-2xs hover:shadow-xs transition text-center">
                             Kembali / Edit Pesanan
                         </a>
+
+                        {{-- Tombol Chat Penjual bila ingin konsultasi custom cake --}}
+                        <div class="pt-2 text-center">
+                            <a href="{{ route('customer.chat.index', ['phone' => $draft['nomor_wa'] ?? null, 'name' => $draft['nama_pemesan'] ?? null]) }}"
+                               class="inline-flex items-center gap-1.5 text-xs text-[#6B0F1A] hover:underline font-semibold">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                <span>Butuh konsultasi desain? Chat dengan Kami</span>
+                            </a>
+                        </div>
                     </div>
 
                 </div>

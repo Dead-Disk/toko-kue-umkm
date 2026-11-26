@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminActivityLogController;
 use App\Http\Controllers\AdminBannerController;
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminChatController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminProductController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\AdminStoreSettingController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CashierController;
+use App\Http\Controllers\CustomerChatController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -77,6 +79,17 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::get('/custom', [CustomerController::class, 'customForm'])->name('custom.create');
     Route::post('/custom', [CustomerController::class, 'reviewCustom'])->name('custom.review');
     Route::post('/custom/store', [CustomerController::class, 'storeCustom'])->name('custom.store');
+
+    // Chat Pembeli (guest-friendly dengan verifikasi keamanan 2 langkah)
+    Route::prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [CustomerChatController::class, 'index'])->name('index');
+        Route::post('/verify-order', [CustomerChatController::class, 'verifyOrder'])->name('verify-order');
+        Route::post('/inquiry', [CustomerChatController::class, 'startInquiry'])->name('inquiry');
+        Route::post('/send', [CustomerChatController::class, 'sendMessage'])->name('send');
+        Route::get('/poll', [CustomerChatController::class, 'pollMessages'])->name('poll');
+        Route::get('/attachments/{chatMessage}', [CustomerChatController::class, 'attachment'])->name('attachment');
+        Route::post('/end-session', [CustomerChatController::class, 'endSession'])->name('end-session');
+    });
 });
 
 /*
@@ -126,6 +139,15 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             ->name('orders.bukti');
         Route::get('pesanan/{order}/custom-photo', [AdminOrderController::class, 'viewCustomPhoto'])
             ->name('orders.custom_photo');
+
+        // Chat Pembeli ↔ Penjual (Admin/Owner selalu bisa, Staff jika can_chat aktif)
+        Route::middleware('chat.permission')->prefix('chat')->name('chat.')->group(function () {
+            Route::get('/', [AdminChatController::class, 'index'])->name('index');
+            Route::get('/threads', [AdminChatController::class, 'pollThreads'])->name('threads');
+            Route::get('/attachments/{chatMessage}', [AdminChatController::class, 'attachment'])->name('attachment');
+            Route::get('/{thread}/messages', [AdminChatController::class, 'pollMessages'])->name('messages');
+            Route::post('/{thread}/reply', [AdminChatController::class, 'reply'])->name('reply');
+        });
     });
 
     Route::middleware('role:admin,owner')->group(function () {
@@ -214,4 +236,13 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'role:staff'])->grou
     // Kasir / POS offline: penjualan tunai langsung di toko.
     Route::get('kasir', [StaffCashierController::class, 'index'])->name('kasir.index');
     Route::post('kasir/store', [StaffCashierController::class, 'store'])->name('kasir.store');
+
+    // Chat Pembeli (Khusus Staf yang memiliki izin akses chat)
+    Route::middleware('chat.permission')->prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [AdminChatController::class, 'index'])->name('index');
+        Route::get('/threads', [AdminChatController::class, 'pollThreads'])->name('threads');
+        Route::get('/attachments/{chatMessage}', [AdminChatController::class, 'attachment'])->name('attachment');
+        Route::get('/{thread}/messages', [AdminChatController::class, 'pollMessages'])->name('messages');
+        Route::post('/{thread}/reply', [AdminChatController::class, 'reply'])->name('reply');
+    });
 });

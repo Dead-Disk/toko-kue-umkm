@@ -278,6 +278,7 @@
                             <th class="py-3 px-4">Username</th>
                             <th class="py-3 px-4">Email</th>
                             <th class="py-3 px-4 text-center">Role</th>
+                            <th class="py-3 px-4 text-center">Akses Chat</th>
                             <th class="py-3 px-4">Dibuat</th>
                             <th class="py-3 px-4 text-center w-28">Aksi</th>
                         </tr>
@@ -336,6 +337,23 @@
                                         </span>
                                     @endif
                                     <span class="hidden">{{ $user->role }}</span>
+                                </td>
+
+                                <!-- Akses Chat -->
+                                <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                    @if ($user->isAdmin())
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Aktif (Otomatis)
+                                        </span>
+                                    @elseif ($user->can_chat)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Diizinkan
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 text-stone-500 border border-stone-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-stone-400"></span> Tidak Aktif
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <!-- Waktu Dibuat -->

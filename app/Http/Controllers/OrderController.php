@@ -7,6 +7,7 @@ use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\StatusStok;
 use App\Enums\TipePesanan;
+use App\Models\ChatThread;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
@@ -378,6 +379,29 @@ class OrderController extends Controller
         $order = Order::with(['items.product'])
             ->where('kode_pesanan', $kode_pesanan)
             ->firstOrFail();
+
+        // Otomatis verifikasi sesi chat pesanan ini agar pembeli bisa langsung chat tanpa memasukkan kode lagi
+        $normalizedPhone = ChatThread::normalizePhone($order->nomor_wa);
+        $thread = ChatThread::firstOrCreate(
+            ['order_code' => $order->kode_pesanan],
+            [
+                'customer_name' => $order->nama_pemesan,
+                'customer_phone' => $normalizedPhone,
+                'thread_type' => 'order',
+                'unread_admin_count' => 0,
+                'unread_customer_count' => 0,
+                'last_message_at' => now(),
+            ]
+        );
+
+        session([
+            'customer_active_thread_id' => $thread->id,
+            'customer_verified_phone' => $normalizedPhone,
+            'customer_verified_order' => $order->kode_pesanan,
+            'customer_chat_phone' => $normalizedPhone,
+            'customer_chat_name' => $order->nama_pemesan,
+            'customer_chat_order' => $order->kode_pesanan,
+        ]);
 
         return view('customer.pesanan.sukses', [
             'order' => $order,
