@@ -338,7 +338,7 @@
                     $hasDescription = filled($item->deskripsi);
                 @endphp
                 <div
-                    class="product-card bg-white rounded-3xl p-3 sm:p-3.5 lg:p-4 xl:p-5 shadow-xs border border-[#F4E1D9] hover:shadow-md transition-all flex flex-col justify-between"
+                    class="product-card group relative bg-white rounded-3xl p-3 sm:p-3.5 lg:p-4 xl:p-5 shadow-xs border border-[#F4E1D9] hover:shadow-md transition-all flex flex-col justify-between {{ $isReady ? 'cursor-pointer' : '' }}"
                     data-product-name="{{ strtolower($item->nama_kue) }}"
                     data-category-id="{{ $item->category_id ?? '' }}"
                     data-status-stok="{{ $isReady ? 'ready' : 'habis' }}"
@@ -349,17 +349,17 @@
                         <div class="aspect-square w-full rounded-2xl lg:rounded-3xl overflow-hidden bg-[#FAF2EE] relative mb-2.5 lg:mb-3 flex items-center justify-center">
                             @if ($item->foto_url)
                                 @if ($isReady)
-                                    <a href="{{ route('customer.produk.show', $item) }}" class="w-full h-full block">
-                                        <img src="{{ $item->foto_url }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
-                                    </a>
+                                    <div class="w-full h-full block">
+                                        <img src="{{ $item->foto_url }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    </div>
                                 @else
                                     <img src="{{ $item->foto_url }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover grayscale opacity-75">
                                 @endif
                             @else
                                 @if ($isReady)
-                                    <a href="{{ route('customer.produk.show', $item) }}" class="w-full h-full p-4 sm:p-5 flex items-center justify-center hover:scale-105 transition-transform duration-300">
+                                    <div class="w-full h-full p-4 sm:p-5 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
                                         <x-category-icon :category="$item->category" class="w-full h-full max-w-[80px] max-h-[80px] lg:max-w-[100px] lg:max-h-[100px]" />
-                                    </a>
+                                    </div>
                                 @else
                                     <div class="w-full h-full p-4 sm:p-5 flex items-center justify-center grayscale opacity-60">
                                         <x-category-icon :category="$item->category" class="w-full h-full max-w-[80px] max-h-[80px] lg:max-w-[100px] lg:max-h-[100px]" />
@@ -379,9 +379,11 @@
                             @endunless
                         </div>
 
-                        {{-- Cake Title --}}
+                        {{-- Cake Title (Stretched link covering the entire card when ready) --}}
                         @if ($isReady)
-                            <a href="{{ route('customer.produk.show', $item) }}" class="block font-bold text-gray-800 text-sm sm:text-base lg:text-lg leading-snug line-clamp-1 hover:text-[#6B0F1A] transition" title="{{ $item->nama_kue }}">
+                            <a href="{{ route('customer.produk.show', $item) }}"
+                               class="block font-bold text-gray-800 text-sm sm:text-base lg:text-lg leading-snug line-clamp-1 group-hover:text-[#6B0F1A] transition focus:outline-none after:absolute after:inset-0 after:z-10 after:rounded-3xl focus-visible:after:ring-2 focus-visible:after:ring-[#6B0F1A]/40 focus-visible:after:ring-inset"
+                               title="{{ $item->nama_kue }}">
                                 {{ $item->nama_kue }}
                             </a>
                         @else
@@ -404,7 +406,7 @@
                         </span>
 
                         @if ($isReady)
-                            <form action="{{ route('cart.add', $item) }}" method="POST" class="inline">
+                            <form action="{{ route('cart.add', $item) }}" method="POST" class="relative z-20 inline" onclick="event.stopPropagation()">
                                 @csrf
                                 <input type="hidden" name="quantity" value="1">
                                 <button

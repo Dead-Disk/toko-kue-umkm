@@ -61,7 +61,7 @@ class CartController extends Controller
             'name' => $product->nama_kue,
             'price' => $product->harga,
             'quantity' => $jumlahBaru,
-            'image_url' => $product->foto ? asset('storage/'.$product->foto) : null,
+            'image_url' => $product->foto_url,
             'options' => $cart[$product->id]['options'] ?? [],
             'catatan' => $catatan !== '' ? $catatan : ($cart[$product->id]['catatan'] ?? null),
         ];
