@@ -65,6 +65,22 @@
                 <form action="{{ route('admin.pengaturan.store') }}" method="POST" class="space-y-5">
                     @csrf
 
+                    <!-- Kategori Kue -->
+                    <div>
+                        <label for="category_id" class="block text-xs font-bold text-stone-700 mb-1.5">
+                            Kategori Kue <span class="text-stone-400 font-normal">(opsional)</span>
+                        </label>
+                        <select id="category_id" name="category_id" class="w-full text-xs px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] transition-all">
+                            <option value="">-- Umum / Semua Kategori --</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}" @selected((string) old('category_id', request('category_id')) === (string) $category->id)>
+                                    {{ $category->nama_kategori }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="text-[11px] text-stone-400 mt-1">Pilih kategori agar opsi ini hanya muncul saat pembeli memesan kategori kue tersebut.</p>
+                    </div>
+
                     <!-- Bentuk Kue -->
                     <div>
                         <label for="bentuk" class="block text-xs font-bold text-stone-700 mb-1.5">Bentuk Kue</label>

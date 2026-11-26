@@ -7,8 +7,9 @@ use Database\Factories\CakeOptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['bentuk', 'ukuran', 'harga_dasar'])]
+#[Fillable(['bentuk', 'ukuran', 'harga_dasar', 'category_id'])]
 class CakeOption extends Model
 {
     /** @use HasFactory<CakeOptionFactory> */
@@ -25,6 +26,16 @@ class CakeOption extends Model
             'bentuk' => BentukKue::class,
             'harga_dasar' => 'integer',
         ];
+    }
+
+    /**
+     * Kategori kue yang terkait dengan opsi varian ini.
+     *
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     /**

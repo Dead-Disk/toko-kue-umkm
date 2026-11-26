@@ -112,4 +112,14 @@ class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    /**
+     * Opsi varian custom cake yang dikaitkan ke kategori ini.
+     *
+     * @return HasMany<CakeOption, $this>
+     */
+    public function cakeOptions(): HasMany
+    {
+        return $this->hasMany(CakeOption::class);
+    }
 }

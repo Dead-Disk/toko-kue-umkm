@@ -18,13 +18,14 @@ class AdminSettingController extends Controller
      */
     public function index(): View
     {
-        $cakeOptions = CakeOption::orderBy('bentuk')->orderBy('ukuran')->get();
+        $cakeOptions = CakeOption::with('category')->orderBy('bentuk')->orderBy('ukuran')->get();
+        $cakeOptionsByCategory = $cakeOptions->groupBy(fn ($o) => $o->category_id ?? 0);
         $categories = Category::with('products')->withCount([
             'products',
             'products as trashed_products_count' => fn ($query) => $query->onlyTrashed(),
         ])->orderBy('nama_kategori')->get();
 
-        return view('admin.setting.index', compact('cakeOptions', 'categories'));
+        return view('admin.setting.index', compact('cakeOptions', 'cakeOptionsByCategory', 'categories'));
     }
 
     /**
@@ -33,8 +34,9 @@ class AdminSettingController extends Controller
     public function create(): View
     {
         $bentukOptions = BentukKue::cases();
+        $categories = Category::orderBy('nama_kategori')->get();
 
-        return view('admin.setting.create', compact('bentukOptions'));
+        return view('admin.setting.create', compact('bentukOptions', 'categories'));
     }
 
     /**
@@ -57,8 +59,9 @@ class AdminSettingController extends Controller
     public function edit(CakeOption $cakeOption): View
     {
         $bentukOptions = BentukKue::cases();
+        $categories = Category::orderBy('nama_kategori')->get();
 
-        return view('admin.setting.edit', compact('cakeOption', 'bentukOptions'));
+        return view('admin.setting.edit', compact('cakeOption', 'bentukOptions', 'categories'));
     }
 
     /**
@@ -100,6 +103,7 @@ class AdminSettingController extends Controller
             'bentuk' => ['required', Rule::enum(BentukKue::class)],
             'ukuran' => ['required', 'string', 'max:50'],
             'harga_dasar' => ['required', 'integer', 'min:0'],
+            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
         ];
     }
 }

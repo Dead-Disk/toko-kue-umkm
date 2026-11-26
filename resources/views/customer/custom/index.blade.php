@@ -145,7 +145,8 @@
                                                     data-harga="{{ $item->harga }}"
                                                     data-harga-format="Rp {{ number_format($item->harga, 0, ',', '.') }}"
                                                     data-nama="{{ $item->nama_kue }}"
-                                                    data-foto="{{ $item->foto_url ?? '' }}">
+                                                    data-foto="{{ $item->foto_url ?? '' }}"
+                                                    data-category-id="{{ $item->category_id ?? '' }}">
                                                 {{ $item->nama_kue }} - Rp {{ number_format($item->harga, 0, ',', '.') }}
                                             </option>
                                         @endforeach
@@ -188,6 +189,23 @@
                                     </div>
                                 </div>
 
+                                {{-- Kategori Kue (Filter Opsi Varian) --}}
+                                <div class="sm:col-span-2">
+                                    <label for="cake_category_id" class="block text-xs font-bold text-stone-700 mb-1.5">
+                                        Kategori Kue <span class="text-stone-400 font-normal">(opsional, untuk menyaring bentuk &amp; ukuran)</span>
+                                    </label>
+                                    <select id="cake_category_id"
+                                            name="cake_category_id"
+                                            class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/30 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] focus:bg-white transition cursor-pointer">
+                                        <option value="">-- Semua Kategori --</option>
+                                        @foreach ($categoriesWithOptions as $category)
+                                            <option value="{{ $category->id }}" @selected((string) $selectedCategoryId === (string) $category->id)>
+                                                {{ $category->nama_kategori }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
                                 {{-- Ukuran Kue --}}
                                 <div class="sm:col-span-2">
                                     <label for="cake_option_id" class="block text-xs font-bold text-stone-700 mb-1.5">
@@ -199,11 +217,16 @@
                                             class="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/30 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] focus:bg-white transition">
                                         <option value="">-- Pilih Ukuran --</option>
                                         @foreach ($cakeOptions as $option)
-                                            <option value="{{ $option->id }}" @selected((string) old('cake_option_id', $draft['cake_option_id'] ?? '') === (string) $option->id) data-harga="{{ $option->harga_dasar }}">
+                                            <option value="{{ $option->id }}" @selected((string) old('cake_option_id', $draft['cake_option_id'] ?? '') === (string) $option->id)
+                                                    data-harga="{{ $option->harga_dasar }}"
+                                                    data-category-id="{{ $option->category_id ?? '' }}">
                                                 {{ $option->label() }}
                                             </option>
                                         @endforeach
                                     </select>
+                                    <p id="cake-option-empty" class="hidden text-[11px] text-amber-700 mt-1.5 font-medium">
+                                        Kategori ini belum memiliki opsi varian khusus. Silakan pilih kategori lain atau pilih "Semua Kategori".
+                                    </p>
                                 </div>
                             </div>
 
@@ -407,7 +430,9 @@
     <script>
         (() => {
             const baseProduct = document.getElementById('base_product_id');
+            const categorySelect = document.getElementById('cake_category_id');
             const cakeOption = document.getElementById('cake_option_id');
+            const cakeOptionEmpty = document.getElementById('cake-option-empty');
             const quantity = document.getElementById('jumlah');
             const estimate = document.getElementById('estimasi-total');
             const previewBox = document.getElementById('base-product-preview');
@@ -512,6 +537,46 @@
                 updateEstimate();
             };
 
+            const allCakeOptions = Array.from(cakeOption.options).filter((option) => option.value !== '');
+
+            const filterCakeOptions = () => {
+                const selectedCategory = categorySelect ? categorySelect.value : '';
+                const hasSpecificForCategory = selectedCategory !== '' && allCakeOptions.some(
+                    (option) => (option.dataset.categoryId || '') === selectedCategory
+                );
+
+                let visibleCount = 0;
+
+                allCakeOptions.forEach((option) => {
+                    const optionCategory = option.dataset.categoryId || '';
+                    let shouldShow = true;
+
+                    if (selectedCategory !== '') {
+                        shouldShow = hasSpecificForCategory
+                            ? optionCategory === selectedCategory
+                            : optionCategory === '';
+                    }
+
+                    option.hidden = !shouldShow;
+                    option.disabled = !shouldShow;
+
+                    if (shouldShow) {
+                        visibleCount += 1;
+                    }
+                });
+
+                const currentOption = cakeOption.selectedOptions[0];
+                if (currentOption && currentOption.value !== '' && currentOption.hidden) {
+                    cakeOption.value = '';
+                }
+
+                if (cakeOptionEmpty) {
+                    cakeOptionEmpty.classList.toggle('hidden', visibleCount > 0);
+                }
+
+                updateEstimate();
+            };
+
             if (resetBtn) {
                 resetBtn.addEventListener('click', () => {
                     baseProduct.value = '';
@@ -519,7 +584,28 @@
                 });
             }
 
-            baseProduct.addEventListener('change', updateEstimate);
+            if (categorySelect) {
+                categorySelect.addEventListener('change', filterCakeOptions);
+            }
+
+            baseProduct.addEventListener('change', () => {
+                const selectedBaseOption = baseProduct.selectedOptions[0];
+                const productCategoryId = selectedBaseOption ? (selectedBaseOption.dataset.categoryId || '') : '';
+
+                if (categorySelect && productCategoryId !== '') {
+                    const matchingCategory = Array.from(categorySelect.options).find(
+                        (option) => option.value === productCategoryId
+                    );
+
+                    if (matchingCategory) {
+                        categorySelect.value = productCategoryId;
+                        filterCakeOptions();
+                        return;
+                    }
+                }
+
+                updateEstimate();
+            });
             cakeOption.addEventListener('change', updateEstimate);
 
             ['input', 'change', 'keyup'].forEach((eventName) => {
@@ -536,7 +622,7 @@
                 }
             });
 
-            updateEstimate();
+            filterCakeOptions();
         })();
     </script>
 </body>
