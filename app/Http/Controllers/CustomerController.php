@@ -126,8 +126,12 @@ class CustomerController extends Controller
     public function customForm(Request $request): View
     {
         $draft = session('custom_order_draft', []);
-        $products = Product::query()->orderBy('nama_kue')->get();
-        $cakeOptions = CakeOption::orderBy('bentuk')->orderBy('ukuran')->get();
+        $products = Product::query()->with('category')->orderBy('nama_kue')->get();
+        $cakeOptions = CakeOption::with('category')->orderBy('bentuk')->orderBy('ukuran')->get();
+        $categoriesWithOptions = Category::query()
+            ->whereHas('cakeOptions')
+            ->orderBy('nama_kategori')
+            ->get();
 
         $baseProductId = $request->old('base_product_id', $draft['base_product_id'] ?? null);
         $cakeOptionId = $request->old('cake_option_id', $draft['cake_option_id'] ?? null);
@@ -136,10 +140,16 @@ class CustomerController extends Controller
 
         $baseProduct = $baseProductId ? $products->firstWhere('id', (int) $baseProductId) : null;
         $cakeOption = $cakeOptionId ? $cakeOptions->firstWhere('id', (int) $cakeOptionId) : null;
+        $selectedCategoryId = $request->old(
+            'cake_category_id',
+            $draft['cake_category_id'] ?? $cakeOption?->category_id ?? $baseProduct?->category_id ?? ''
+        );
         $hargaAcuan = $baseProduct?->harga ?? $cakeOption?->harga_dasar ?? 0;
 
         return view('customer.custom.index', [
             'cakeOptions' => $cakeOptions,
+            'categoriesWithOptions' => $categoriesWithOptions,
+            'selectedCategoryId' => $selectedCategoryId,
             'products' => $products,
             'draft' => $draft,
             'jumlah' => $jumlah,
@@ -159,6 +169,7 @@ class CustomerController extends Controller
             'nomor_wa' => ['required', 'string', 'max:20'],
             'alamat_lengkap' => ['required', 'string', 'max:1000'],
             'deskripsi_custom' => ['required', 'string', 'max:2000'],
+            'cake_category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->whereNull('deleted_at')],
             'cake_option_id' => ['required', 'integer', 'exists:cake_options,id'],
             'base_product_id' => ['nullable', 'integer', Rule::exists('products', 'id')->whereNull('deleted_at')],
             'jumlah' => ['required', 'integer', 'min:1', 'max:'.self::MAX_CUSTOM_QUANTITY],
@@ -190,6 +201,7 @@ class CustomerController extends Controller
             'nomor_wa' => $data['nomor_wa'],
             'alamat_lengkap' => $data['alamat_lengkap'],
             'deskripsi_custom' => $data['deskripsi_custom'],
+            'cake_category_id' => ! empty($data['cake_category_id']) ? (int) $data['cake_category_id'] : null,
             'cake_option_id' => (int) $data['cake_option_id'],
             'base_product_id' => ! empty($data['base_product_id']) ? (int) $data['base_product_id'] : null,
             'jumlah' => (int) $data['jumlah'],

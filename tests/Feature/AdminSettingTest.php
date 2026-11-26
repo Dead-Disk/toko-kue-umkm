@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\BentukKue;
 use App\Models\CakeOption;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -57,9 +58,34 @@ class AdminSettingTest extends TestCase
         $response->assertSessionHasErrors(['bentuk', 'ukuran', 'harga_dasar']);
     }
 
+    public function test_store_saves_category_id_when_provided(): void
+    {
+        $seller = User::factory()->create();
+        $category = Category::factory()->create(['nama_kategori' => 'Bento Cake']);
+
+        $response = $this->actingAs($seller)->post(route('admin.pengaturan.store'), [
+            'category_id' => $category->id,
+            'bentuk' => BentukKue::Lingkaran->value,
+            'ukuran' => '10 cm',
+            'harga_dasar' => 65_000,
+        ]);
+
+        $response->assertRedirect(route('admin.pengaturan.index'));
+
+        $option = CakeOption::firstWhere('ukuran', '10 cm');
+        $this->assertNotNull($option);
+        $this->assertSame($category->id, $option->category_id);
+
+        $indexResponse = $this->actingAs($seller)->get(route('admin.pengaturan.index'));
+        $indexResponse->assertOk();
+        $indexResponse->assertSee('Bento Cake');
+        $indexResponse->assertSee('Lingkaran 10 cm - Rp 65.000');
+    }
+
     public function test_update_changes_a_cake_option(): void
     {
         $seller = User::factory()->create();
+        $category = Category::factory()->create(['nama_kategori' => 'Donat']);
         $option = CakeOption::factory()->create([
             'bentuk' => BentukKue::Lingkaran,
             'ukuran' => '16 cm',
@@ -67,6 +93,7 @@ class AdminSettingTest extends TestCase
         ]);
 
         $response = $this->actingAs($seller)->put(route('admin.pengaturan.update', $option), [
+            'category_id' => $category->id,
             'bentuk' => BentukKue::Lainnya->value,
             'ukuran' => '18 cm',
             'harga_dasar' => 175_000,
@@ -75,6 +102,7 @@ class AdminSettingTest extends TestCase
         $response->assertRedirect(route('admin.pengaturan.index'));
 
         $option->refresh();
+        $this->assertSame($category->id, $option->category_id);
         $this->assertSame(BentukKue::Lainnya, $option->bentuk);
         $this->assertSame('18 cm', $option->ukuran);
         $this->assertSame(175_000, $option->harga_dasar);

@@ -150,18 +150,28 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 5. Opsi Custom Cake
+        // 5. Opsi Custom Cake per Kategori
         $cakeOptions = [
-            ['bentuk' => BentukKue::Lingkaran, 'ukuran' => '16 cm', 'harga_dasar' => 120_000],
-            ['bentuk' => BentukKue::Lingkaran, 'ukuran' => '18 cm', 'harga_dasar' => 140_000],
-            ['bentuk' => BentukKue::Lingkaran, 'ukuran' => '20 cm', 'harga_dasar' => 160_000],
-            ['bentuk' => BentukKue::Kotak, 'ukuran' => '18 cm', 'harga_dasar' => 150_000],
-            ['bentuk' => BentukKue::Kotak, 'ukuran' => '20 cm', 'harga_dasar' => 175_000],
+            ['category_id' => $categoryModels['Kue Tart']->id, 'bentuk' => BentukKue::Lingkaran, 'ukuran' => '16 cm', 'harga_dasar' => 120_000],
+            ['category_id' => $categoryModels['Kue Tart']->id, 'bentuk' => BentukKue::Lingkaran, 'ukuran' => '18 cm', 'harga_dasar' => 140_000],
+            ['category_id' => $categoryModels['Kue Tart']->id, 'bentuk' => BentukKue::Lingkaran, 'ukuran' => '20 cm', 'harga_dasar' => 160_000],
+            ['category_id' => $categoryModels['Kue Tart']->id, 'bentuk' => BentukKue::Kotak, 'ukuran' => '18 cm', 'harga_dasar' => 150_000],
+            ['category_id' => $categoryModels['Kue Tart']->id, 'bentuk' => BentukKue::Kotak, 'ukuran' => '20 cm', 'harga_dasar' => 175_000],
+            ['category_id' => $categoryModels['Bento Cake']->id, 'bentuk' => BentukKue::Lingkaran, 'ukuran' => '10 cm (Mini Bento)', 'harga_dasar' => 65_000],
+            ['category_id' => $categoryModels['Bento Cake']->id, 'bentuk' => BentukKue::Kotak, 'ukuran' => '12 cm (Lunchbox)', 'harga_dasar' => 75_000],
+            ['category_id' => $categoryModels['Donat']->id, 'bentuk' => BentukKue::Kotak, 'ukuran' => 'Isi 6 pcs', 'harga_dasar' => 25_000],
+            ['category_id' => $categoryModels['Donat']->id, 'bentuk' => BentukKue::Kotak, 'ukuran' => 'Isi 12 pcs', 'harga_dasar' => 45_000],
+            ['category_id' => $categoryModels['Roti Gulung']->id, 'bentuk' => BentukKue::Lainnya, 'ukuran' => 'Panjang 24 cm', 'harga_dasar' => 50_000],
+            ['category_id' => $categoryModels['Spiku']->id, 'bentuk' => BentukKue::Kotak, 'ukuran' => '20x20 cm', 'harga_dasar' => 110_000],
         ];
 
         foreach ($cakeOptions as $option) {
             CakeOption::firstOrCreate(
-                ['bentuk' => $option['bentuk'], 'ukuran' => $option['ukuran']],
+                [
+                    'category_id' => $option['category_id'],
+                    'bentuk' => $option['bentuk'],
+                    'ukuran' => $option['ukuran'],
+                ],
                 $option
             );
         }

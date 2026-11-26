@@ -363,71 +363,114 @@
                     </a>
                 </div>
 
-                <!-- Table View of Cake Options -->
-                <div class="overflow-x-auto rounded-xl border border-stone-200/70">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-stone-50 text-stone-600 font-semibold border-b border-stone-200/70">
-                                <th class="py-3 px-4 w-12 text-center">No</th>
-                                <th class="py-3 px-4">Bentuk</th>
-                                <th class="py-3 px-4">Ukuran</th>
-                                <th class="py-3 px-4">Harga Dasar (Rp)</th>
-                                <th class="py-3 px-4">Label Opsi</th>
-                                <th class="py-3 px-4 text-center w-28">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-stone-100">
-                            @forelse ($cakeOptions as $cakeOption)
-                                <tr class="hover:bg-stone-50/70 transition-colors">
-                                    <td class="py-3 px-4 text-center text-stone-500 font-mono text-[11px]">
-                                        {{ $loop->iteration }}
-                                    </td>
-                                    <td class="py-3 px-4 font-bold text-stone-800">
-                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
-                                            {{ $cakeOption->bentuk->label() ?? $cakeOption->bentuk->value }}
+                <!-- Grouped Table View of Cake Options by Category -->
+                @php
+                    $groupedOptions = $cakeOptions
+                        ->groupBy(fn ($option) => $option->category_id ?? 0)
+                        ->sortBy(function ($group, $catId) {
+                            if ((int) $catId === 0) {
+                                return 'zzz_umum';
+                            }
+
+                            return strtolower($group->first()?->category?->nama_kategori ?? 'zzz');
+                        });
+                @endphp
+
+                @if ($cakeOptions->isEmpty())
+                    <div class="rounded-xl border border-stone-200/70 py-10 text-center text-xs text-stone-400">
+                        Belum ada opsi custom cake.
+                    </div>
+                @else
+                    <div class="space-y-5">
+                        @foreach ($groupedOptions as $catId => $optionsGroup)
+                            @php
+                                $groupCategory = $optionsGroup->first()?->category;
+                                $groupTitle = $groupCategory?->nama_kategori ?? 'Umum / Tanpa Kategori';
+                            @endphp
+                            <div class="rounded-xl border border-stone-200/70 overflow-hidden bg-white">
+                                <div class="px-4 py-3 bg-stone-50/90 border-b border-stone-200/70 flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold {{ $groupCategory ? 'bg-[#6B0F1A]/10 text-[#6B0F1A]' : 'bg-stone-200/70 text-stone-700' }}">
+                                            {{ $groupTitle }}
                                         </span>
-                                        <span class="hidden">{{ $cakeOption->bentuk->value }}</span>
-                                    </td>
-                                    <td class="py-3 px-4 font-semibold text-stone-800">
-                                        {{ $cakeOption->ukuran }}
-                                    </td>
-                                    <td class="py-3 px-4 text-stone-800">
-                                        <span class="font-bold text-stone-900">Rp{{ number_format($cakeOption->harga_dasar, 0, ',', '.') }}</span>
-                                        <span class="hidden">{{ $cakeOption->harga_dasar }}</span>
-                                    </td>
-                                    <td class="py-3 px-4 text-stone-600">
-                                        {{ $cakeOption->label() }}
-                                    </td>
-                                    <td class="py-3 px-4 text-center whitespace-nowrap">
-                                        <div class="inline-flex items-center gap-1.5">
-                                            <a href="{{ route('admin.pengaturan.edit', $cakeOption) }}"
-                                               class="px-2.5 py-1 text-[11px] font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors">
-                                                Edit
-                                            </a>
-                                            <form action="{{ route('admin.pengaturan.destroy', $cakeOption) }}"
-                                                  method="POST"
-                                                  onsubmit="return confirm('Hapus opsi ini?')"
-                                                  class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="py-8 text-center text-stone-400">
-                                        Belum ada opsi custom cake.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                                        <span class="text-[11px] text-stone-500 font-medium">
+                                            {{ $optionsGroup->count() }} opsi
+                                        </span>
+                                    </div>
+                                    @if ($groupCategory)
+                                        <a href="{{ route('admin.pengaturan.create', ['category_id' => $groupCategory->id]) }}"
+                                           class="text-[11px] font-semibold text-[#6B0F1A] hover:underline">
+                                            + Tambah untuk {{ $groupCategory->nama_kategori }}
+                                        </a>
+                                    @endif
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="bg-stone-50/40 text-stone-600 font-semibold border-b border-stone-200/60">
+                                                <th class="py-2.5 px-4 w-12 text-center">No</th>
+                                                <th class="py-2.5 px-4">Kategori</th>
+                                                <th class="py-2.5 px-4">Bentuk</th>
+                                                <th class="py-2.5 px-4">Ukuran</th>
+                                                <th class="py-2.5 px-4">Harga Dasar (Rp)</th>
+                                                <th class="py-2.5 px-4">Label Opsi</th>
+                                                <th class="py-2.5 px-4 text-center w-28">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-stone-100">
+                                            @foreach ($optionsGroup as $cakeOption)
+                                                <tr class="hover:bg-stone-50/70 transition-colors">
+                                                    <td class="py-3 px-4 text-center text-stone-500 font-mono text-[11px]">
+                                                        {{ $loop->iteration }}
+                                                    </td>
+                                                    <td class="py-3 px-4 text-stone-700 font-medium whitespace-nowrap">
+                                                        {{ $cakeOption->category?->nama_kategori ?? 'Umum' }}
+                                                    </td>
+                                                    <td class="py-3 px-4 font-bold text-stone-800">
+                                                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                                                            {{ $cakeOption->bentuk->label() ?? $cakeOption->bentuk->value }}
+                                                        </span>
+                                                        <span class="hidden">{{ $cakeOption->bentuk->value }}</span>
+                                                    </td>
+                                                    <td class="py-3 px-4 font-semibold text-stone-800">
+                                                        {{ $cakeOption->ukuran }}
+                                                    </td>
+                                                    <td class="py-3 px-4 text-stone-800">
+                                                        <span class="font-bold text-stone-900">Rp{{ number_format($cakeOption->harga_dasar, 0, ',', '.') }}</span>
+                                                        <span class="hidden">{{ $cakeOption->harga_dasar }}</span>
+                                                    </td>
+                                                    <td class="py-3 px-4 text-stone-600">
+                                                        {{ $cakeOption->label() }}
+                                                    </td>
+                                                    <td class="py-3 px-4 text-center whitespace-nowrap">
+                                                        <div class="inline-flex items-center gap-1.5">
+                                                            <a href="{{ route('admin.pengaturan.edit', $cakeOption) }}"
+                                                               class="px-2.5 py-1 text-[11px] font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors">
+                                                                Edit
+                                                            </a>
+                                                            <form action="{{ route('admin.pengaturan.destroy', $cakeOption) }}"
+                                                                  method="POST"
+                                                                  onsubmit="return confirm('Hapus opsi ini?')"
+                                                                  class="inline-block">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit"
+                                                                        class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors">
+                                                                    Hapus
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
 
             </div>
 

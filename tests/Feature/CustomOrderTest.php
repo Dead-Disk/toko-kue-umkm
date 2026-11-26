@@ -8,6 +8,7 @@ use App\Enums\OpsiPengiriman;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
 use App\Models\CakeOption;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -408,5 +409,36 @@ class CustomOrderTest extends TestCase
         $adminResponse = $this->actingAs($seller)->get(route('admin.pesanan.index'));
         $adminResponse->assertOk();
         $adminResponse->assertSee($order->kode_pesanan);
+    }
+
+    public function test_custom_form_groups_cake_options_by_category(): void
+    {
+        $bento = Category::factory()->create(['nama_kategori' => 'Bento Cake']);
+        $donat = Category::factory()->create(['nama_kategori' => 'Donat']);
+
+        $bentoOption = CakeOption::factory()->create([
+            'category_id' => $bento->id,
+            'bentuk' => BentukKue::Lingkaran,
+            'ukuran' => '10 cm',
+            'harga_dasar' => 65_000,
+        ]);
+
+        $donatOption = CakeOption::factory()->create([
+            'category_id' => $donat->id,
+            'bentuk' => BentukKue::Kotak,
+            'ukuran' => 'Isi 12 pcs',
+            'harga_dasar' => 45_000,
+        ]);
+
+        $response = $this->get(route('customer.custom.create'));
+
+        $response->assertOk();
+        $response->assertSee('name="cake_category_id"', false);
+        $response->assertSee('Bento Cake');
+        $response->assertSee('Donat');
+        $response->assertSee('data-category-id="'.$bento->id.'"', false);
+        $response->assertSee('data-category-id="'.$donat->id.'"', false);
+        $response->assertSee($bentoOption->label());
+        $response->assertSee($donatOption->label());
     }
 }

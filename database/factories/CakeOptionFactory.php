@@ -22,6 +22,7 @@ class CakeOptionFactory extends Factory
             'bentuk' => fake()->randomElement(BentukKue::cases()),
             'ukuran' => fake()->randomElement(['16 cm', '18 cm', '20 cm', '22 cm', '24 cm']),
             'harga_dasar' => fake()->numberBetween(100_000, 350_000),
+            'category_id' => null,
         ];
     }
 }
