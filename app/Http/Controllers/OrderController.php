@@ -34,8 +34,15 @@ class OrderController extends Controller
                 ->with('warning', 'Keranjang belanja Anda masih kosong.');
         }
 
+        $productIds = collect($cart)->pluck('id')->filter()->all();
+        $products = Product::with('category')
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
         return view('customer.pesanan.review-cart', [
             'cart' => $cart,
+            'products' => $products,
             'total' => collect($cart)->sum(fn (array $item): int => $item['price'] * $item['quantity']),
             'storeSetting' => StoreSetting::current(),
         ]);

@@ -89,9 +89,9 @@
             {{-- Product Grid: responsive columns --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-5 xl:gap-6">
                 @forelse ($produks as $produk)
-                    <div class="bg-white rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-4 xl:p-5 border border-[#F3E1DC] shadow-2xs hover:shadow-md transition flex flex-col justify-between group">
+                    <div class="relative bg-white rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-4 xl:p-5 border border-[#F3E1DC] shadow-2xs hover:shadow-md transition flex flex-col justify-between group cursor-pointer">
                         <div>
-                            <a href="{{ route('customer.produk.show', $produk) }}" class="block aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] mb-1.5 sm:mb-2.5 lg:mb-3 relative">
+                            <div class="block aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-[#FAF2EE] mb-1.5 sm:mb-2.5 lg:mb-3 relative">
                                 @if ($produk->foto_url)
                                     <img src="{{ $produk->foto_url }}" alt="{{ $produk->nama_kue }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                                 @else
@@ -101,13 +101,15 @@
                                 @endif
 
                                 @if ($produk->status_stok === \App\Enums\StatusStok::Habis || $produk->stok < 1)
-                                    <span class="absolute top-1 right-1 lg:top-2 lg:right-2 bg-rose-600/90 text-white text-[8px] sm:text-[9px] lg:text-xs font-bold px-1.5 py-0.5 lg:px-2.5 lg:py-1 rounded-full">
+                                    <span class="absolute top-1 right-1 lg:top-2 lg:right-2 bg-rose-600/90 text-white text-[8px] sm:text-[9px] lg:text-xs font-bold px-1.5 py-0.5 lg:px-2.5 lg:py-1 rounded-full pointer-events-none">
                                         Habis
                                     </span>
                                 @endif
-                            </a>
+                            </div>
 
-                            <a href="{{ route('customer.produk.show', $produk) }}" class="block font-semibold text-[11px] sm:text-xs lg:text-sm xl:text-base text-gray-900 group-hover:text-[#6B0F1A] transition leading-tight line-clamp-1" title="{{ $produk->nama_kue }}">
+                            <a href="{{ route('customer.produk.show', $produk) }}"
+                               class="block font-semibold text-[11px] sm:text-xs lg:text-sm xl:text-base text-gray-900 group-hover:text-[#6B0F1A] transition leading-tight line-clamp-1 focus:outline-none after:absolute after:inset-0 after:z-10 after:rounded-2xl lg:after:rounded-3xl focus-visible:after:ring-2 focus-visible:after:ring-[#6B0F1A]/40 focus-visible:after:ring-inset"
+                               title="{{ $produk->nama_kue }}">
                                 {{ $produk->nama_kue }}
                             </a>
                             @if ($produk->deskripsi)
@@ -126,7 +128,7 @@
                             </span>
 
                             @if ($produk->status_stok === \App\Enums\StatusStok::Ready && $produk->stok > 0)
-                                <form action="{{ route('cart.add', $produk->id) }}" method="POST" class="inline-block">
+                                <form action="{{ route('cart.add', $produk->id) }}" method="POST" class="relative z-20 inline-block" onclick="event.stopPropagation()">
                                     @csrf
                                     <input type="hidden" name="quantity" value="1">
                                     <button type="submit" class="bg-[#6B0F1A] hover:bg-[#520912] active:scale-95 text-white p-1 sm:p-1.5 lg:p-2 rounded-md sm:rounded-lg lg:rounded-xl transition shadow-2xs cursor-pointer flex items-center justify-center" title="Tambah {{ $produk->nama_kue }} ke Keranjang">
@@ -136,7 +138,7 @@
                                     </button>
                                 </form>
                             @else
-                                <button type="button" disabled class="bg-gray-200 text-gray-400 p-1 sm:p-1.5 lg:p-2 rounded-md sm:rounded-lg lg:rounded-xl cursor-not-allowed flex items-center justify-center" title="Stok Habis">
+                                <button type="button" disabled class="relative z-20 bg-gray-200 text-gray-400 p-1 sm:p-1.5 lg:p-2 rounded-md sm:rounded-lg lg:rounded-xl cursor-not-allowed flex items-center justify-center" title="Stok Habis">
                                     <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                                     </svg>
