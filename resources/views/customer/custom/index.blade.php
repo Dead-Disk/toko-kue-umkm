@@ -409,7 +409,7 @@
                             </div>
 
                             {{-- Tombol Aksi Submit --}}
-                            <div class="pt-1">
+                            <div class="pt-1 space-y-3">
                                 <button type="submit"
                                         class="w-full py-3.5 px-6 bg-[#6B0F1A] hover:bg-[#540F18] active:bg-[#3A0A0F] text-white font-bold text-sm sm:text-base rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#6B0F1A]/30 text-center cursor-pointer flex items-center justify-center gap-2">
                                     <span>Lanjut ke Ringkasan Pesanan</span>
@@ -417,6 +417,15 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                                     </svg>
                                 </button>
+
+                                <div class="text-center pt-1">
+                                    <a href="{{ route('customer.chat.index', ['mode' => 'order', 'verify' => 1]) }}"
+                                       id="custom-chat-seller-link"
+                                       class="inline-flex items-center gap-1.5 text-xs text-[#6B0F1A] hover:underline font-semibold transition-colors">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                        <span>Punya ide khusus atau ingin tanya sebelum memesan? Chat Penjual</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 
@@ -623,6 +632,22 @@
             });
 
             filterCakeOptions();
+
+            // Hubungkan tombol Chat Penjual dengan nomor WA yang sedang diisi di form (wajib verifikasi 2 langkah)
+            const chatSellerLink = document.getElementById('custom-chat-seller-link');
+            const phoneInput = document.getElementById('nomor_wa');
+            if (chatSellerLink) {
+                chatSellerLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+                    const baseChatUrl = "{{ route('customer.chat.index') }}";
+                    if (phoneVal) {
+                        window.location.href = `${baseChatUrl}?mode=order&verify=1&phone=${encodeURIComponent(phoneVal)}`;
+                    } else {
+                        window.location.href = `${baseChatUrl}?mode=order&verify=1`;
+                    }
+                });
+            }
         })();
     </script>
 </body>

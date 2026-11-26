@@ -9,9 +9,12 @@ use App\Enums\TipePesanan;
 use App\Models\Banner;
 use App\Models\CakeOption;
 use App\Models\Category;
+use App\Models\ChatMessage;
+use App\Models\ChatThread;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -280,7 +283,7 @@ class CustomerController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $jumlah, $subtotal, $fotoPermanen): Order {
+        $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $baseProduct, $jumlah, $subtotal, $fotoPermanen): Order {
             $order = Order::create([
                 'kode_pesanan' => Order::generateKodePesanan(),
                 'tipe_pesanan' => TipePesanan::Custom,
@@ -301,6 +304,81 @@ class CustomerController extends Controller
                 'deskripsi_custom' => $draft['deskripsi_custom'],
                 'foto_referensi' => $fotoPermanen,
                 'ukuran_kue' => $cakeOption->label(),
+            ]);
+
+            // Auto-kirim pesan template pesanan custom ke chat penjual (tepat sekali / idempoten)
+            $normalizedPhone = ChatThread::normalizePhone($order->nomor_wa);
+            $thread = ChatThread::firstOrCreate(
+                ['order_code' => $order->kode_pesanan],
+                [
+                    'customer_name' => $order->nama_pemesan,
+                    'customer_phone' => $normalizedPhone,
+                    'thread_type' => 'order',
+                    'unread_admin_count' => 0,
+                    'unread_customer_count' => 0,
+                    'last_message_at' => now(),
+                ]
+            );
+
+            // Cek apakah pesan pembuka custom sudah pernah dibuat untuk thread ini
+            $alreadySent = $thread->messages()
+                ->where('sender_type', 'customer')
+                ->where('message', 'like', "%[Pesanan Custom Cake Baru - {$order->kode_pesanan}]%")
+                ->exists();
+
+            if (! $alreadySent) {
+                $categoryName = $cakeOption->category?->nama_kategori ?? 'Kue Custom';
+                $productName = $baseProduct ? $baseProduct->nama_kue : '-';
+                $opsiPengiriman = $order->opsi_pengiriman instanceof OpsiPengiriman
+                    ? $order->opsi_pengiriman->label()
+                    : ucfirst((string) $order->opsi_pengiriman);
+                $metodeBayar = $order->metode_pembayaran instanceof MetodePembayaran
+                    ? $order->metode_pembayaran->label()
+                    : strtoupper((string) $order->metode_pembayaran);
+                $tglAmbil = $order->tanggal_ambil
+                    ? (Carbon::parse($order->tanggal_ambil)->translatedFormat('d F Y'))
+                    : '-';
+                $formattedTotal = 'Rp '.number_format($order->total_harga, 0, ',', '.');
+
+                $templateMessage = "🍰 *[Pesanan Custom Cake Baru - {$order->kode_pesanan}]*\n\n"
+                    ."Halo Penjual Nak Mbarep, saya baru saja mengonfirmasi pesanan custom cake dengan rincian berikut:\n\n"
+                    ."📋 *Kode Pesanan:* {$order->kode_pesanan}\n"
+                    ."👤 *Nama Pemesan:* {$order->nama_pemesan}\n"
+                    ."📱 *Nomor WhatsApp:* {$order->nomor_wa}\n"
+                    ."🚚 *Opsi Pengiriman:* {$opsiPengiriman}\n"
+                    ."📅 *Tanggal Ambil/Kirim:* {$tglAmbil}\n"
+                    ."📍 *Alamat Lengkap:* {$order->alamat_lengkap}\n\n"
+                    ."🎂 *Spesifikasi Kue:*\n"
+                    ."• *Kategori:* {$categoryName}\n"
+                    ."• *Produk Acuan:* {$productName}\n"
+                    ."• *Varian/Ukuran:* {$cakeOption->label()}\n"
+                    ."• *Jumlah:* {$jumlah} pcs\n"
+                    ."• *Deskripsi Request:* {$draft['deskripsi_custom']}\n\n"
+                    ."💳 *Metode Pembayaran:* {$metodeBayar}\n"
+                    ."💰 *Estimasi Total Harga:* {$formattedTotal}\n\n"
+                    .'Mohon dikonfirmasi ketersediaan dan detail pesanannya ya. Terima kasih!';
+
+                ChatMessage::create([
+                    'thread_id' => $thread->id,
+                    'sender_type' => 'customer',
+                    'sender_id' => null,
+                    'sender_name' => $order->nama_pemesan,
+                    'message' => $templateMessage,
+                    'is_read' => false,
+                ]);
+
+                $thread->increment('unread_admin_count');
+                $thread->update(['last_message_at' => now()]);
+            }
+
+            // Simpan status verifikasi di session browser
+            session([
+                'customer_active_thread_id' => $thread->id,
+                'customer_verified_phone' => $normalizedPhone,
+                'customer_verified_order' => $order->kode_pesanan,
+                'customer_chat_phone' => $normalizedPhone,
+                'customer_chat_name' => $order->nama_pemesan,
+                'customer_chat_order' => $order->kode_pesanan,
             ]);
 
             return $order;

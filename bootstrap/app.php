@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckChatPermission;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\ShareStoreSetting;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => CheckRole::class,
+            'chat.permission' => CheckChatPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

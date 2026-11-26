@@ -146,6 +146,26 @@
                         </div>
                     </div>
 
+                    <!-- Hak Akses Chat Khusus Staf -->
+                    <div class="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/80">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox"
+                                   name="can_chat"
+                                   value="1"
+                                   @checked(old('can_chat'))
+                                   class="mt-1 rounded text-[#6B0F1A] focus:ring-[#6B0F1A]">
+                            <div>
+                                <p class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                                    <span>Izin Akses Chat Pembeli</span>
+                                    <span class="text-[10px] font-normal px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-medium">Khusus Staf</span>
+                                </p>
+                                <p class="text-[11px] text-stone-600 mt-0.5 leading-relaxed">
+                                    Jika dicentang, staf dapat melihat kotak masuk obrolan dan membalas pesan pelanggan. (Untuk akun Admin/Owner, akses chat selalu aktif otomatis).
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+
                     <!-- Password Fields (2 Grid) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-stone-100">
                         <div>

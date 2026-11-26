@@ -11,12 +11,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'username', 'email', 'password', 'role'])]
+#[Fillable(['name', 'username', 'email', 'password', 'role', 'can_chat'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Apakah user diizinkan mengakses dan membalas chat pembeli?
+     * Owner & Admin selalu punya izin penuh; Staf tergantung flag can_chat.
+     */
+    public function canAccessChat(): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        return (bool) $this->can_chat;
+    }
 
     /**
      * Apakah user adalah owner atau admin (pemilik toko)?
@@ -60,6 +73,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'can_chat' => 'boolean',
         ];
     }
 }

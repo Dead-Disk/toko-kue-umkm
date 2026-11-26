@@ -66,9 +66,11 @@ class UserController extends Controller
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
             'role' => ['required', Rule::in(self::ROLES)],
+            'can_chat' => ['nullable', 'boolean'],
         ]);
 
         $data['email'] = blank($data['email'] ?? null) ? null : $data['email'];
+        $data['can_chat'] = $request->boolean('can_chat');
 
         $user = User::create($data);
 
@@ -102,9 +104,11 @@ class UserController extends Controller
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
             'role' => ['required', Rule::in(self::ROLES)],
+            'can_chat' => ['nullable', 'boolean'],
         ]);
 
         $data['email'] = blank($data['email'] ?? null) ? null : $data['email'];
+        $data['can_chat'] = $request->boolean('can_chat');
 
         if (blank($data['password'] ?? null)) {
             unset($data['password']);
