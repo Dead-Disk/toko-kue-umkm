@@ -57,15 +57,33 @@
                 </div>
 
                 @if ($thread)
-                    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                    @php
+                        $secretChatUrl = $thread->getCustomerSecretUrl();
+                    @endphp
+                    <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                        @if ($secretChatUrl)
+                            {{-- Tombol Salin Tautan Rahasia Chat --}}
+                            <button type="button"
+                                    id="btnCopySecretLink"
+                                    data-url="{{ $secretChatUrl }}"
+                                    title="Salin tautan rahasia untuk membuka kembali percakapan ini"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-semibold text-rose-100 hover:text-white transition cursor-pointer border border-white/10">
+                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                </svg>
+                                <span id="btnCopyText" class="hidden sm:inline">Simpan Tautan</span>
+                            </button>
+                        @endif
+
                         <a href="{{ route('customer.chat.index', ['mode' => 'inquiry', 'verify' => 1]) }}"
-                           class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-rose-100 hover:text-white transition">
+                           class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-rose-100 hover:text-white transition">
                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                             </svg>
                             <span>Tanya Baru</span>
                         </a>
-                        <div class="text-right min-w-0 max-w-[110px] min-[400px]:max-w-[150px] sm:max-w-xs">
+
+                        <div class="text-right min-w-0 max-w-[90px] min-[400px]:max-w-[130px] sm:max-w-xs">
                             <span class="text-xs sm:text-sm font-semibold block text-stone-100 truncate">{{ $thread->customer_name }}</span>
                             <span class="text-[10px] sm:text-xs text-stone-300 font-mono truncate block">{{ $thread->customer_phone }}</span>
                         </div>
@@ -233,6 +251,21 @@
                                         </div>
 
                                         <div>
+                                            <label for="chat_pin_order" class="block text-xs sm:text-sm font-bold text-stone-700 mb-1">PIN Rahasia Pesanan (6 Digit)</label>
+                                            <input type="password"
+                                                   id="chat_pin_order"
+                                                   name="chat_pin"
+                                                   inputmode="numeric"
+                                                   pattern="[0-9]{6}"
+                                                   minlength="6"
+                                                   maxlength="6"
+                                                   placeholder="6 digit PIN yang dibuat saat konfirmasi pesanan"
+                                                   required
+                                                   class="w-full text-xs sm:text-sm px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border border-[#E8B8AE]/70 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] bg-[#FAF2EE]/20 focus:bg-white font-mono tracking-widest transition">
+                                            <p class="text-[10px] sm:text-[11px] text-stone-400 mt-0.5">PIN hanya diketahui oleh Anda dan tidak dapat dilihat penjual.</p>
+                                        </div>
+
+                                        <div>
                                             <label for="order_message" class="block text-xs sm:text-sm font-bold text-stone-700 mb-1">Pesan (Opsional)</label>
                                             <textarea id="order_message"
                                                       name="message"
@@ -342,7 +375,7 @@
             @else
                 {{-- Area Pesan Chat (Sesi Terverifikasi) --}}
                 <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 lg:p-8 space-y-3.5 sm:space-y-4 bg-[#FAF2EE]/30 chat-scroll">
-                    {{-- Banner Status Sesi --}}
+                    {{-- Banner Status Sesi & Tautan Rahasia --}}
                     @if ($thread->order_code)
                         <div class="mx-auto max-w-sm sm:max-w-md text-center my-1 sm:my-2">
                             <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-2xs">
@@ -361,6 +394,30 @@
                                 </svg>
                                 <span>Sesi Tanya-Tanya Pra-Order</span>
                             </span>
+                        </div>
+                    @endif
+
+                    {{-- Kotak Info Tautan Rahasia --}}
+                    @if ($secretChatUrl)
+                        <div id="secretTokenBanner" class="mx-auto max-w-xl bg-white border border-[#F4E1D9] rounded-2xl p-3 sm:p-3.5 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                            <div class="flex items-start gap-2 min-w-0">
+                                <svg class="w-4 h-4 text-[#6B0F1A] shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                </svg>
+                                <div class="text-[11px] leading-tight text-stone-600">
+                                    <span class="font-bold text-stone-800 block">Tautan Rahasia Obrolan Anda</span>
+                                    <span>Simpan tautan ini untuk membuka percakapan ini lagi kapan saja tanpa login.</span>
+                                </div>
+                            </div>
+                            <button type="button"
+                                    id="btnBannerCopyLink"
+                                    data-url="{{ $secretChatUrl }}"
+                                    class="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#6B0F1A] hover:bg-[#520912] active:scale-95 text-white text-[11px] font-bold transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-2xs">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                                <span id="btnBannerCopyText">Salin Tautan</span>
+                            </button>
                         </div>
                     @endif
 
@@ -388,8 +445,25 @@
                                     @if (filled($msg->message))
                                         <p class="whitespace-pre-wrap leading-relaxed">{{ $msg->message }}</p>
                                     @endif
-                                    <div class="text-[10px] sm:text-[11px] mt-1 text-right {{ $isCustomer ? 'text-rose-200' : 'text-stone-400' }}">
-                                        {{ $msg->created_at->format('H:i') }}
+                                    <div class="text-[10px] sm:text-[11px] mt-1 flex items-center justify-end gap-1.5 {{ $isCustomer ? 'text-rose-200' : 'text-stone-400' }}">
+                                        <span>{{ $msg->created_at->format('H:i') }}</span>
+                                        @if ($isCustomer)
+                                            @if ($msg->is_read)
+                                                <span class="read-status inline-flex items-center gap-0.5 text-sky-300 font-medium" data-is-read="1">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2 12l5 5L17 7M9 12l5 5L22 7"/>
+                                                    </svg>
+                                                    <span>Dibaca</span>
+                                                </span>
+                                            @else
+                                                <span class="read-status inline-flex items-center gap-0.5 text-rose-200/80" data-is-read="0">
+                                                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    <span>Terkirim</span>
+                                                </span>
+                                            @endif
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -457,6 +531,39 @@
 
             if (sendForm.dataset.handlersAttached === 'true') return;
             sendForm.dataset.handlersAttached = 'true';
+
+            // Fitur Salin Tautan Rahasia ke Clipboard
+            function setupCopyButton(btnId, textId) {
+                const btn = document.getElementById(btnId);
+                const txt = document.getElementById(textId);
+                if (!btn) return;
+
+                btn.addEventListener('click', async function () {
+                    const url = btn.dataset.url || window.location.href;
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(url);
+                        } else {
+                            const tempInput = document.createElement('input');
+                            tempInput.value = url;
+                            document.body.appendChild(tempInput);
+                            tempInput.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(tempInput);
+                        }
+                        if (txt) {
+                            const original = txt.textContent;
+                            txt.textContent = 'Tersalin!';
+                            setTimeout(() => { txt.textContent = original; }, 2000);
+                        }
+                    } catch (e) {
+                        prompt('Salin tautan rahasia berikut:', url);
+                    }
+                });
+            }
+
+            setupCopyButton('btnCopySecretLink', 'btnCopyText');
+            setupCopyButton('btnBannerCopyLink', 'btnBannerCopyText');
 
             let isSending = false;
             let activePoll = null;
@@ -587,6 +694,24 @@
                 }
             });
 
+            function renderReadStatusHtml(isRead) {
+                if (isRead) {
+                    return `<span class="read-status inline-flex items-center gap-0.5 text-sky-300 font-medium" data-is-read="1">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2 12l5 5L17 7M9 12l5 5L22 7"/>
+                        </svg>
+                        <span>Dibaca</span>
+                    </span>`;
+                }
+
+                return `<span class="read-status inline-flex items-center gap-0.5 text-rose-200/80" data-is-read="0">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Terkirim</span>
+                </span>`;
+            }
+
             function appendMessage(msg) {
                 if (document.getElementById('msg-' + msg.id)) return;
 
@@ -615,7 +740,8 @@
                     const sanitizedMsg = msg.message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     html += `<p class="whitespace-pre-wrap leading-relaxed">${sanitizedMsg}</p>`;
                 }
-                html += `<div class="text-[10px] sm:text-[11px] mt-1 text-right ${msg.is_mine ? 'text-rose-200' : 'text-stone-400'}">${msg.created_at}</div>`;
+                const readStatusHtml = msg.is_mine ? renderReadStatusHtml(Boolean(msg.is_read)) : '';
+                html += `<div class="text-[10px] sm:text-[11px] mt-1 flex items-center justify-end gap-1.5 ${msg.is_mine ? 'text-rose-200' : 'text-stone-400'}"><span>${msg.created_at}</span>${readStatusHtml}</div>`;
 
                 bubble.innerHTML = html;
                 wrapper.appendChild(bubble);
@@ -642,9 +768,15 @@
                         let hasNew = false;
                         if (data.messages && data.messages.length > 0) {
                             data.messages.forEach(msg => {
-                                if (!document.getElementById('msg-' + msg.id)) {
+                                const existingEl = document.getElementById('msg-' + msg.id);
+                                if (!existingEl) {
                                     appendMessage(msg);
                                     hasNew = true;
+                                } else if (msg.is_mine && msg.is_read) {
+                                    const statusEl = existingEl.querySelector('.read-status');
+                                    if (statusEl && statusEl.dataset.isRead !== '1') {
+                                        statusEl.outerHTML = renderReadStatusHtml(true);
+                                    }
                                 }
                             });
                             if (hasNew) {

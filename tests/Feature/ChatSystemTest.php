@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -27,6 +28,7 @@ class ChatSystemTest extends TestCase
             'kode_pesanan' => 'ORD-20261126-1111',
             'nomor_wa' => '081234567890',
             'nama_pemesan' => 'Budi Asli',
+            'chat_pin' => Hash::make('123456'),
         ]);
 
         // Mencoba mengakses dengan nomor HP benar tapi Kode Pesanan salah
@@ -34,6 +36,7 @@ class ChatSystemTest extends TestCase
             ->post(route('customer.chat.verify-order'), [
                 'customer_phone' => '0812-3456-7890',
                 'order_code' => 'ORD-SALAH-9999',
+                'chat_pin' => '123456',
             ]);
 
         $response->assertRedirect(route('customer.chat.index'));
@@ -47,6 +50,7 @@ class ChatSystemTest extends TestCase
             'kode_pesanan' => 'ORD-20261126-2222',
             'nomor_wa' => '081234567890',
             'nama_pemesan' => 'Korban',
+            'chat_pin' => Hash::make('123456'),
         ]);
 
         // Orang iseng menebak kode pesanan tapi memakai nomor HP miliknya sendiri
@@ -54,11 +58,47 @@ class ChatSystemTest extends TestCase
             ->post(route('customer.chat.verify-order'), [
                 'customer_phone' => '089999999999',
                 'order_code' => 'ORD-20261126-2222',
+                'chat_pin' => '123456',
             ]);
 
         $response->assertRedirect(route('customer.chat.index'));
         $response->assertSessionHasErrors('verification');
         $this->assertNull(session('customer_active_thread_id'));
+    }
+
+    public function test_customer_cannot_access_order_chat_with_wrong_or_missing_pin(): void
+    {
+        Order::factory()->create([
+            'kode_pesanan' => 'ORD-20261127-4444',
+            'nomor_wa' => '081234567890',
+            'nama_pemesan' => 'Pembeli Asli',
+            'chat_pin' => Hash::make('567890'),
+        ]);
+
+        // Admin/staf tahu kode pesanan & nomor WA, tetapi salah menebak PIN
+        $response = $this->from(route('customer.chat.index'))
+            ->post(route('customer.chat.verify-order'), [
+                'customer_phone' => '081234567890',
+                'order_code' => 'ORD-20261127-4444',
+                'chat_pin' => '123456',
+            ]);
+
+        $response->assertRedirect(route('customer.chat.index'));
+        $response->assertSessionHasErrors('verification');
+        $this->assertNull(session('customer_active_thread_id'));
+
+        // Tanpa PIN harus ditolak validasi
+        $this->postJson(route('customer.chat.verify-order'), [
+            'customer_phone' => '081234567890',
+            'order_code' => 'ORD-20261127-4444',
+        ])->assertUnprocessable()->assertJsonValidationErrors('chat_pin');
+
+        // PIN bukan 6 digit (misal 4 digit) harus ditolak validasi
+        $this->postJson(route('customer.chat.verify-order'), [
+            'customer_phone' => '081234567890',
+            'order_code' => 'ORD-20261127-4444',
+            'chat_pin' => '5678',
+        ])->assertUnprocessable()->assertJsonValidationErrors('chat_pin');
     }
 
     public function test_customer_can_verify_and_access_order_chat_with_matching_credentials(): void
@@ -67,11 +107,13 @@ class ChatSystemTest extends TestCase
             'kode_pesanan' => 'ORD-20261126-3333',
             'nomor_wa' => '0812-3456-7890',
             'nama_pemesan' => 'Ahmad Pembeli',
+            'chat_pin' => Hash::make('432100'),
         ]);
 
         $response = $this->post(route('customer.chat.verify-order'), [
             'customer_phone' => '+6281234567890', // Format +628...
             'order_code' => 'ORD-20261126-3333',
+            'chat_pin' => '432100',
             'message' => 'Halo penjual, apakah pesanan saya sudah dipanggang?',
         ]);
 
@@ -696,5 +738,315 @@ class ChatSystemTest extends TestCase
 
         // Sesi aktif lama harus di-reset
         $this->assertNull(session('customer_active_thread_id'));
+    }
+
+    public function test_chat_thread_automatically_generates_unique_access_token_on_creation(): void
+    {
+        $threadA = ChatThread::create([
+            'customer_name' => 'Pembeli A',
+            'customer_phone' => '628111111111',
+            'thread_type' => 'inquiry',
+        ]);
+
+        $threadB = ChatThread::create([
+            'customer_name' => 'Pembeli B',
+            'customer_phone' => '628111111111',
+            'thread_type' => 'inquiry',
+        ]);
+
+        $this->assertNotEmpty($threadA->plainAccessToken);
+        $this->assertNotEmpty($threadB->plainAccessToken);
+        $this->assertSame(48, strlen($threadA->plainAccessToken));
+        $this->assertSame(64, strlen($threadA->access_token));
+        $this->assertSame(hash('sha256', $threadA->plainAccessToken), $threadA->access_token);
+        $this->assertNotEquals($threadA->plainAccessToken, $threadA->access_token);
+        $this->assertNotEquals($threadA->access_token, $threadB->access_token);
+    }
+
+    public function test_customer_can_reopen_chat_thread_using_valid_secret_token(): void
+    {
+        $thread = ChatThread::create([
+            'customer_name' => 'Sari',
+            'customer_phone' => '628123456789',
+            'thread_type' => 'inquiry',
+        ]);
+
+        ChatMessage::create([
+            'thread_id' => $thread->id,
+            'sender_type' => 'customer',
+            'sender_name' => 'Sari',
+            'message' => 'Halo, apakah kue lapis legit masih tersedia?',
+        ]);
+
+        // Tanpa sesi aktif, pembeli membuka chat lewat tautan rahasia (plain token)
+        $response = $this->get(route('customer.chat.index', ['token' => $thread->plainAccessToken]));
+
+        $response->assertOk()
+            ->assertSee('Halo, apakah kue lapis legit masih tersedia?')
+            ->assertSee('Tautan Rahasia Obrolan Anda')
+            ->assertSee($thread->getCustomerSecretUrl(), false);
+
+        $this->assertSame($thread->id, session('customer_active_thread_id'));
+    }
+
+    public function test_invalid_secret_token_shows_verification_form_without_leaking_threads(): void
+    {
+        $thread = ChatThread::create([
+            'customer_name' => 'Rahasia',
+            'customer_phone' => '628123456789',
+            'thread_type' => 'inquiry',
+        ]);
+
+        ChatMessage::create([
+            'thread_id' => $thread->id,
+            'sender_type' => 'customer',
+            'sender_name' => 'Rahasia',
+            'message' => 'PESAN_TIDAK_BOLEH_BOCOR',
+        ]);
+
+        $this->get(route('customer.chat.index', ['token' => 'token-palsu-tidak-valid']))
+            ->assertOk()
+            ->assertDontSee('PESAN_TIDAK_BOLEH_BOCOR')
+            ->assertSee('Diskusi Pesanan');
+
+        // Hash di database tidak boleh bisa dipakai langsung sebagai token di URL
+        $this->get(route('customer.chat.index', ['token' => $thread->access_token]))
+            ->assertOk()
+            ->assertDontSee('PESAN_TIDAK_BOLEH_BOCOR');
+
+        $this->assertNull(session('customer_active_thread_id'));
+    }
+
+    public function test_admin_and_staff_cannot_see_customer_secret_link_or_plain_token(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $staff = User::factory()->create(['role' => 'staff', 'can_chat' => true]);
+
+        $thread = ChatThread::create([
+            'customer_name' => 'Rahasia Pembeli',
+            'customer_phone' => '628123456789',
+            'thread_type' => 'inquiry',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.chat.index', ['thread_id' => $thread->id]))
+            ->assertOk()
+            ->assertDontSee('Salin Tautan')
+            ->assertDontSee($thread->plainAccessToken);
+
+        $this->actingAs($staff)
+            ->get(route('staff.chat.index', ['thread_id' => $thread->id]))
+            ->assertOk()
+            ->assertDontSee('Salin Tautan')
+            ->assertDontSee($thread->plainAccessToken);
+    }
+
+    public function test_secret_token_takes_priority_over_existing_active_session(): void
+    {
+        $threadA = ChatThread::create([
+            'customer_name' => 'Pembeli A',
+            'customer_phone' => '628111111111',
+            'thread_type' => 'inquiry',
+        ]);
+        ChatMessage::create([
+            'thread_id' => $threadA->id,
+            'sender_type' => 'customer',
+            'sender_name' => 'Pembeli A',
+            'message' => 'ISI_CHAT_THREAD_A',
+        ]);
+
+        $threadB = ChatThread::create([
+            'customer_name' => 'Pembeli B',
+            'customer_phone' => '628222222222',
+            'thread_type' => 'inquiry',
+        ]);
+        ChatMessage::create([
+            'thread_id' => $threadB->id,
+            'sender_type' => 'customer',
+            'sender_name' => 'Pembeli B',
+            'message' => 'ISI_CHAT_THREAD_B',
+        ]);
+
+        session(['customer_active_thread_id' => $threadA->id]);
+
+        $response = $this->get(route('customer.chat.index', ['token' => $threadB->plainAccessToken]));
+
+        $response->assertOk()
+            ->assertSee('ISI_CHAT_THREAD_B')
+            ->assertDontSee('ISI_CHAT_THREAD_A');
+
+        $this->assertSame($threadB->id, session('customer_active_thread_id'));
+    }
+
+    public function test_verify_order_start_inquiry_and_poll_return_token_and_secret_url_in_json(): void
+    {
+        $order = Order::factory()->create([
+            'kode_pesanan' => 'ORD-20261127-9999',
+            'nomor_wa' => '081234567890',
+            'nama_pemesan' => 'Dina',
+            'chat_pin' => Hash::make('987654'),
+        ]);
+
+        $verifyResponse = $this->postJson(route('customer.chat.verify-order'), [
+            'customer_phone' => '081234567890',
+            'order_code' => 'ORD-20261127-9999',
+            'chat_pin' => '987654',
+        ]);
+
+        $verifyResponse->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['success', 'thread_id', 'token', 'secret_url']);
+
+        $inquiryResponse = $this->postJson(route('customer.chat.inquiry'), [
+            'customer_name' => 'Dina Tanya',
+            'customer_phone' => '081234567890',
+            'message' => 'Halo admin',
+        ]);
+
+        $inquiryResponse->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['success', 'thread_id', 'token', 'secret_url']);
+
+        $pollResponse = $this->getJson(route('customer.chat.poll'));
+        $pollResponse->assertOk()
+            ->assertJsonPath('thread.token', $inquiryResponse->json('token'))
+            ->assertJsonPath('thread.secret_url', $inquiryResponse->json('secret_url'));
+    }
+
+    public function test_start_inquiry_and_verify_order_are_rate_limited(): void
+    {
+        // Batas inquiry: 5 percobaan per 60 detik per IP
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson(route('customer.chat.inquiry'), [
+                'customer_name' => "Spam {$i}",
+                'customer_phone' => '081234567890',
+            ])->assertOk();
+        }
+
+        $this->postJson(route('customer.chat.inquiry'), [
+            'customer_name' => 'Spam Blocked',
+            'customer_phone' => '081234567890',
+        ])->assertStatus(429);
+
+        // Batas verifyOrder: 10 percobaan per 60 detik per IP
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson(route('customer.chat.verify-order'), [
+                'customer_phone' => '081234567890',
+                'order_code' => 'ORD-TIDAK-ADA',
+                'chat_pin' => '123456',
+            ])->assertStatus(422);
+        }
+
+        $blockedVerify = $this->postJson(route('customer.chat.verify-order'), [
+            'customer_phone' => '081234567890',
+            'order_code' => 'ORD-TIDAK-ADA',
+            'chat_pin' => '123456',
+        ]);
+
+        $blockedVerify->assertStatus(422);
+        $this->assertStringContainsString('Terlalu banyak percobaan verifikasi', $blockedVerify->json('error'));
+    }
+
+    public function test_read_and_unread_message_status_updates_across_customer_admin_and_staff(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $staff = User::factory()->create(['role' => 'staff', 'can_chat' => true]);
+
+        $thread = ChatThread::create([
+            'customer_name' => 'Rina',
+            'customer_phone' => '628123456789',
+            'thread_type' => 'inquiry',
+        ]);
+
+        // 1. Pembeli mengirim pesan -> awalnya is_read = false ("Terkirim")
+        session(['customer_active_thread_id' => $thread->id]);
+        $customerSend = $this->postJson(route('customer.chat.send'), [
+            'message' => 'Halo, apakah ready?',
+        ]);
+        $customerSend->assertOk()->assertJsonPath('message.is_read', false);
+
+        $this->get(route('customer.chat.index'))
+            ->assertOk()
+            ->assertSee('data-is-read="0"', false)
+            ->assertSee('Terkirim');
+
+        // 2. Admin membuka thread -> pesan pembeli otomatis ditandai terbaca
+        $this->actingAs($admin)
+            ->get(route('admin.chat.index', ['thread_id' => $thread->id]))
+            ->assertOk();
+
+        $this->getJson(route('customer.chat.poll'))
+            ->assertOk()
+            ->assertJsonPath('messages.0.is_read', true);
+
+        $this->get(route('customer.chat.index'))
+            ->assertOk()
+            ->assertSee('data-is-read="1"', false)
+            ->assertSee('Dibaca');
+
+        // 3. Staf membalas pesan -> awalnya is_read = false ("Terkirim")
+        $staffReply = $this->actingAs($staff)
+            ->postJson(route('staff.chat.reply', $thread), [
+                'message' => 'Ready kak, silakan dipesan.',
+            ]);
+        $staffReply->assertOk()->assertJsonPath('message.is_read', false);
+
+        $this->actingAs($staff)
+            ->get(route('staff.chat.index', ['thread_id' => $thread->id]))
+            ->assertOk()
+            ->assertSee('data-is-read="0"', false)
+            ->assertSee('Terkirim');
+
+        // 4. Pembeli membuka chat lagi -> balasan staf otomatis ditandai terbaca
+        $this->get(route('customer.chat.index', ['token' => $thread->plainAccessToken]))
+            ->assertOk();
+
+        $this->actingAs($staff)
+            ->getJson(route('staff.chat.messages', $thread))
+            ->assertOk()
+            ->assertJsonPath('messages.1.is_read', true);
+
+        $this->actingAs($admin)
+            ->get(route('admin.chat.index', ['thread_id' => $thread->id]))
+            ->assertOk()
+            ->assertSee('data-is-read="1"', false)
+            ->assertSee('Dibaca');
+    }
+
+    public function test_checkout_saves_hashed_chat_pin_and_allows_order_chat_verification(): void
+    {
+        $product = Product::factory()->create([
+            'stok' => 10,
+            'harga' => 50000,
+        ]);
+
+        // 1. Pembeli mengisi form review pesanan tanpa PIN; halaman review memuat popup pembuatan PIN
+        $this->post(route('customer.pesanan.review'), [
+            'product_id' => $product->id,
+            'nama_pemesan' => 'Siti Checkout',
+            'alamat_lengkap' => 'Jl. Melati No. 5',
+            'nomor_wa' => '081234567890',
+            'jumlah' => 1,
+            'opsi_pengiriman' => OpsiPengiriman::AmbilSendiri->value,
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ])->assertOk()->assertSee('chatPinModal');
+
+        // 2. Pembeli konfirmasi checkout beserta PIN 6 digit dari popup (246810)
+        $this->post(route('customer.pesanan.checkout'), [
+            'chat_pin' => '246810',
+        ])->assertRedirect();
+
+        $order = Order::where('nama_pemesan', 'Siti Checkout')->firstOrFail();
+        $this->assertNotNull($order->chat_pin);
+        $this->assertNotSame('246810', $order->chat_pin);
+        $this->assertTrue($order->verifyChatPin('246810'));
+        $this->assertFalse($order->verifyChatPin('000000'));
+
+        // 3. Verifikasi chat pesanan menggunakan PIN 246810 berhasil
+        $this->postJson(route('customer.chat.verify-order'), [
+            'customer_phone' => '081234567890',
+            'order_code' => $order->kode_pesanan,
+            'chat_pin' => '246810',
+        ])->assertOk()->assertJsonPath('success', true);
     }
 }

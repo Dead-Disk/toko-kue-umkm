@@ -14,6 +14,7 @@ use App\Models\StoreSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -150,6 +151,9 @@ class OrderController extends Controller
 
         $proofValidator = Validator::make($request->all(), [
             'bukti_pembayaran' => $this->paymentProofRules($metode !== MetodePembayaran::Cash),
+            'chat_pin' => ['nullable', 'digits:6'],
+        ], [
+            'chat_pin.digits' => 'PIN rahasia chat harus berupa tepat 6 digit angka.',
         ]);
 
         // Halaman review tidak punya route GET, jadi kegagalan validasi diarahkan
@@ -166,8 +170,12 @@ class OrderController extends Controller
             ? null
             : $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
 
+        $chatPinHash = $request->filled('chat_pin')
+            ? Hash::make((string) $request->input('chat_pin'))
+            : null;
+
         try {
-            $order = DB::transaction(function () use ($draft, $buktiPembayaran): Order {
+            $order = DB::transaction(function () use ($draft, $buktiPembayaran, $chatPinHash): Order {
                 $product = Product::query()->lockForUpdate()->findOrFail($draft['product_id']);
 
                 if ($product->stok < $draft['jumlah']) {
@@ -191,6 +199,7 @@ class OrderController extends Controller
                     'tipe_pesanan' => TipePesanan::Reguler,
                     'nama_pemesan' => $draft['nama_pemesan'],
                     'nomor_wa' => $draft['nomor_wa'],
+                    'chat_pin' => $chatPinHash,
                     'alamat_lengkap' => $draft['alamat_lengkap'],
                     'opsi_pengiriman' => $draft['opsi_pengiriman'],
                     'tanggal_ambil' => $draft['tanggal_ambil'] ?? null,
@@ -238,6 +247,7 @@ class OrderController extends Controller
             'nama_pemesan' => ['required', 'string', 'max:255'],
             'alamat_lengkap' => ['required', 'string', 'max:1000'],
             'nomor_wa' => ['required', 'string', 'max:20'],
+            'chat_pin' => ['nullable', 'digits:6'],
             'opsi_pengiriman' => ['required', Rule::enum(OpsiPengiriman::class)],
             'tanggal_ambil' => ['required', 'date', 'after_or_equal:today'],
             'metode_pembayaran' => ['required', Rule::enum(MetodePembayaran::class)],
@@ -245,6 +255,8 @@ class OrderController extends Controller
             'bukti_pembayaran' => $this->paymentProofRules(
                 $request->input('metode_pembayaran') !== MetodePembayaran::Cash->value
             ),
+        ], [
+            'chat_pin.digits' => 'PIN rahasia chat harus berupa tepat 6 digit angka.',
         ]);
 
         $cart = session('cart', []);
@@ -304,6 +316,7 @@ class OrderController extends Controller
                     'tipe_pesanan' => TipePesanan::Reguler,
                     'nama_pemesan' => $data['nama_pemesan'],
                     'nomor_wa' => $data['nomor_wa'],
+                    'chat_pin' => filled($data['chat_pin'] ?? null) ? Hash::make($data['chat_pin']) : null,
                     'alamat_lengkap' => $data['alamat_lengkap'],
                     'opsi_pengiriman' => $data['opsi_pengiriman'],
                     'tanggal_ambil' => $data['tanggal_ambil'],
@@ -394,14 +407,20 @@ class OrderController extends Controller
             ]
         );
 
-        session([
+        $sessionPayload = [
             'customer_active_thread_id' => $thread->id,
             'customer_verified_phone' => $normalizedPhone,
             'customer_verified_order' => $order->kode_pesanan,
             'customer_chat_phone' => $normalizedPhone,
             'customer_chat_name' => $order->nama_pemesan,
             'customer_chat_order' => $order->kode_pesanan,
-        ]);
+        ];
+
+        if ($thread->plainAccessToken) {
+            $sessionPayload['customer_plain_access_token'] = $thread->plainAccessToken;
+        }
+
+        session($sessionPayload);
 
         return view('customer.pesanan.sukses', [
             'order' => $order,

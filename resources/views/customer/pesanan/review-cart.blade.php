@@ -44,7 +44,7 @@
             @endif
 
             {{-- Checkout Form --}}
-            <form action="{{ route('customer.pesanan.checkout') }}" method="POST" enctype="multipart/form-data">
+            <form id="cartCheckoutForm" action="{{ route('customer.pesanan.checkout') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="checkout_mode" value="cart">
 
@@ -325,5 +325,6 @@
         </div>
     </main>
 
+    <x-chat-pin-modal form-id="cartCheckoutForm" />
 </body>
 </html>

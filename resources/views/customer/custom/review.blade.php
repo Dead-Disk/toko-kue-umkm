@@ -198,7 +198,7 @@
 
                     {{-- Section 5: Action Buttons --}}
                     <div class="space-y-3 pt-1">
-                        <form action="{{ route('customer.custom.store') }}" method="POST">
+                        <form id="customOrderConfirmForm" action="{{ route('customer.custom.store') }}" method="POST">
                             @csrf
                             <button type="submit"
                                     class="w-full py-3.5 px-6 bg-[#6B0F1A] hover:bg-[#540F18] active:bg-[#3A0A0F] text-white font-bold text-sm sm:text-base rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#6B0F1A]/30 text-center cursor-pointer flex items-center justify-center gap-2">
@@ -229,5 +229,7 @@
             </div>
         </div>
     </main>
+
+    <x-chat-pin-modal form-id="customOrderConfirmForm" />
 </body>
 </html>

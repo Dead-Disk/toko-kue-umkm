@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -234,8 +235,18 @@ class CustomerController extends Controller
     /**
      * Simpan pesanan custom secara permanen setelah dikonfirmasi di halaman review.
      */
-    public function storeCustom(): RedirectResponse
+    public function storeCustom(Request $request): RedirectResponse
     {
+        $validatedPin = $request->validate([
+            'chat_pin' => ['nullable', 'digits:6'],
+        ], [
+            'chat_pin.digits' => 'PIN rahasia chat harus berupa tepat 6 digit angka.',
+        ]);
+
+        $chatPinHash = filled($validatedPin['chat_pin'] ?? null)
+            ? Hash::make((string) $validatedPin['chat_pin'])
+            : null;
+
         $draft = session('custom_order_draft');
 
         if (empty($draft)) {
@@ -283,12 +294,13 @@ class CustomerController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $baseProduct, $jumlah, $subtotal, $fotoPermanen): Order {
+        $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $baseProduct, $jumlah, $subtotal, $fotoPermanen, $chatPinHash): Order {
             $order = Order::create([
                 'kode_pesanan' => Order::generateKodePesanan(),
                 'tipe_pesanan' => TipePesanan::Custom,
                 'nama_pemesan' => $draft['nama_pemesan'],
                 'nomor_wa' => $draft['nomor_wa'],
+                'chat_pin' => $chatPinHash,
                 'alamat_lengkap' => $draft['alamat_lengkap'],
                 'opsi_pengiriman' => $draft['opsi_pengiriman'],
                 'metode_pembayaran' => $draft['metode_pembayaran'],
@@ -374,6 +386,7 @@ class CustomerController extends Controller
             // Simpan status verifikasi di session browser
             session([
                 'customer_active_thread_id' => $thread->id,
+                'customer_plain_access_token' => $thread->plainAccessToken,
                 'customer_verified_phone' => $normalizedPhone,
                 'customer_verified_order' => $order->kode_pesanan,
                 'customer_chat_phone' => $normalizedPhone,

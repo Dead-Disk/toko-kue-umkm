@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Hash;
 
 #[Fillable([
     'kode_pesanan',
     'tipe_pesanan',
     'nama_pemesan',
     'nomor_wa',
+    'chat_pin',
     'alamat_lengkap',
     'opsi_pengiriman',
     'metode_pembayaran',
@@ -34,6 +36,27 @@ class Order extends Model
     use HasFactory;
 
     use SoftDeletes;
+
+    /**
+     * Sembunyikan hash PIN chat dari serialisasi array/JSON.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'chat_pin',
+    ];
+
+    /**
+     * Periksa apakah PIN chat yang dimasukkan pembeli cocok dengan hash yang tersimpan.
+     */
+    public function verifyChatPin(string $pin): bool
+    {
+        if (blank($this->chat_pin)) {
+            return false;
+        }
+
+        return Hash::check($pin, $this->chat_pin);
+    }
 
     /**
      * Get the attributes that should be cast.
