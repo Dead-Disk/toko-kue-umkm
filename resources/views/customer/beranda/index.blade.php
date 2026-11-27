@@ -189,9 +189,9 @@
 
                 {{-- Right Card Photo Frame --}}
                 <div class="col-span-4 lg:col-span-5 flex justify-end">
-                    <div class="bg-white p-1 lg:p-1.5 xl:p-2 rounded-2xl lg:rounded-3xl shadow-sm border border-white/80 w-full max-w-[120px] sm:max-w-[140px] lg:max-w-[220px] xl:max-w-[260px]">
-                        <div class="aspect-square rounded-xl lg:rounded-2xl overflow-hidden bg-gray-100">
-                            <img src="{{ asset('images/custom-card-new.png') }}" alt="Kue Custom Nak Mbarep" class="w-full h-full object-cover">
+                    <div class="bg-transparent p-1 lg:p-1.5 xl:p-2 rounded-2xl lg:rounded-3xl w-full max-w-[120px] sm:max-w-[140px] lg:max-w-[220px] xl:max-w-[260px]">
+                        <div class="aspect-square rounded-xl lg:rounded-2xl overflow-visible bg-transparent">
+                            <img src="{{ asset('images/hotwheel.png') }}" alt="Kue Custom Nak Mbarep" class="w-full h-full object-contain">
                         </div>
                     </div>
                 </div>
