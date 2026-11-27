@@ -20,9 +20,9 @@ class CustomerChatController extends Controller
      */
     public function index(Request $request): View|RedirectResponse
     {
-        // Jika pembeli meminta membuka alur verifikasi (misalnya mode=order atau verify=1 dari form Custom Cake),
+        // Jika pembeli meminta membuka alur verifikasi (misalnya mode=order atau verify=1/verify=3 dari form Custom Cake),
         // paksa reset sesi thread aktif agar wajib verifikasi Nomor HP + Kode Pesanan terlebih dahulu.
-        $forceVerify = $request->boolean('verify') || ($request->query('mode') === 'order' && ! $request->has('order'));
+        $forceVerify = $request->filled('verify') || ($request->query('mode') === 'order' && ! $request->has('order'));
 
         if ($forceVerify) {
             session()->forget([
