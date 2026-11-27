@@ -8,6 +8,7 @@ use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use RuntimeException;
@@ -20,13 +21,43 @@ class CustomerChatController extends Controller
      */
     public function index(Request $request): View|RedirectResponse
     {
-        // Jika pembeli meminta membuka alur verifikasi (misalnya mode=order atau verify=1/verify=3 dari form Custom Cake),
+        // 1. Jika pembeli membuka URL dengan ?token=..., verifikasi hash token rahasia
+        $token = $request->query('token');
+        if (! empty($token)) {
+            $tokenThread = ChatThread::findByPlainToken((string) $token);
+
+            if ($tokenThread) {
+                $this->markSellerMessagesAsRead($tokenThread);
+
+                // Simpan token thread & plain token ke sesi aktif pembeli
+                session([
+                    'customer_active_thread_id' => $tokenThread->id,
+                    'customer_plain_access_token' => $tokenThread->plainAccessToken,
+                    'customer_verified_phone' => $tokenThread->customer_phone,
+                    'customer_verified_order' => $tokenThread->order_code,
+                    'customer_chat_phone' => $tokenThread->customer_phone,
+                    'customer_chat_name' => $tokenThread->customer_name,
+                    'customer_chat_order' => $tokenThread->order_code,
+                ]);
+
+                return view('customer.chat.index', [
+                    'thread' => $tokenThread,
+                    'presetPhone' => $tokenThread->customer_phone,
+                    'presetName' => $tokenThread->customer_name,
+                    'presetOrder' => $tokenThread->order_code,
+                    'defaultMode' => $tokenThread->thread_type === 'order' ? 'order' : 'inquiry',
+                ]);
+            }
+        }
+
+        // 2. Jika pembeli meminta membuka alur verifikasi (misalnya mode=order atau verify=1/verify=3 dari form Custom Cake),
         // paksa reset sesi thread aktif agar wajib verifikasi Nomor HP + Kode Pesanan terlebih dahulu.
         $forceVerify = $request->filled('verify') || ($request->query('mode') === 'order' && ! $request->has('order'));
 
         if ($forceVerify) {
             session()->forget([
                 'customer_active_thread_id',
+                'customer_plain_access_token',
                 'customer_verified_phone',
                 'customer_verified_order',
                 'customer_chat_order',
@@ -40,6 +71,11 @@ class CustomerChatController extends Controller
             $thread = ChatThread::with([
                 'messages' => fn ($query) => $query->orderBy('id'),
             ])->find($sessionThreadId);
+
+            if ($thread) {
+                $this->markSellerMessagesAsRead($thread);
+                $thread->plainAccessToken = $this->resolveSessionPlainToken($thread);
+            }
         }
 
         $presetPhone = $request->query('phone') ?? session('customer_chat_phone');
@@ -61,27 +97,45 @@ class CustomerChatController extends Controller
      */
     public function verifyOrder(Request $request): JsonResponse|RedirectResponse
     {
+        // Rate limiting untuk mencegah brute force percobaan kombinasi kode pesanan & nomor WA
+        $ip = $request->ip();
+        $rateKey = 'chat-verify:'.$ip;
+        if (RateLimiter::tooManyAttempts($rateKey, 10)) {
+            $seconds = RateLimiter::availableIn($rateKey);
+            $msg = "Terlalu banyak percobaan verifikasi. Silakan coba lagi dalam {$seconds} detik.";
+
+            return $this->verificationFailed($request, $msg);
+        }
+
+        RateLimiter::hit($rateKey, 60);
+
         $validated = $request->validate([
             'customer_phone' => ['required', 'string', 'max:30'],
             'order_code' => ['required', 'string', 'max:50'],
+            'chat_pin' => ['required', 'digits:6'],
             'message' => ['nullable', 'string', 'max:2000'],
+        ], [
+            'chat_pin.required' => 'PIN rahasia pesanan wajib diisi.',
+            'chat_pin.digits' => 'PIN rahasia pesanan harus tepat 6 digit angka.',
         ]);
 
         $normalizedPhone = ChatThread::normalizePhone($validated['customer_phone']);
         $orderCode = trim($validated['order_code']);
 
-        // 1. Verifikasi kecocokan nomor HP dan Kode Pesanan terhadap tabel orders
+        // 1. Verifikasi kecocokan nomor HP, Kode Pesanan, dan PIN rahasia terhadap tabel orders
         $order = Order::where('kode_pesanan', $orderCode)->first();
 
         if (! $order) {
-            return $this->verificationFailed($request, 'Kombinasi Nomor WhatsApp dan Kode Pesanan tidak ditemukan.');
+            return $this->verificationFailed($request, 'Kombinasi Nomor WhatsApp, Kode Pesanan, dan PIN tidak cocok.');
         }
 
         $orderPhoneNormalized = ChatThread::normalizePhone($order->nomor_wa);
 
-        if ($orderPhoneNormalized !== $normalizedPhone) {
-            return $this->verificationFailed($request, 'Kombinasi Nomor WhatsApp dan Kode Pesanan tidak cocok.');
+        if ($orderPhoneNormalized !== $normalizedPhone || ! $order->verifyChatPin($validated['chat_pin'])) {
+            return $this->verificationFailed($request, 'Kombinasi Nomor WhatsApp, Kode Pesanan, dan PIN tidak cocok.');
         }
+
+        RateLimiter::clear($rateKey);
 
         // 2. Cari atau buat thread chat untuk pesanan ini
         $thread = ChatThread::where('order_code', $order->kode_pesanan)->first();
@@ -97,17 +151,19 @@ class CustomerChatController extends Controller
                 'last_message_at' => now(),
             ]);
         } else {
-            // Pastikan data thread sinkron
+            // Pastikan data thread sinkron dan terbitkan token rahasia baru saat verifikasi ulang
             $thread->update([
                 'customer_name' => $order->nama_pemesan,
                 'customer_phone' => $normalizedPhone,
                 'thread_type' => 'order',
             ]);
+            $thread->rotateAccessToken();
         }
 
-        // 3. Simpan token verifikasi ke sesi browser
+        // 3. Simpan token verifikasi & plain token ke sesi browser
         session([
             'customer_active_thread_id' => $thread->id,
+            'customer_plain_access_token' => $thread->plainAccessToken,
             'customer_verified_phone' => $normalizedPhone,
             'customer_verified_order' => $order->kode_pesanan,
             'customer_chat_phone' => $normalizedPhone,
@@ -134,6 +190,8 @@ class CustomerChatController extends Controller
             return response()->json([
                 'success' => true,
                 'thread_id' => $thread->id,
+                'token' => $thread->plainAccessToken,
+                'secret_url' => $thread->getCustomerSecretUrl(),
             ]);
         }
 
@@ -143,10 +201,25 @@ class CustomerChatController extends Controller
     /**
      * Mode 2: Chat Baru Pra-Order / Tanya-tanya (Tanpa Kode Pesanan).
      * Aturan keamanan: membuat thread obrolan baru terisolasi ('inquiry'),
-     * tidak boleh memuat riwayat thread pesanan lama.
+     * setiap kali obrolan baru dibuat memiliki thread terpisah dengan secret access_token.
      */
     public function startInquiry(Request $request): JsonResponse|RedirectResponse
     {
+        // Rate limiting anti-spam pembuatan thread percakapan baru
+        $ip = $request->ip();
+        $rateKey = 'chat-inquiry:'.$ip;
+        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateKey);
+            $errorMsg = "Terlalu banyak permintaan chat baru. Silakan tunggu {$seconds} detik sebelum membuat obrolan baru.";
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $errorMsg], 429);
+            }
+
+            return back()->withErrors(['inquiry' => $errorMsg]);
+        }
+
+        RateLimiter::hit($rateKey, 60);
+
         $validated = $request->validate([
             'customer_name' => ['required', 'string', 'max:100'],
             'customer_phone' => ['required', 'string', 'max:30'],
@@ -174,9 +247,10 @@ class CustomerChatController extends Controller
             'last_message_at' => now(),
         ]);
 
-        // Simpan sesi aktif
+        // Simpan sesi aktif beserta plain token sementara untuk browser pembeli
         session([
             'customer_active_thread_id' => $thread->id,
+            'customer_plain_access_token' => $thread->plainAccessToken,
             'customer_verified_phone' => $normalizedPhone,
             'customer_verified_order' => null,
             'customer_chat_phone' => $normalizedPhone,
@@ -202,6 +276,8 @@ class CustomerChatController extends Controller
             return response()->json([
                 'success' => true,
                 'thread_id' => $thread->id,
+                'token' => $thread->plainAccessToken,
+                'secret_url' => $thread->getCustomerSecretUrl(),
             ]);
         }
 
@@ -222,6 +298,14 @@ class CustomerChatController extends Controller
         if (! $thread) {
             return response()->json(['error' => 'Thread chat tidak ditemukan.'], 404);
         }
+
+        // Rate limiting kirim pesan untuk mencegah spam flood
+        $ip = $request->ip();
+        $rateKey = 'chat-send:'.$thread->id.':'.$ip;
+        if (RateLimiter::tooManyAttempts($rateKey, 20)) {
+            return response()->json(['error' => 'Terlalu cepat mengirim pesan. Silakan tunggu beberapa detik.'], 429);
+        }
+        RateLimiter::hit($rateKey, 60);
 
         $validated = $request->validate([
             'message' => ['nullable', 'required_without:image', 'string', 'max:2000'],
@@ -260,6 +344,7 @@ class CustomerChatController extends Controller
                 'created_at' => $chatMessage->created_at->format('H:i'),
                 'created_date' => $chatMessage->created_at->format('d M Y'),
                 'is_mine' => true,
+                'is_read' => (bool) $chatMessage->is_read,
             ],
         ]);
     }
@@ -289,14 +374,9 @@ class CustomerChatController extends Controller
         $messages = $messagesQuery->get();
 
         // Tandai pesan dari admin/staff sebagai dibaca oleh customer jika ada
-        $adminStaffMessages = $thread->messages()
-            ->whereIn('sender_type', ['admin', 'staff'])
-            ->where('is_read', false);
+        $this->markSellerMessagesAsRead($thread);
 
-        if ($adminStaffMessages->exists()) {
-            $adminStaffMessages->update(['is_read' => true]);
-            $thread->update(['unread_customer_count' => 0]);
-        }
+        $plainToken = $this->resolveSessionPlainToken($thread);
 
         return response()->json([
             'thread' => [
@@ -304,6 +384,8 @@ class CustomerChatController extends Controller
                 'customer_name' => $thread->customer_name,
                 'thread_type' => $thread->thread_type,
                 'order_code' => $thread->order_code,
+                'token' => $plainToken,
+                'secret_url' => $thread->getCustomerSecretUrl($plainToken),
             ],
             'messages' => $messages->map(fn (ChatMessage $msg) => [
                 'id' => $msg->id,
@@ -316,6 +398,7 @@ class CustomerChatController extends Controller
                 'created_at' => $msg->created_at->format('H:i'),
                 'created_date' => $msg->created_at->format('d M Y'),
                 'is_mine' => $msg->sender_type === 'customer',
+                'is_read' => (bool) $msg->is_read,
             ]),
         ]);
     }
@@ -344,6 +427,7 @@ class CustomerChatController extends Controller
     {
         session()->forget([
             'customer_active_thread_id',
+            'customer_plain_access_token',
             'customer_verified_phone',
             'customer_verified_order',
             'customer_chat_phone',
@@ -352,6 +436,36 @@ class CustomerChatController extends Controller
         ]);
 
         return redirect()->route('customer.chat.index');
+    }
+
+    /**
+     * Ambil plain token dari sesi hanya jika hash-nya cocok dengan thread aktif.
+     */
+    private function resolveSessionPlainToken(ChatThread $thread): ?string
+    {
+        $sessionPlain = session('customer_plain_access_token');
+        if (! is_string($sessionPlain) || $sessionPlain === '') {
+            return null;
+        }
+
+        return hash_equals((string) $thread->access_token, ChatThread::hashAccessToken($sessionPlain))
+            ? $sessionPlain
+            : null;
+    }
+
+    /**
+     * Tandai semua pesan dari admin/staf pada thread ini sebagai sudah dibaca pembeli.
+     */
+    private function markSellerMessagesAsRead(ChatThread $thread): void
+    {
+        $unreadSellerMessages = $thread->messages()
+            ->whereIn('sender_type', ['admin', 'staff'])
+            ->where('is_read', false);
+
+        if ($unreadSellerMessages->exists()) {
+            $unreadSellerMessages->update(['is_read' => true]);
+            $thread->update(['unread_customer_count' => 0]);
+        }
     }
 
     /**

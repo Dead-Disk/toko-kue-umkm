@@ -123,6 +123,7 @@ class AdminChatController extends Controller
                 'created_at' => $msg->created_at->format('H:i'),
                 'created_date' => $msg->created_at->format('d M Y'),
                 'is_internal' => in_array($msg->sender_type, ['admin', 'staff'], true),
+                'is_read' => (bool) $msg->is_read,
             ]),
         ]);
     }
@@ -175,6 +176,7 @@ class AdminChatController extends Controller
                 'created_at' => $chatMessage->created_at->format('H:i'),
                 'created_date' => $chatMessage->created_at->format('d M Y'),
                 'is_internal' => true,
+                'is_read' => (bool) $chatMessage->is_read,
             ],
         ]);
     }

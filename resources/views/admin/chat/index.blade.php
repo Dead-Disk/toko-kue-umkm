@@ -140,7 +140,7 @@
                         </div>
 
                         <!-- Info Role Penjawab Saat Ini -->
-                        <div class="text-right">
+                        <div class="text-right shrink-0">
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ auth()->user()->isAdmin() ? 'bg-purple-100 text-purple-800' : 'bg-sky-100 text-sky-800' }}">
                                 Menjawab sebagai: {{ auth()->user()->isAdmin() ? 'Admin' : 'Staf - '.auth()->user()->name }}
                             </span>
@@ -191,8 +191,25 @@
                                             <p class="whitespace-pre-wrap leading-relaxed">{{ $msg->message }}</p>
                                         @endif
 
-                                        <div class="text-[10px] mt-1 text-right {{ $isCustomer ? 'text-stone-400' : 'text-rose-200' }}">
-                                            {{ $msg->created_at->format('H:i') }} WIB
+                                        <div class="text-[10px] mt-1 flex items-center justify-end gap-1.5 {{ $isCustomer ? 'text-stone-400' : 'text-rose-200' }}">
+                                            <span>{{ $msg->created_at->format('H:i') }} WIB</span>
+                                            @if (! $isCustomer)
+                                                @if ($msg->is_read)
+                                                    <span class="read-status inline-flex items-center gap-0.5 text-sky-300 font-medium" data-is-read="1">
+                                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2 12l5 5L17 7M9 12l5 5L22 7"/>
+                                                        </svg>
+                                                        <span>Dibaca</span>
+                                                    </span>
+                                                @else
+                                                    <span class="read-status inline-flex items-center gap-0.5 text-rose-200/80" data-is-read="0">
+                                                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                        <span>Terkirim</span>
+                                                    </span>
+                                                @endif
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -424,6 +441,24 @@
                 }
             });
 
+            function renderAdminReadStatusHtml(isRead) {
+                if (isRead) {
+                    return `<span class="read-status inline-flex items-center gap-0.5 text-sky-300 font-medium" data-is-read="1">
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2 12l5 5L17 7M9 12l5 5L22 7"/>
+                        </svg>
+                        <span>Dibaca</span>
+                    </span>`;
+                }
+
+                return `<span class="read-status inline-flex items-center gap-0.5 text-rose-200/80" data-is-read="0">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Terkirim</span>
+                </span>`;
+            }
+
             function appendAdminMessage(msg) {
                 if (document.getElementById('admin-msg-' + msg.id)) return;
 
@@ -462,7 +497,8 @@
                     const sanitizedMsg = msg.message.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     html += `<p class="whitespace-pre-wrap leading-relaxed">${sanitizedMsg}</p>`;
                 }
-                html += `<div class="text-[10px] mt-1 text-right ${msg.is_internal ? 'text-rose-200' : 'text-stone-400'}">${msg.created_at} WIB</div>`;
+                const readStatusHtml = msg.is_internal ? renderAdminReadStatusHtml(Boolean(msg.is_read)) : '';
+                html += `<div class="text-[10px] mt-1 flex items-center justify-end gap-1.5 ${msg.is_internal ? 'text-rose-200' : 'text-stone-400'}"><span>${msg.created_at} WIB</span>${readStatusHtml}</div>`;
 
                 bubble.innerHTML = html;
                 wrapper.appendChild(bubble);
@@ -490,9 +526,15 @@
                         let hasNew = false;
                         if (data.messages && data.messages.length > 0) {
                             data.messages.forEach(msg => {
-                                if (!document.getElementById('admin-msg-' + msg.id)) {
+                                const existingEl = document.getElementById('admin-msg-' + msg.id);
+                                if (!existingEl) {
                                     appendAdminMessage(msg);
                                     hasNew = true;
+                                } else if (msg.is_internal && msg.is_read) {
+                                    const statusEl = existingEl.querySelector('.read-status');
+                                    if (statusEl && statusEl.dataset.isRead !== '1') {
+                                        statusEl.outerHTML = renderAdminReadStatusHtml(true);
+                                    }
                                 }
                             });
                             if (hasNew) scrollToBottom();

@@ -203,7 +203,7 @@
             {{-- ============================================================ --}}
             {{-- Section 4: Form Konfirmasi --}}
             {{-- ============================================================ --}}
-            <form action="{{ route('customer.pesanan.checkout') }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-4">
+            <form id="singleOrderCheckoutForm" action="{{ route('customer.pesanan.checkout') }}" method="POST" enctype="multipart/form-data" class="mt-6 space-y-4">
                 @csrf
 
                 @unless ($metodePembayaran === \App\Enums\MetodePembayaran::Cash)
@@ -236,5 +236,7 @@
             </p>
         </div>
     </main>
+
+    <x-chat-pin-modal form-id="singleOrderCheckoutForm" />
 </body>
 </html>
