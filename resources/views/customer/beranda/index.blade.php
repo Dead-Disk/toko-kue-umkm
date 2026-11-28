@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#FBF7F2] text-[#2C1810] min-h-screen antialiased flex flex-col font-sans overflow-x-clip">
+<body class="bg-[#FAF2EE] text-[#2C1810] min-h-screen antialiased flex flex-col font-sans overflow-x-clip">
 
     {{-- Top Navigation Bar --}}
     @include('customer.partials.navbar')
@@ -62,7 +62,7 @@
             <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6">
                 @forelse ($categories as $cat)
                     <a href="{{ route('customer.produk.index', ['kategori' => $cat->slug]) }}" class="group flex flex-col items-center">
-                        <div class="w-full aspect-square rounded-2xl overflow-hidden bg-[#F4ECE3] border border-[#E6D9CC] group-hover:border-[#C87D87] transition-colors mb-2.5 flex items-center justify-center p-4 sm:p-5">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden bg-[#F9F3F1]/80 border border-[#E6D9CC] group-hover:border-[#C87D87] transition-colors mb-2.5 flex items-center justify-center p-4 sm:p-5">
                             <x-category-icon :category="$cat" class="w-full h-full max-w-[56px] max-h-[56px] sm:max-w-[68px] sm:max-h-[68px] lg:max-w-[78px] lg:max-h-[78px] group-hover:scale-105 transition-transform duration-300" />
                         </div>
                         <span class="text-xs sm:text-sm font-medium text-[#2C1810] group-hover:text-[#6B0F1A] transition text-center line-clamp-1">
@@ -101,7 +101,7 @@
                     @endphp
                     <article class="relative bg-white rounded-2xl border border-[#EAE0D5] hover:border-[#D4B8AE] transition-colors flex flex-col justify-between group overflow-hidden cursor-pointer">
                         <div>
-                            <div class="aspect-square w-full overflow-hidden bg-[#F4ECE3] relative">
+                            <div class="aspect-square w-full overflow-hidden bg-[#F9F3F1] relative">
                                 @if ($produk->foto_url)
                                     <img src="{{ $produk->foto_url }}" alt="{{ $produk->nama_kue }}" class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500 {{ $isAvailable ? '' : 'grayscale opacity-75' }}">
                                 @else

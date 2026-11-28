@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#FBF7F2] text-[#2C1810] min-h-screen antialiased flex flex-col font-sans overflow-x-clip">
+<body class="bg-[#FAF2EE] text-[#2C1810] min-h-screen antialiased flex flex-col font-sans overflow-x-clip">
 
     {{-- Top Navigation Bar --}}
     @include('customer.partials.navbar')
@@ -61,7 +61,7 @@
 
             {{-- Right Visual Frame --}}
             <div class="lg:col-span-5 pt-6 sm:pt-8 lg:pt-6">
-                <div class="bg-[#F4ECE3] border border-[#E6D9CC] rounded-2xl lg:rounded-3xl p-6 sm:p-8 lg:p-10 flex flex-col items-center text-center space-y-5 overflow-visible">
+                <div class="bg-[#F9F3F1] border border-[#E6D9CC] rounded-2xl lg:rounded-3xl p-6 sm:p-8 lg:p-10 flex flex-col items-center text-center space-y-5 overflow-visible">
                     <div class="relative w-full flex items-center justify-center overflow-visible">
                         <img src="{{ asset('images/cake-no-background/multi-cake.png') }}"
                              alt="Aneka Kue Pilihan {{ $storeSetting->store_name ?? 'Nak Mbarep' }}"

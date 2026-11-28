@@ -27,7 +27,7 @@
                     <div class="{{ $previewId }}-slide absolute inset-0 w-full h-full overflow-visible transition-all duration-600 ease-out opacity-100 z-10 translate-x-0"
                          data-slide-index="0">
                         {{-- Card Surface Layer (z-10) --}}
-                        <div aria-hidden="true" class="absolute inset-0 rounded-2xl lg:rounded-3xl border border-[#E6D9CC] bg-[#F5EDE4] z-10 pointer-events-none"></div>
+                        <div aria-hidden="true" class="absolute inset-0 rounded-2xl lg:rounded-3xl border border-[#E6D9CC] bg-[#F9F3F1] z-10 pointer-events-none"></div>
 
                         <div class="relative w-full h-full px-4 py-5 sm:px-8 sm:py-8 lg:px-12 lg:py-10 xl:px-16 flex items-center overflow-visible">
                             <div class="relative w-full grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 lg:gap-10 items-center overflow-visible">
