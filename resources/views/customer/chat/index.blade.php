@@ -207,6 +207,15 @@
                                                 <li>{{ $error }}</li>
                                             @endforeach
                                         </ul>
+                                        @if (session('active_order_chat_url'))
+                                            <div class="mt-2.5 pt-2 border-t border-rose-200/70">
+                                                <a href="{{ session('active_order_chat_url') }}"
+                                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs font-bold transition shadow-2xs">
+                                                    <span>Masuk ke Ruang Chat Aktif (Kode Pesanan + No. HP + PIN)</span>
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                                </a>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endif
 
@@ -377,7 +386,7 @@
                 <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 lg:p-8 space-y-3.5 sm:space-y-4 bg-[#FAF2EE]/30 chat-scroll">
                     {{-- Banner Status Sesi & Tautan Rahasia --}}
                     @if ($thread->order_code)
-                        <div class="mx-auto max-w-sm sm:max-w-md text-center my-1 sm:my-2">
+                        <div class="mx-auto max-w-2xl text-center my-1 sm:my-2 space-y-2">
                             <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-2xs">
                                 <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
@@ -385,6 +394,68 @@
                                 <span>Terverifikasi Pesanan:</span>
                                 <strong class="font-mono">{{ $thread->order_code }}</strong>
                             </span>
+
+                            @if ($activeOrder)
+                                @php
+                                    $orderStatusBadge = match($activeOrder->status) {
+                                        \App\Enums\StatusPesanan::Pending => 'bg-amber-100 text-amber-800 border-amber-200',
+                                        \App\Enums\StatusPesanan::Proses => 'bg-sky-100 text-sky-800 border-sky-200',
+                                        \App\Enums\StatusPesanan::Selesai => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                                        \App\Enums\StatusPesanan::Ditolak => 'bg-rose-100 text-rose-800 border-rose-200',
+                                        \App\Enums\StatusPesanan::Batal => 'bg-stone-200 text-stone-700 border-stone-300',
+                                        \App\Enums\StatusPesanan::Expired => 'bg-stone-200 text-stone-700 border-stone-300',
+                                    };
+                                    $orderStatusText = match($activeOrder->status) {
+                                        \App\Enums\StatusPesanan::Pending => 'Menunggu ACC Penjual',
+                                        \App\Enums\StatusPesanan::Proses => 'Sudah ACC 100% (Diproses)',
+                                        default => $activeOrder->status->label(),
+                                    };
+                                @endphp
+                                <div id="orderStatusSummaryCard" class="bg-white border border-[#F4E1D9] rounded-2xl p-3 sm:p-4 text-left shadow-2xs space-y-2.5">
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span id="orderStatusBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold border {{ $orderStatusBadge }}">
+                                                {{ $orderStatusText }}
+                                            </span>
+                                            <span id="orderSummaryMeta" class="text-xs text-stone-600 font-medium">
+                                                {{ $activeOrder->items->count() }} item ({{ $activeOrder->items->sum('jumlah') }} pcs) &bull;
+                                                <strong id="orderSummaryTotal" class="text-[#6B0F1A]">Rp {{ number_format($activeOrder->total_harga, 0, ',', '.') }}</strong>
+                                            </span>
+                                        </div>
+
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ route('customer.chat.order', $activeOrder->kode_pesanan) }}"
+                                               class="text-[11px] font-semibold text-[#6B0F1A] hover:underline">
+                                                URL Ruang Chat
+                                            </a>
+                                            @if ($canAddCustomItems)
+                                                <button type="button"
+                                                        id="openAddCustomItemModalBtn"
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs font-bold shadow-2xs transition cursor-pointer">
+                                                    <span>+ Tambah Kue Kustom</span>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if ($activeOrder->expires_at && $activeOrder->isCustomActive())
+                                        <p class="text-[11px] text-amber-700 flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span>Batas waktu diskusi sebelum kedaluwarsa otomatis: <strong>{{ $activeOrder->expires_at->format('d M Y H:i') }} WIB</strong></span>
+                                        </p>
+                                    @endif
+
+                                    @if ($isClosedOrder)
+                                        <div class="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                            <span>{{ $activeOrder->cancel_reason ?? 'Diskusi pesanan ini telah ditutup.' }}</span>
+                                            <a href="{{ route('customer.custom.create') }}"
+                                               class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-[#6B0F1A] hover:bg-[#520912] text-white text-[11px] font-bold shrink-0">
+                                                Buat Pesanan Custom Baru
+                                            </a>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     @else
                         <div class="mx-auto max-w-sm sm:max-w-md text-center my-1 sm:my-2">
@@ -425,7 +496,16 @@
                         @foreach ($thread->messages as $msg)
                             @php
                                 $isCustomer = $msg->sender_type === 'customer';
+                                $isSystem = $msg->sender_type === 'system';
                             @endphp
+                            @if ($isSystem)
+                                <div id="msg-{{ $msg->id }}" data-message-id="{{ $msg->id }}" class="flex justify-center">
+                                    <div class="max-w-xl rounded-2xl px-4 py-2 text-[11px] sm:text-xs bg-amber-50 text-amber-900 border border-amber-200/80 text-center shadow-2xs">
+                                        <p class="whitespace-pre-wrap leading-relaxed">{{ $msg->message }}</p>
+                                        <span class="block text-[10px] text-amber-700/70 mt-0.5">{{ $msg->created_at->format('H:i') }}</span>
+                                    </div>
+                                </div>
+                            @else
                             <div id="msg-{{ $msg->id }}" data-message-id="{{ $msg->id }}" class="flex flex-col {{ $isCustomer ? 'items-end' : 'items-start' }}">
                                 <div class="max-w-[88%] sm:max-w-[78%] md:max-w-[68%] lg:max-w-[58%] rounded-2xl px-3.5 sm:px-4.5 py-2.5 sm:py-3 text-xs sm:text-sm shadow-2xs break-words {{ $isCustomer ? 'bg-[#6B0F1A] text-white rounded-br-xs' : 'bg-white text-stone-800 border border-[#F4E1D9] rounded-bl-xs' }}">
                                     @if (! $isCustomer)
@@ -467,13 +547,19 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         @endforeach
                     </div>
                 </div>
 
                 {{-- Input Pengiriman Pesan --}}
                 <div class="p-2.5 sm:p-3.5 md:p-4 lg:p-5 lg:px-8 bg-white border-t border-[#F4E1D9] shrink-0">
-                    <form id="sendMessageForm" class="flex items-end gap-1.5 sm:gap-3 max-w-5xl mx-auto w-full" novalidate>
+                    @if ($isClosedOrder)
+                        <div class="max-w-5xl mx-auto text-center py-2 text-xs text-stone-500">
+                            Diskusi pesanan ini telah ditutup/kedaluwarsa. Anda hanya dapat melihat riwayat percakapan.
+                        </div>
+                    @endif
+                    <form id="sendMessageForm" class="flex items-end gap-1.5 sm:gap-3 max-w-5xl mx-auto w-full {{ $isClosedOrder ? 'hidden' : '' }}" novalidate>
                         @csrf
                         <textarea id="messageInput"
                                   name="message"
@@ -513,6 +599,93 @@
 
         </div>
     </main>
+
+    @if ($thread && $canAddCustomItems)
+        {{-- Modal Tambah Item Kue Kustom ke Pesanan Aktif --}}
+        <div id="addCustomItemModal"
+             class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="addCustomItemModalTitle">
+            <div class="w-full max-w-lg rounded-3xl bg-white border border-[#F4E1D9] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                <div class="bg-[#6B0F1A] px-5 py-4 text-white flex items-center justify-between shrink-0">
+                    <div>
+                        <h3 id="addCustomItemModalTitle" class="text-sm sm:text-base font-bold">Tambah Kue Kustom ke Pesanan #{{ $activeOrder->kode_pesanan }}</h3>
+                        <p class="text-[11px] text-rose-200">Item baru akan langsung masuk ke pesanan &amp; ruang chat aktif ini.</p>
+                    </div>
+                    <button type="button" id="closeAddCustomItemModalBtn" aria-label="Tutup" class="p-1 rounded-lg text-rose-200 hover:text-white hover:bg-white/10 transition cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form id="addCustomItemForm" action="{{ route('customer.chat.items.store') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-4 overflow-y-auto">
+                    @csrf
+                    <div id="addCustomItemError" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium"></div>
+
+                    <div>
+                        <label for="modal_base_product_id" class="block text-xs font-bold text-stone-700 mb-1">Produk Acuan (Opsional)</label>
+                        <select id="modal_base_product_id" name="base_product_id" class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/40 focus:outline-none focus:border-[#6B0F1A]">
+                            <option value="">-- Tanpa Produk Acuan --</option>
+                            @foreach ($products as $item)
+                                <option value="{{ $item->id }}" data-harga="{{ $item->harga }}" data-category-id="{{ $item->category_id ?? '' }}">
+                                    {{ $item->nama_kue }} - Rp {{ number_format($item->harga, 0, ',', '.') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="modal_cake_category_id" class="block text-xs font-bold text-stone-700 mb-1">Kategori Kue (Opsional)</label>
+                            <select id="modal_cake_category_id" name="cake_category_id" class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/40 focus:outline-none focus:border-[#6B0F1A]">
+                                <option value="">-- Semua Kategori --</option>
+                                @foreach ($categoriesWithOptions as $category)
+                                    <option value="{{ $category->id }}">{{ $category->nama_kategori }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="modal_jumlah" class="block text-xs font-bold text-stone-700 mb-1">Jumlah (Pcs) <span class="text-rose-500">*</span></label>
+                            <input type="number" id="modal_jumlah" name="jumlah" value="1" min="1" max="{{ $maxCustomQuantity }}" required class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/40 focus:outline-none focus:border-[#6B0F1A]">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="modal_cake_option_id" class="block text-xs font-bold text-stone-700 mb-1">Bentuk &amp; Ukuran Kue <span class="text-rose-500">*</span></label>
+                        <select id="modal_cake_option_id" name="cake_option_id" required class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/40 focus:outline-none focus:border-[#6B0F1A]">
+                            <option value="">-- Pilih Ukuran --</option>
+                            @foreach ($cakeOptions as $option)
+                                <option value="{{ $option->id }}" data-harga="{{ $option->harga_dasar }}" data-category-id="{{ $option->category_id ?? '' }}">
+                                    {{ $option->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="modal_deskripsi_custom" class="block text-xs font-bold text-stone-700 mb-1">Deskripsi Request <span class="text-rose-500">*</span></label>
+                        <textarea id="modal_deskripsi_custom" name="deskripsi_custom" rows="3" required placeholder="Tuliskan rasa, warna krim, tulisan ucapan, dsb." class="w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-stone-200 bg-stone-50/40 focus:outline-none focus:border-[#6B0F1A] resize-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="modal_foto_referensi" class="block text-xs font-bold text-stone-700 mb-1">Foto Referensi (Opsional)</label>
+                        <input type="file" id="modal_foto_referensi" name="foto_referensi" accept="image/*" class="w-full text-xs text-stone-600 border border-stone-200 rounded-xl p-2 bg-stone-50/40">
+                    </div>
+
+                    <div class="rounded-xl bg-[#FAF2EE] border border-[#F4E1D9] p-3 flex items-center justify-between text-xs">
+                        <span class="font-semibold text-stone-600">Estimasi Tambahan Item:</span>
+                        <strong id="modalItemEstimate" class="text-sm font-bold text-[#6B0F1A]">Rp 0</strong>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2 border-t border-stone-100">
+                        <button type="button" id="cancelAddCustomItemModalBtn" class="px-4 py-2 rounded-xl border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer">Batal</button>
+                        <button type="submit" id="submitAddCustomItemBtn" class="px-5 py-2 rounded-xl bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs font-bold shadow-xs cursor-pointer">Tambahkan ke Pesanan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 
     @if ($thread)
     <script>
@@ -718,6 +891,18 @@
                 const wrapper = document.createElement('div');
                 wrapper.id = 'msg-' + msg.id;
                 wrapper.dataset.messageId = String(msg.id);
+
+                if (msg.is_system) {
+                    wrapper.className = 'flex justify-center';
+                    const sanitizedSystemMsg = (msg.message || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    wrapper.innerHTML = `<div class="max-w-xl rounded-2xl px-4 py-2 text-[11px] sm:text-xs bg-amber-50 text-amber-900 border border-amber-200/80 text-center shadow-2xs"><p class="whitespace-pre-wrap leading-relaxed">${sanitizedSystemMsg}</p><span class="block text-[10px] text-amber-700/70 mt-0.5">${msg.created_at}</span></div>`;
+                    const nextMessage = Array.from(messagesList.children).find(
+                        messageElement => Number(messageElement.dataset.messageId) > Number(msg.id)
+                    );
+                    messagesList.insertBefore(wrapper, nextMessage || null);
+                    return;
+                }
+
                 wrapper.className = 'flex flex-col ' + (msg.is_mine ? 'items-end' : 'items-start');
 
                 const bubble = document.createElement('div');
@@ -765,6 +950,25 @@
                         }
 
                         const data = await response.json();
+                        if (data.order) {
+                            const statusBadge = document.getElementById('orderStatusBadge');
+                            const summaryTotal = document.getElementById('orderSummaryTotal');
+                            const addBtn = document.getElementById('openAddCustomItemModalBtn');
+                            if (statusBadge) {
+                                statusBadge.textContent = data.order.status === 'proses'
+                                    ? 'Sudah ACC 100% (Diproses)'
+                                    : (data.order.status === 'pending' ? 'Menunggu ACC Penjual' : data.order.status_label);
+                            }
+                            if (summaryTotal && data.order.total_harga_formatted) {
+                                summaryTotal.textContent = data.order.total_harga_formatted;
+                            }
+                            if (addBtn && !data.order.is_active) {
+                                addBtn.classList.add('hidden');
+                            }
+                            if (data.order.is_closed) {
+                                sendForm.classList.add('hidden');
+                            }
+                        }
                         let hasNew = false;
                         if (data.messages && data.messages.length > 0) {
                             data.messages.forEach(msg => {
@@ -799,6 +1003,125 @@
             }
 
             setInterval(pollMessages, 3500);
+
+            // Modal Tambah Item Kue Kustom di dalam Chat Aktif
+            const addModal = document.getElementById('addCustomItemModal');
+            const openAddBtn = document.getElementById('openAddCustomItemModalBtn');
+            const closeAddBtn = document.getElementById('closeAddCustomItemModalBtn');
+            const cancelAddBtn = document.getElementById('cancelAddCustomItemModalBtn');
+            const addItemForm = document.getElementById('addCustomItemForm');
+            const addItemError = document.getElementById('addCustomItemError');
+            const modalBaseProduct = document.getElementById('modal_base_product_id');
+            const modalCategory = document.getElementById('modal_cake_category_id');
+            const modalCakeOption = document.getElementById('modal_cake_option_id');
+            const modalQty = document.getElementById('modal_jumlah');
+            const modalEstimate = document.getElementById('modalItemEstimate');
+            const submitAddBtn = document.getElementById('submitAddCustomItemBtn');
+
+            if (addModal && openAddBtn && addItemForm) {
+                const openModal = () => {
+                    addModal.classList.remove('hidden');
+                    addModal.classList.add('flex');
+                };
+                const closeModal = () => {
+                    addModal.classList.add('hidden');
+                    addModal.classList.remove('flex');
+                    if (addItemError) {
+                        addItemError.classList.add('hidden');
+                        addItemError.textContent = '';
+                    }
+                };
+
+                openAddBtn.addEventListener('click', openModal);
+                closeAddBtn?.addEventListener('click', closeModal);
+                cancelAddBtn?.addEventListener('click', closeModal);
+                addModal.addEventListener('click', (e) => {
+                    if (e.target === addModal) closeModal();
+                });
+
+                const updateModalEstimate = () => {
+                    const baseHarga = Number.parseInt(modalBaseProduct?.selectedOptions[0]?.dataset.harga || '0', 10) || 0;
+                    const optHarga = Number.parseInt(modalCakeOption?.selectedOptions[0]?.dataset.harga || '0', 10) || 0;
+                    const unitHarga = modalBaseProduct?.value ? baseHarga : optHarga;
+                    const qty = Math.max(1, Number.parseInt(modalQty?.value || '1', 10) || 1);
+                    if (modalEstimate) {
+                        modalEstimate.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(unitHarga * qty);
+                    }
+                };
+
+                const filterModalCakeOptions = () => {
+                    if (!modalCakeOption) return;
+                    const selectedCat = modalCategory ? modalCategory.value : '';
+                    const options = Array.from(modalCakeOption.options).filter((o) => o.value !== '');
+                    const hasSpecific = selectedCat !== '' && options.some((o) => (o.dataset.categoryId || '') === selectedCat);
+                    options.forEach((o) => {
+                        const catId = o.dataset.categoryId || '';
+                        const show = selectedCat === '' ? true : (hasSpecific ? catId === selectedCat : catId === '');
+                        o.hidden = !show;
+                        o.disabled = !show;
+                    });
+                    if (modalCakeOption.selectedOptions[0]?.hidden) {
+                        modalCakeOption.value = '';
+                    }
+                    updateModalEstimate();
+                };
+
+                modalCategory?.addEventListener('change', filterModalCakeOptions);
+                modalBaseProduct?.addEventListener('change', updateModalEstimate);
+                modalCakeOption?.addEventListener('change', updateModalEstimate);
+                modalQty?.addEventListener('input', updateModalEstimate);
+
+                addItemForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    if (!submitAddBtn) return;
+
+                    const csrfToken = addItemForm.querySelector('input[name="_token"]')?.value;
+                    if (!csrfToken) return;
+
+                    submitAddBtn.disabled = true;
+                    if (addItemError) {
+                        addItemError.classList.add('hidden');
+                        addItemError.textContent = '';
+                    }
+
+                    try {
+                        const formData = new FormData(addItemForm);
+                        const response = await fetch(addItemForm.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: formData,
+                        });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            const firstErr = data?.errors ? Object.values(data.errors).flat()[0] : null;
+                            throw new Error(firstErr || data?.error || 'Gagal menambahkan item.');
+                        }
+                        if (data.message) {
+                            appendMessage(data.message);
+                            scrollToBottom();
+                        }
+                        if (data.order) {
+                            const metaEl = document.getElementById('orderSummaryMeta');
+                            if (metaEl) {
+                                metaEl.innerHTML = `${data.order.items_count} item (${data.order.total_qty} pcs) &bull; <strong id="orderSummaryTotal" class="text-[#6B0F1A]">${data.order.total_harga_formatted}</strong>`;
+                            }
+                        }
+                        addItemForm.reset();
+                        updateModalEstimate();
+                        closeModal();
+                    } catch (err) {
+                        if (addItemError) {
+                            addItemError.textContent = err.message || 'Gagal menambahkan item.';
+                            addItemError.classList.remove('hidden');
+                        }
+                    } finally {
+                        submitAddBtn.disabled = false;
+                    }
+                });
+            }
         });
     </script>
     @endif

@@ -59,6 +59,18 @@
             </div>
         </div>
 
+        @if (session('success'))
+            <div class="mb-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shrink-0">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="mb-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold shrink-0">
+                {{ $errors->first() }}
+            </div>
+        @endif
+
         <!-- Chat Workspace Card (2-Kolom: Daftar Thread di Kiri, Percakapan di Kanan) -->
         <div class="flex-1 bg-white rounded-2xl shadow-xs border border-stone-200/80 flex overflow-hidden min-h-0">
             
@@ -84,6 +96,11 @@
                                         @if ($th->order_code)
                                             <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-mono font-semibold shrink-0">
                                                 #{{ $th->order_code }}
+                                            </span>
+                                        @endif
+                                        @if ($th->order)
+                                            <span class="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 {{ $th->order->status === \App\Enums\StatusPesanan::Pending ? 'bg-amber-50 text-amber-700 border border-amber-200' : ($th->order->status === \App\Enums\StatusPesanan::Proses ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-stone-100 text-stone-600') }}">
+                                                {{ $th->order->status->label() }}
                                             </span>
                                         @endif
                                     </div>
@@ -147,6 +164,60 @@
                         </div>
                     </div>
 
+                    @if ($activeOrder)
+                        @php
+                            $isAdminClosedOrder = in_array($activeOrder->status, [\App\Enums\StatusPesanan::Batal, \App\Enums\StatusPesanan::Ditolak, \App\Enums\StatusPesanan::Expired], true);
+                        @endphp
+                        <div class="px-4 py-2.5 border-b border-stone-200 bg-[#FAF2EE]/60 flex flex-wrap items-center justify-between gap-2.5 text-xs shrink-0">
+                            <div class="flex flex-wrap items-center gap-2 min-w-0">
+                                <span class="font-bold text-[#6B0F1A]">{{ \App\Enums\TipePesanan::labelFor($activeOrder->tipe_pesanan) }}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white border border-stone-200 text-stone-700">
+                                    Status: {{ $activeOrder->status?->label() ?? '-' }}
+                                </span>
+                                <span class="text-stone-600 font-medium">
+                                    {{ $activeOrder->items->count() }} item ({{ $activeOrder->items->sum('jumlah') }} pcs) &bull;
+                                    <strong class="text-stone-900">Rp{{ number_format($activeOrder->total_harga, 0, ',', '.') }}</strong>
+                                </span>
+                                @if ($activeOrder->expires_at && $activeOrder->isCustomActive())
+                                    <span class="text-[11px] text-amber-700">
+                                        &bull; Batas: {{ $activeOrder->expires_at->format('d M Y H:i') }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if ($activeOrder->status === \App\Enums\StatusPesanan::Pending)
+                                    @if ($activeOrder->tipe_pesanan === \App\Enums\TipePesanan::Custom)
+                                        <form action="{{ route($panel === 'staff' ? 'staff.chat.approve' : 'admin.chat.approve', $activeThread) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit"
+                                                    onclick="return confirm('ACC 100% pesanan custom {{ $activeOrder->kode_pesanan }}? Kunci nomor HP akan dilepas.')"
+                                                    class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold shadow-2xs transition cursor-pointer">
+                                                ACC 100% Pesanan
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <form action="{{ route($panel === 'staff' ? 'staff.chat.cancel' : 'admin.chat.cancel', $activeThread) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                onclick="return confirm('Batalkan diskusi pesanan {{ $activeOrder->kode_pesanan }}? Kunci nomor HP akan dilepas.')"
+                                                class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold shadow-2xs transition cursor-pointer">
+                                            Batalkan Diskusi
+                                        </button>
+                                    </form>
+                                @elseif ($activeOrder->status === \App\Enums\StatusPesanan::Proses)
+                                    <span class="text-[11px] font-semibold text-emerald-700">Sudah ACC 100% (Kunci No. HP Dilepas)</span>
+                                @elseif ($isAdminClosedOrder)
+                                    <span class="text-[11px] font-semibold text-rose-700">Diskusi Ditutup ({{ $activeOrder->status->label() }})</span>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        @php
+                            $isAdminClosedOrder = false;
+                        @endphp
+                    @endif
+
                     <!-- Area Pesan -->
                     <div id="adminChatMessagesContainer" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3 bg-[#FAF2EE]/30 chat-scroll">
                         <div id="adminMessagesList" class="space-y-3">
@@ -155,10 +226,17 @@
                                     $isCustomer = $msg->sender_type === 'customer';
                                     $isStaff = $msg->sender_type === 'staff';
                                     $isAdmin = $msg->sender_type === 'admin';
+                                    $isSystem = $msg->sender_type === 'system';
                                 @endphp
-                                <div id="admin-msg-{{ $msg->id }}"
-                                     data-message-id="{{ $msg->id }}"
-                                     class="flex flex-col {{ $isCustomer ? 'items-start' : 'items-end' }}">
+                                @if ($isSystem)
+                                    <div id="admin-msg-{{ $msg->id }}" data-message-id="{{ $msg->id }}" class="flex justify-center">
+                                        <div class="max-w-xl rounded-2xl px-4 py-2 text-[11px] sm:text-xs bg-amber-50 text-amber-900 border border-amber-200/80 text-center shadow-2xs">
+                                            <p class="whitespace-pre-wrap leading-relaxed">{{ $msg->message }}</p>
+                                            <span class="block text-[10px] text-amber-700/70 mt-0.5">{{ $msg->created_at->format('H:i') }} WIB</span>
+                                        </div>
+                                    </div>
+                                @else
+                                <div id="admin-msg-{{ $msg->id }}" data-message-id="{{ $msg->id }}" class="flex flex-col {{ $isCustomer ? 'items-start' : 'items-end' }}">
                                     <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm shadow-2xs break-words {{ $isCustomer ? 'bg-white text-stone-800 border border-stone-200 rounded-bl-xs' : 'bg-[#6B0F1A] text-white rounded-br-xs' }}">
                                         {{-- Header Pengirim --}}
                                         <div class="flex items-center gap-1.5 mb-1 pb-1 border-b {{ $isCustomer ? 'border-stone-100' : 'border-white/10' }}">
@@ -213,17 +291,21 @@
                                         </div>
                                     </div>
                                 </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
 
                     <!-- Input Balasan -->
                     <div class="p-3 sm:p-4 bg-white border-t border-stone-200 shrink-0">
+                        @if (! empty($isAdminClosedOrder))
+                            <p class="text-center text-xs text-stone-500 py-1.5">Diskusi pesanan ini telah ditutup/kedaluwarsa sehingga balasan baru dinonaktifkan.</p>
+                        @endif
                         <form id="adminReplyForm"
                               action="{{ route($panel === 'staff' ? 'staff.chat.reply' : 'admin.chat.reply', $activeThread, false) }}"
                               method="POST"
                               novalidate
-                              class="flex items-center gap-2">
+                              class="flex items-center gap-2 {{ ! empty($isAdminClosedOrder) ? 'hidden' : '' }}">
                             @csrf
                             <input type="hidden" id="activeThreadId" value="{{ $activeThread->id }}">
                             <textarea id="adminMessageInput"
@@ -465,6 +547,18 @@
                 const wrapper = document.createElement('div');
                 wrapper.id = 'admin-msg-' + msg.id;
                 wrapper.dataset.messageId = String(msg.id);
+
+                if (msg.is_system) {
+                    wrapper.className = 'flex justify-center';
+                    const sanitizedSystemMsg = (msg.message || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    wrapper.innerHTML = `<div class="max-w-xl rounded-2xl px-4 py-2 text-[11px] sm:text-xs bg-amber-50 text-amber-900 border border-amber-200/80 text-center shadow-2xs"><p class="whitespace-pre-wrap leading-relaxed">${sanitizedSystemMsg}</p><span class="block text-[10px] text-amber-700/70 mt-0.5">${msg.created_at} WIB</span></div>`;
+                    const nextMessage = Array.from(messagesList.children).find(
+                        messageElement => Number(messageElement.dataset.messageId) > Number(msg.id)
+                    );
+                    messagesList.insertBefore(wrapper, nextMessage || null);
+                    return;
+                }
+
                 wrapper.className = 'flex flex-col ' + (msg.is_internal ? 'items-end' : 'items-start');
 
                 const bubble = document.createElement('div');

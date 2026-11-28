@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
@@ -14,10 +15,12 @@ use Illuminate\Support\Str;
     'customer_phone',
     'thread_type',
     'order_code',
+    'status',
     'access_token',
     'unread_admin_count',
     'unread_customer_count',
     'last_message_at',
+    'closed_at',
 ])]
 class ChatThread extends Model
 {
@@ -104,6 +107,7 @@ class ChatThread extends Model
             'unread_admin_count' => 'integer',
             'unread_customer_count' => 'integer',
             'last_message_at' => 'datetime',
+            'closed_at' => 'datetime',
         ];
     }
 
@@ -157,5 +161,13 @@ class ChatThread extends Model
     public function latestMessage(): HasOne
     {
         return $this->hasOne(ChatMessage::class, 'thread_id')->latestOfMany();
+    }
+
+    /**
+     * Relasi ke pesanan jika thread ini bertipe 'order'.
+     */
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'order_code', 'kode_pesanan');
     }
 }

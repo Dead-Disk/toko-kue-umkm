@@ -11,6 +11,7 @@ use App\Models\ChatThread;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
+use App\Services\CustomOrderChatService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
+    public function __construct(public CustomOrderChatService $chatService) {}
+
     /**
      * Langkah 1 (jalur keranjang): tampilkan ringkasan isi keranjang + form data pemesan.
      */
@@ -69,6 +72,12 @@ class OrderController extends Controller
         ]);
 
         $product = Product::findOrFail($data['product_id']);
+
+        if ($this->chatService->isSellerPhone($data['nomor_wa'])) {
+            return back()
+                ->withInput()
+                ->withErrors(['nomor_wa' => 'Nomor WhatsApp ini terdaftar sebagai nomor penjual/admin dan tidak dapat digunakan untuk membuat pesanan tamu.']);
+        }
 
         $storeSetting = StoreSetting::current();
         $metode = MetodePembayaran::from($data['metode_pembayaran']);
@@ -139,6 +148,12 @@ class OrderController extends Controller
             return redirect()
                 ->route('customer.produk.index')
                 ->withErrors(['order' => 'Data pesanan belum lengkap. Silakan pilih produk dan isi form pesanan terlebih dahulu.']);
+        }
+
+        if ($this->chatService->isSellerPhone($draft['nomor_wa'] ?? null)) {
+            return redirect()
+                ->route('customer.produk.show', $draft['product_id'])
+                ->withErrors(['nomor_wa' => 'Nomor WhatsApp ini terdaftar sebagai nomor penjual/admin dan tidak dapat digunakan untuk membuat pesanan tamu.']);
         }
 
         $metode = MetodePembayaran::from($draft['metode_pembayaran']);
@@ -236,6 +251,7 @@ class OrderController extends Controller
         }
 
         session()->forget(['order_draft', 'customer_chat_pin']);
+        session(['customer_just_created_order' => $order->kode_pesanan]);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }
@@ -262,6 +278,13 @@ class OrderController extends Controller
         ]);
 
         $data['chat_pin'] ??= session('customer_chat_pin');
+
+        if ($this->chatService->isSellerPhone($data['nomor_wa'])) {
+            return redirect()
+                ->route('customer.pesanan.review-cart')
+                ->withInput()
+                ->withErrors(['nomor_wa' => 'Nomor WhatsApp ini terdaftar sebagai nomor penjual/admin dan tidak dapat digunakan untuk membuat pesanan tamu.']);
+        }
 
         $cart = session('cart', []);
 
@@ -356,6 +379,7 @@ class OrderController extends Controller
         }
 
         session()->forget(['cart', 'cart_note', 'customer_chat_pin']);
+        session(['customer_just_created_order' => $order->kode_pesanan]);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }
@@ -411,20 +435,13 @@ class OrderController extends Controller
             ]
         );
 
-        $sessionPayload = [
-            'customer_active_thread_id' => $thread->id,
-            'customer_verified_phone' => $normalizedPhone,
-            'customer_verified_order' => $order->kode_pesanan,
-            'customer_chat_phone' => $normalizedPhone,
-            'customer_chat_name' => $order->nama_pemesan,
-            'customer_chat_order' => $order->kode_pesanan,
-        ];
+        $canAutoVerify = session('customer_just_created_order') === $order->kode_pesanan
+            || blank($order->chat_pin);
 
-        if ($thread->plainAccessToken) {
-            $sessionPayload['customer_plain_access_token'] = $thread->plainAccessToken;
+        if ($canAutoVerify) {
+            session()->forget('customer_just_created_order');
+            $this->chatService->grantOrderChatSession($thread, $order, $normalizedPhone);
         }
-
-        session($sessionPayload);
 
         return view('customer.pesanan.sukses', [
             'order' => $order,

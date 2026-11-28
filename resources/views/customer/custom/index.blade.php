@@ -61,6 +61,17 @@
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
+                        @if (session('active_order_chat_url'))
+                            <div class="pt-2 border-t border-rose-200/80 flex flex-wrap items-center gap-2">
+                                <a href="{{ session('active_order_chat_url') }}"
+                                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#6B0F1A] hover:bg-[#520912] text-white font-bold text-xs shadow-xs transition">
+                                    <span>Masuk ke Ruang Chat Aktif (Kode Pesanan + No. HP + PIN)</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 @endif
 

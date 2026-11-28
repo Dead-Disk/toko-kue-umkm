@@ -14,6 +14,7 @@ use App\Models\ChatThread;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StoreSetting;
+use App\Services\CustomOrderChatService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CustomerController extends Controller
@@ -29,7 +31,9 @@ class CustomerController extends Controller
     /**
      * Batas maksimal jumlah kue pada satu pesanan custom.
      */
-    private const MAX_CUSTOM_QUANTITY = 5;
+    private const MAX_CUSTOM_QUANTITY = CustomOrderChatService::MAX_CUSTOM_QUANTITY;
+
+    public function __construct(public CustomOrderChatService $chatService) {}
 
     /**
      * Halaman utama (landing page) pembeli.
@@ -166,7 +170,7 @@ class CustomerController extends Controller
      * Validasi form custom, simpan draf sementara ke session (termasuk foto),
      * lalu tampilkan halaman review. Belum ada yang ditulis ke database orders.
      */
-    public function reviewCustom(Request $request): View
+    public function reviewCustom(Request $request): View|RedirectResponse
     {
         $data = $request->validate([
             'nama_pemesan' => ['required', 'string', 'max:255'],
@@ -184,6 +188,19 @@ class CustomerController extends Controller
         ], [
             'jumlah.max' => 'Maksimal pemesanan untuk pesanan ini adalah '.self::MAX_CUSTOM_QUANTITY.' pcs.',
         ]);
+
+        if ($this->chatService->isSellerPhone($data['nomor_wa'])) {
+            return redirect()
+                ->route('customer.custom.create')
+                ->withInput()
+                ->withErrors([
+                    'nomor_wa' => 'Nomor WhatsApp ini terdaftar sebagai nomor penjual/admin dan tidak dapat digunakan untuk membuat pesanan tamu.',
+                ]);
+        }
+
+        if ($activeOrder = $this->chatService->findActiveCustomOrderForPhone($data['nomor_wa'])) {
+            return $this->redirectToExistingCustomChat($activeOrder, $data['nomor_wa']);
+        }
 
         // Simpan file sementara ke private storage (temp_custom) dan simpan path-nya di session
         if ($request->hasFile('foto_referensi')) {
@@ -257,6 +274,18 @@ class CustomerController extends Controller
                 ->withErrors(['custom' => 'Data pesanan belum lengkap. Silakan isi form custom terlebih dahulu.']);
         }
 
+        if ($this->chatService->isSellerPhone($draft['nomor_wa'] ?? null)) {
+            return redirect()
+                ->route('customer.custom.create')
+                ->withErrors([
+                    'nomor_wa' => 'Nomor WhatsApp ini terdaftar sebagai nomor penjual/admin dan tidak dapat digunakan untuk membuat pesanan tamu.',
+                ]);
+        }
+
+        if ($activeOrder = $this->chatService->findActiveCustomOrderForPhone($draft['nomor_wa'] ?? null)) {
+            return $this->redirectToExistingCustomChat($activeOrder, (string) ($draft['nomor_wa'] ?? ''));
+        }
+
         $cakeOption = CakeOption::find($draft['cake_option_id']);
 
         if ($cakeOption === null) {
@@ -296,111 +325,154 @@ class CustomerController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $baseProduct, $jumlah, $subtotal, $fotoPermanen, $chatPinHash): Order {
-            $order = Order::create([
-                'kode_pesanan' => Order::generateKodePesanan(),
-                'tipe_pesanan' => TipePesanan::Custom,
-                'nama_pemesan' => $draft['nama_pemesan'],
-                'nomor_wa' => $draft['nomor_wa'],
-                'chat_pin' => $chatPinHash,
-                'alamat_lengkap' => $draft['alamat_lengkap'],
-                'opsi_pengiriman' => $draft['opsi_pengiriman'],
-                'metode_pembayaran' => $draft['metode_pembayaran'],
-                'total_harga' => $subtotal,
-                'status' => StatusPesanan::Pending,
-                'tanggal_ambil' => $draft['tanggal_ambil'] ?? null,
-            ]);
+        try {
+            $order = DB::transaction(function () use ($draft, $cakeOption, $baseProductId, $baseProduct, $jumlah, $subtotal, $fotoPermanen, $chatPinHash): Order {
+                $normalizedPhone = ChatThread::normalizePhone($draft['nomor_wa']);
 
-            $order->items()->create([
-                'product_id' => $baseProductId,
-                'jumlah' => $jumlah,
-                'subtotal' => $subtotal,
-                'deskripsi_custom' => $draft['deskripsi_custom'],
-                'foto_referensi' => $fotoPermanen,
-                'ukuran_kue' => $cakeOption->label(),
-            ]);
+                if ($existingActive = $this->chatService->findActiveCustomOrderForPhone($normalizedPhone)) {
+                    throw ValidationException::withMessages([
+                        'nomor_wa' => 'Nomor WhatsApp ini masih memiliki pesanan custom aktif ('.$existingActive->kode_pesanan.'). Silakan lanjutkan pada ruang chat aktif tersebut.',
+                    ]);
+                }
 
-            // Auto-kirim pesan template pesanan custom ke chat penjual (tepat sekali / idempoten)
-            $normalizedPhone = ChatThread::normalizePhone($order->nomor_wa);
-            $thread = ChatThread::firstOrCreate(
-                ['order_code' => $order->kode_pesanan],
-                [
-                    'customer_name' => $order->nama_pemesan,
-                    'customer_phone' => $normalizedPhone,
-                    'thread_type' => 'order',
-                    'unread_admin_count' => 0,
-                    'unread_customer_count' => 0,
-                    'last_message_at' => now(),
-                ]
-            );
+                $expiryHours = max(1, (int) config('custom_order.expiry_hours', 24));
 
-            // Cek apakah pesan pembuka custom sudah pernah dibuat untuk thread ini
-            $alreadySent = $thread->messages()
-                ->where('sender_type', 'customer')
-                ->where('message', 'like', "%[Pesanan Custom Cake Baru - {$order->kode_pesanan}]%")
-                ->exists();
-
-            if (! $alreadySent) {
-                $categoryName = $cakeOption->category?->nama_kategori ?? 'Kue Custom';
-                $productName = $baseProduct ? $baseProduct->nama_kue : '-';
-                $opsiPengiriman = $order->opsi_pengiriman instanceof OpsiPengiriman
-                    ? $order->opsi_pengiriman->label()
-                    : ucfirst((string) $order->opsi_pengiriman);
-                $metodeBayar = $order->metode_pembayaran instanceof MetodePembayaran
-                    ? $order->metode_pembayaran->label()
-                    : strtoupper((string) $order->metode_pembayaran);
-                $tglAmbil = $order->tanggal_ambil
-                    ? (Carbon::parse($order->tanggal_ambil)->translatedFormat('d F Y'))
-                    : '-';
-                $formattedTotal = 'Rp '.number_format($order->total_harga, 0, ',', '.');
-
-                $templateMessage = "🍰 *[Pesanan Custom Cake Baru - {$order->kode_pesanan}]*\n\n"
-                    ."Halo Penjual Nak Mbarep, saya baru saja mengonfirmasi pesanan custom cake dengan rincian berikut:\n\n"
-                    ."📋 *Kode Pesanan:* {$order->kode_pesanan}\n"
-                    ."👤 *Nama Pemesan:* {$order->nama_pemesan}\n"
-                    ."📱 *Nomor WhatsApp:* {$order->nomor_wa}\n"
-                    ."🚚 *Opsi Pengiriman:* {$opsiPengiriman}\n"
-                    ."📅 *Tanggal Ambil/Kirim:* {$tglAmbil}\n"
-                    ."📍 *Alamat Lengkap:* {$order->alamat_lengkap}\n\n"
-                    ."🎂 *Spesifikasi Kue:*\n"
-                    ."• *Kategori:* {$categoryName}\n"
-                    ."• *Produk Acuan:* {$productName}\n"
-                    ."• *Varian/Ukuran:* {$cakeOption->label()}\n"
-                    ."• *Jumlah:* {$jumlah} pcs\n"
-                    ."• *Deskripsi Request:* {$draft['deskripsi_custom']}\n\n"
-                    ."💳 *Metode Pembayaran:* {$metodeBayar}\n"
-                    ."💰 *Estimasi Total Harga:* {$formattedTotal}\n\n"
-                    .'Mohon dikonfirmasi ketersediaan dan detail pesanannya ya. Terima kasih!';
-
-                ChatMessage::create([
-                    'thread_id' => $thread->id,
-                    'sender_type' => 'customer',
-                    'sender_id' => null,
-                    'sender_name' => $order->nama_pemesan,
-                    'message' => $templateMessage,
-                    'is_read' => false,
+                $order = Order::create([
+                    'kode_pesanan' => Order::generateKodePesanan(),
+                    'tipe_pesanan' => TipePesanan::Custom,
+                    'nama_pemesan' => $draft['nama_pemesan'],
+                    'nomor_wa' => $draft['nomor_wa'],
+                    'chat_pin' => $chatPinHash,
+                    'alamat_lengkap' => $draft['alamat_lengkap'],
+                    'opsi_pengiriman' => $draft['opsi_pengiriman'],
+                    'metode_pembayaran' => $draft['metode_pembayaran'],
+                    'total_harga' => $subtotal,
+                    'status' => StatusPesanan::Pending,
+                    'tanggal_ambil' => $draft['tanggal_ambil'] ?? null,
+                    'expires_at' => now()->addHours($expiryHours),
                 ]);
 
-                $thread->increment('unread_admin_count');
-                $thread->update(['last_message_at' => now()]);
+                $order->items()->create([
+                    'product_id' => $baseProductId,
+                    'jumlah' => $jumlah,
+                    'subtotal' => $subtotal,
+                    'deskripsi_custom' => $draft['deskripsi_custom'],
+                    'foto_referensi' => $fotoPermanen,
+                    'ukuran_kue' => $cakeOption->label(),
+                ]);
+
+                // Auto-kirim pesan template pesanan custom ke chat penjual (tepat sekali / idempoten)
+                $thread = ChatThread::firstOrCreate(
+                    ['order_code' => $order->kode_pesanan],
+                    [
+                        'customer_name' => $order->nama_pemesan,
+                        'customer_phone' => $normalizedPhone,
+                        'thread_type' => 'order',
+                        'status' => 'active',
+                        'unread_admin_count' => 0,
+                        'unread_customer_count' => 0,
+                        'last_message_at' => now(),
+                    ]
+                );
+
+                // Cek apakah pesan pembuka custom sudah pernah dibuat untuk thread ini
+                $alreadySent = $thread->messages()
+                    ->where('sender_type', 'customer')
+                    ->where('message', 'like', "%[Pesanan Custom Cake Baru - {$order->kode_pesanan}]%")
+                    ->exists();
+
+                if (! $alreadySent) {
+                    $categoryName = $cakeOption->category?->nama_kategori ?? 'Kue Custom';
+                    $productName = $baseProduct ? $baseProduct->nama_kue : '-';
+                    $opsiPengiriman = $order->opsi_pengiriman instanceof OpsiPengiriman
+                        ? $order->opsi_pengiriman->label()
+                        : ucfirst((string) $order->opsi_pengiriman);
+                    $metodeBayar = $order->metode_pembayaran instanceof MetodePembayaran
+                        ? $order->metode_pembayaran->label()
+                        : strtoupper((string) $order->metode_pembayaran);
+                    $tglAmbil = $order->tanggal_ambil
+                        ? (Carbon::parse($order->tanggal_ambil)->translatedFormat('d F Y'))
+                        : '-';
+                    $formattedTotal = 'Rp '.number_format($order->total_harga, 0, ',', '.');
+
+                    $templateMessage = "🍰 *[Pesanan Custom Cake Baru - {$order->kode_pesanan}]*\n\n"
+                        ."Halo Penjual Nak Mbarep, saya baru saja mengonfirmasi pesanan custom cake dengan rincian berikut:\n\n"
+                        ."📋 *Kode Pesanan:* {$order->kode_pesanan}\n"
+                        ."👤 *Nama Pemesan:* {$order->nama_pemesan}\n"
+                        ."📱 *Nomor WhatsApp:* {$order->nomor_wa}\n"
+                        ."🚚 *Opsi Pengiriman:* {$opsiPengiriman}\n"
+                        ."📅 *Tanggal Ambil/Kirim:* {$tglAmbil}\n"
+                        ."📍 *Alamat Lengkap:* {$order->alamat_lengkap}\n\n"
+                        ."🎂 *Spesifikasi Kue:*\n"
+                        ."• *Kategori:* {$categoryName}\n"
+                        ."• *Produk Acuan:* {$productName}\n"
+                        ."• *Varian/Ukuran:* {$cakeOption->label()}\n"
+                        ."• *Jumlah:* {$jumlah} pcs\n"
+                        ."• *Deskripsi Request:* {$draft['deskripsi_custom']}\n\n"
+                        ."💳 *Metode Pembayaran:* {$metodeBayar}\n"
+                        ."💰 *Estimasi Total Harga:* {$formattedTotal}\n\n"
+                        .'Mohon dikonfirmasi ketersediaan dan detail pesanannya ya. Terima kasih!';
+
+                    ChatMessage::create([
+                        'thread_id' => $thread->id,
+                        'sender_type' => 'customer',
+                        'sender_id' => null,
+                        'sender_name' => $order->nama_pemesan,
+                        'message' => $templateMessage,
+                        'is_read' => false,
+                    ]);
+
+                    $thread->increment('unread_admin_count');
+                    $thread->update(['last_message_at' => now()]);
+                }
+
+                // Simpan status verifikasi di session browser untuk pembuat pesanan
+                session(['customer_just_created_order' => $order->kode_pesanan]);
+                $this->chatService->grantOrderChatSession($thread, $order, $normalizedPhone);
+
+                return $order;
+            });
+        } catch (ValidationException $exception) {
+            if ($fotoPermanen && Storage::exists($fotoPermanen)) {
+                Storage::delete($fotoPermanen);
             }
 
-            // Simpan status verifikasi di session browser
-            session([
-                'customer_active_thread_id' => $thread->id,
-                'customer_plain_access_token' => $thread->plainAccessToken,
-                'customer_verified_phone' => $normalizedPhone,
-                'customer_verified_order' => $order->kode_pesanan,
-                'customer_chat_phone' => $normalizedPhone,
-                'customer_chat_name' => $order->nama_pemesan,
-                'customer_chat_order' => $order->kode_pesanan,
-            ]);
+            if ($activeOrder = $this->chatService->findActiveCustomOrderForPhone($draft['nomor_wa'] ?? null)) {
+                return $this->redirectToExistingCustomChat($activeOrder, (string) ($draft['nomor_wa'] ?? ''));
+            }
 
-            return $order;
-        });
+            return redirect()
+                ->route('customer.custom.create')
+                ->withErrors($exception->errors());
+        }
 
         session()->forget(['custom_order_draft', 'temp_foto', 'customer_chat_pin']);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
+    }
+
+    /**
+     * Arahkan pembeli yang masih memiliki pesanan custom aktif agar masuk kembali ke ruang chat aktifnya.
+     * Selalu melalui form verifikasi (Kode Pesanan + No. HP + PIN) tanpa jalan pintas langsung ke chat.
+     */
+    private function redirectToExistingCustomChat(Order $activeOrder, string $rawPhone): RedirectResponse
+    {
+        // Selalu arahkan ke form verifikasi PIN terlepas dari status session saat ini.
+        // Pembeli wajib memasukkan Kode Pesanan + No. HP + PIN setiap kali masuk dari
+        // konteks baru (form pesanan baru, browser berbeda, dsb.).
+        $chatReentryUrl = route('customer.chat.index', [
+            'mode' => 'order',
+            'verify' => 1,
+            'phone' => $rawPhone,
+        ]);
+
+        return redirect()
+            ->route('customer.custom.create')
+            ->withInput()
+            ->with('active_order_chat_url', $chatReentryUrl)
+            ->with('active_order_requires_verification', true)
+            ->withErrors([
+                'nomor_wa' => 'Nomor WhatsApp ini masih memiliki pesanan custom aktif yang belum selesai atau di-ACC. Anda tidak dapat membuat pesanan baru — silakan masuk kembali ke ruang chat aktif menggunakan Kode Pesanan, Nomor HP, dan PIN.',
+            ]);
     }
 }
