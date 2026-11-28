@@ -421,6 +421,23 @@ class CustomerChatController extends Controller
     }
 
     /**
+     * Simpan PIN yang sudah dikonfirmasi ke sesi checkout pembeli.
+     */
+    public function storePin(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'chat_pin' => ['required', 'digits:6'],
+        ], [
+            'chat_pin.required' => 'PIN rahasia chat wajib diisi.',
+            'chat_pin.digits' => 'PIN rahasia chat harus tepat 6 digit angka.',
+        ]);
+
+        session(['customer_chat_pin' => $validated['chat_pin']]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Akhiri sesi chat di browser.
      */
     public function endSession(Request $request): RedirectResponse

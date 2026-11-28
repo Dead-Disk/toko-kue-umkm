@@ -243,8 +243,10 @@ class CustomerController extends Controller
             'chat_pin.digits' => 'PIN rahasia chat harus berupa tepat 6 digit angka.',
         ]);
 
-        $chatPinHash = filled($validatedPin['chat_pin'] ?? null)
-            ? Hash::make((string) $validatedPin['chat_pin'])
+        $chatPin = $validatedPin['chat_pin'] ?? session('customer_chat_pin');
+
+        $chatPinHash = filled($chatPin)
+            ? Hash::make((string) $chatPin)
             : null;
 
         $draft = session('custom_order_draft');
@@ -397,7 +399,7 @@ class CustomerController extends Controller
             return $order;
         });
 
-        session()->forget(['custom_order_draft', 'temp_foto']);
+        session()->forget(['custom_order_draft', 'temp_foto', 'customer_chat_pin']);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }

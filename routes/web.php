@@ -89,6 +89,7 @@ Route::prefix('customer')->name('customer.')->group(function () {
         Route::get('/poll', [CustomerChatController::class, 'pollMessages'])->name('poll');
         Route::get('/attachments/{chatMessage}', [CustomerChatController::class, 'attachment'])->name('attachment');
         Route::post('/end-session', [CustomerChatController::class, 'endSession'])->name('end-session');
+        Route::post('/pin', [CustomerChatController::class, 'storePin'])->name('pin.store')->middleware('throttle:10,1');
     });
 });
 

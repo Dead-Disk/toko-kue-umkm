@@ -1049,4 +1049,123 @@ class ChatSystemTest extends TestCase
             'chat_pin' => '246810',
         ])->assertOk()->assertJsonPath('success', true);
     }
+
+    public function test_confirmed_pin_is_reused_after_the_review_page_is_reopened(): void
+    {
+        $category = Category::create([
+            'nama_kategori' => 'Kue Tart Ulang Tahun',
+            'slug' => 'kue-tart-ulang-tahun',
+        ]);
+        $cakeOption = CakeOption::create([
+            'category_id' => $category->id,
+            'bentuk' => BentukKue::Lingkaran,
+            'ukuran' => '22 cm',
+            'harga_dasar' => 175000,
+        ]);
+        $product = Product::factory()->create([
+            'category_id' => $category->id,
+            'nama_kue' => 'Blackforest Special',
+            'harga' => 200000,
+        ]);
+
+        $draft = [
+            'nama_pemesan' => 'Rina Wijaya',
+            'nomor_wa' => '0812-3456-7890',
+            'alamat_lengkap' => 'Jl. Mawar No. 12, Surabaya',
+            'deskripsi_custom' => 'Tulisan Happy Birthday',
+            'cake_category_id' => $category->id,
+            'cake_option_id' => $cakeOption->id,
+            'base_product_id' => $product->id,
+            'jumlah' => 1,
+            'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
+            'metode_pembayaran' => MetodePembayaran::Qris->value,
+            'tanggal_ambil' => now()->addDays(2)->format('Y-m-d'),
+            'foto_referensi' => null,
+        ];
+
+        $this->postJson(route('customer.chat.pin.store'), ['chat_pin' => '135790'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertSame('135790', session('customer_chat_pin'));
+
+        $this->post(route('customer.custom.review'), $draft)
+            ->assertOk()
+            ->assertSee('135790', false);
+
+        $this->post(route('customer.custom.store'))->assertRedirect();
+
+        $order = Order::where('nama_pemesan', 'Rina Wijaya')->firstOrFail();
+
+        $this->assertTrue($order->verifyChatPin('135790'));
+        $this->assertFalse($order->verifyChatPin('000000'));
+        $this->assertNull(session('customer_chat_pin'));
+    }
+
+    public function test_single_order_checkout_falls_back_to_the_pin_saved_in_session(): void
+    {
+        $product = Product::factory()->create([
+            'stok' => 10,
+            'harga' => 50000,
+        ]);
+
+        $this->post(route('customer.pesanan.review'), [
+            'product_id' => $product->id,
+            'nama_pemesan' => 'Siti Checkout',
+            'alamat_lengkap' => 'Jl. Melati No. 5',
+            'nomor_wa' => '081234567890',
+            'jumlah' => 1,
+            'opsi_pengiriman' => OpsiPengiriman::AmbilSendiri->value,
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ])->assertOk();
+
+        $this->postJson(route('customer.chat.pin.store'), ['chat_pin' => '246810'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->post(route('customer.pesanan.checkout'))->assertRedirect();
+
+        $order = Order::where('nama_pemesan', 'Siti Checkout')->firstOrFail();
+
+        $this->assertTrue($order->verifyChatPin('246810'));
+        $this->assertNull(session('customer_chat_pin'));
+    }
+
+    public function test_cart_checkout_falls_back_to_the_pin_saved_in_session(): void
+    {
+        $product = Product::factory()->create([
+            'stok' => 10,
+            'harga' => 50000,
+        ]);
+
+        $this->post(route('cart.add', $product));
+
+        $this->postJson(route('customer.chat.pin.store'), ['chat_pin' => '864202'])
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->post(route('customer.pesanan.checkout'), [
+            'checkout_mode' => 'cart',
+            'nama_pemesan' => 'Budi Cart',
+            'alamat_lengkap' => 'Jl. Merdeka No. 1',
+            'nomor_wa' => '08123456789',
+            'opsi_pengiriman' => OpsiPengiriman::KurirToko->value,
+            'tanggal_ambil' => now()->toDateString(),
+            'metode_pembayaran' => MetodePembayaran::Cash->value,
+        ])->assertRedirect();
+
+        $order = Order::where('nama_pemesan', 'Budi Cart')->firstOrFail();
+
+        $this->assertTrue($order->verifyChatPin('864202'));
+        $this->assertNull(session('customer_chat_pin'));
+    }
+
+    public function test_storing_an_invalid_pin_is_rejected_without_changing_the_session(): void
+    {
+        $this->postJson(route('customer.chat.pin.store'), ['chat_pin' => '12345'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['chat_pin' => 'PIN rahasia chat harus tepat 6 digit angka.']);
+
+        $this->assertNull(session('customer_chat_pin'));
+    }
 }
