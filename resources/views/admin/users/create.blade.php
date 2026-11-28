@@ -108,6 +108,20 @@
                         </div>
                     </div>
 
+                    <!-- Nomor WhatsApp / HP (Opsional) -->
+                    <div>
+                        <label for="phone" class="block text-xs font-bold text-stone-700 mb-1.5">
+                            Nomor WhatsApp / HP (Opsional)
+                        </label>
+                        <input type="tel"
+                               id="phone"
+                               name="phone"
+                               value="{{ old('phone') }}"
+                               placeholder="Contoh: 081234567890"
+                               class="w-full text-xs px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-[#6B0F1A]/20 focus:border-[#6B0F1A] transition-all font-mono">
+                        <p class="text-[11px] text-stone-400 mt-1">Nomor HP akun admin/penjual otomatis diblokir dari form pesanan tamu.</p>
+                    </div>
+
                     <!-- Pilihan Role -->
                     <div>
                         <label class="block text-xs font-bold text-stone-700 mb-2">

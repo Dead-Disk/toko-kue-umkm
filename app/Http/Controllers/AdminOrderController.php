@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Enums\StatusPesanan;
 use App\Enums\TipePesanan;
 use App\Models\ActivityLog;
+use App\Models\ChatThread;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\CustomOrderChatService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,14 +31,18 @@ class AdminOrderController extends PanelController
         'selesai' => ['selesai'],
         'ditolak' => ['ditolak'],
         'batal' => ['batal'],
+        'expired' => ['expired'],
         'ditolak-batal' => ['ditolak', 'batal'],
     ];
+
+    public function __construct(public CustomOrderChatService $chatService) {}
 
     /**
      * Daftar pesanan masuk dari pembeli, bisa difilter lewat ?status=, ?type=, ?search=, ?metode_pembayaran=, dan ?start_date=/&end_date=.
      */
     public function index(Request $request): View
     {
+        $this->chatService->expireStaleCustomOrders();
         $status = $request->query('status');
         $filter = is_string($status) && array_key_exists($status, self::FILTER_STATUS) ? $status : null;
 
@@ -99,13 +105,43 @@ class AdminOrderController extends PanelController
         // dikembalikan sekali saat pesanan yang sedang diproses dibatalkan.
         $pesanError = DB::transaction(function () use ($order, $statusLama, $statusBaru): ?string {
             if ($statusBaru === StatusPesanan::Proses && $statusLama === StatusPesanan::Pending) {
+                if ($order->tipe_pesanan === TipePesanan::Custom) {
+                    $this->chatService->approveCustomDiscussion($order);
+
+                    return null;
+                }
+
                 return $this->terimaPesanan($order);
             }
 
-            $order->update(['status' => $statusBaru]);
+            if ($statusBaru === StatusPesanan::Batal) {
+                $this->chatService->cancelDiscussion($order);
 
-            if ($statusBaru === StatusPesanan::Batal && $statusLama === StatusPesanan::Proses) {
-                $this->kembalikanStok($order);
+                return null;
+            }
+
+            $updatePayload = ['status' => $statusBaru];
+            if ($statusBaru === StatusPesanan::Ditolak) {
+                $updatePayload['cancelled_at'] = now();
+                $updatePayload['expires_at'] = null;
+            } elseif ($statusBaru === StatusPesanan::Selesai) {
+                $updatePayload['expires_at'] = null;
+            }
+
+            $order->update($updatePayload);
+
+            if ($thread = ChatThread::where('order_code', $order->kode_pesanan)->first()) {
+                $threadStatus = match ($statusBaru) {
+                    StatusPesanan::Selesai => 'completed',
+                    StatusPesanan::Ditolak => 'cancelled',
+                    StatusPesanan::Expired => 'expired',
+                    StatusPesanan::Proses => 'approved',
+                    default => $thread->status,
+                };
+                $thread->update([
+                    'status' => $threadStatus,
+                    'closed_at' => in_array($statusBaru, [StatusPesanan::Ditolak, StatusPesanan::Expired, StatusPesanan::Selesai], true) ? now() : null,
+                ]);
             }
 
             return null;

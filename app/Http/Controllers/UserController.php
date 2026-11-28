@@ -64,12 +64,14 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')],
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')],
+            'phone' => ['nullable', 'string', 'max:30'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
             'role' => ['required', Rule::in(self::ROLES)],
             'can_chat' => ['nullable', 'boolean'],
         ]);
 
         $data['email'] = blank($data['email'] ?? null) ? null : $data['email'];
+        $data['phone'] = blank($data['phone'] ?? null) ? null : $data['phone'];
         $data['can_chat'] = $request->boolean('can_chat');
 
         $user = User::create($data);
@@ -102,12 +104,14 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:30'],
             'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
             'role' => ['required', Rule::in(self::ROLES)],
             'can_chat' => ['nullable', 'boolean'],
         ]);
 
         $data['email'] = blank($data['email'] ?? null) ? null : $data['email'];
+        $data['phone'] = blank($data['phone'] ?? null) ? null : $data['phone'];
         $data['can_chat'] = $request->boolean('can_chat');
 
         if (blank($data['password'] ?? null)) {

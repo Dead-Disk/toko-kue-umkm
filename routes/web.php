@@ -80,14 +80,27 @@ Route::prefix('customer')->name('customer.')->group(function () {
     Route::post('/custom', [CustomerController::class, 'reviewCustom'])->name('custom.review');
     Route::post('/custom/store', [CustomerController::class, 'storeCustom'])->name('custom.store');
 
-    // Chat Pembeli (guest-friendly dengan verifikasi keamanan 2 langkah)
+    // Chat Pembeli (guest-friendly dengan verifikasi keamanan 2 langkah + proteksi session)
     Route::prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [CustomerChatController::class, 'index'])->name('index');
+        Route::get('/pesanan/{kode_pesanan}', [CustomerChatController::class, 'showOrderChat'])
+            ->where('kode_pesanan', '[A-Za-z0-9\-]+')
+            ->middleware('customer.chat.access')
+            ->name('order');
         Route::post('/verify-order', [CustomerChatController::class, 'verifyOrder'])->name('verify-order');
         Route::post('/inquiry', [CustomerChatController::class, 'startInquiry'])->name('inquiry');
-        Route::post('/send', [CustomerChatController::class, 'sendMessage'])->name('send');
-        Route::get('/poll', [CustomerChatController::class, 'pollMessages'])->name('poll');
-        Route::get('/attachments/{chatMessage}', [CustomerChatController::class, 'attachment'])->name('attachment');
+        Route::post('/send', [CustomerChatController::class, 'sendMessage'])
+            ->middleware('customer.chat.access')
+            ->name('send');
+        Route::post('/items', [CustomerChatController::class, 'addCustomItem'])
+            ->middleware('customer.chat.access')
+            ->name('items.store');
+        Route::get('/poll', [CustomerChatController::class, 'pollMessages'])
+            ->middleware('customer.chat.access')
+            ->name('poll');
+        Route::get('/attachments/{chatMessage}', [CustomerChatController::class, 'attachment'])
+            ->middleware('customer.chat.access')
+            ->name('attachment');
         Route::post('/end-session', [CustomerChatController::class, 'endSession'])->name('end-session');
         Route::post('/pin', [CustomerChatController::class, 'storePin'])->name('pin.store')->middleware('throttle:10,1');
     });
@@ -148,6 +161,8 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
             Route::get('/attachments/{chatMessage}', [AdminChatController::class, 'attachment'])->name('attachment');
             Route::get('/{thread}/messages', [AdminChatController::class, 'pollMessages'])->name('messages');
             Route::post('/{thread}/reply', [AdminChatController::class, 'reply'])->name('reply');
+            Route::post('/{thread}/approve', [AdminChatController::class, 'approve'])->name('approve');
+            Route::post('/{thread}/cancel', [AdminChatController::class, 'cancel'])->name('cancel');
         });
     });
 
@@ -245,5 +260,7 @@ Route::prefix('staff')->name('staff.')->middleware(['auth', 'role:staff'])->grou
         Route::get('/attachments/{chatMessage}', [AdminChatController::class, 'attachment'])->name('attachment');
         Route::get('/{thread}/messages', [AdminChatController::class, 'pollMessages'])->name('messages');
         Route::post('/{thread}/reply', [AdminChatController::class, 'reply'])->name('reply');
+        Route::post('/{thread}/approve', [AdminChatController::class, 'approve'])->name('approve');
+        Route::post('/{thread}/cancel', [AdminChatController::class, 'cancel'])->name('cancel');
     });
 });

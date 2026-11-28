@@ -320,6 +320,7 @@
                         <option value="selesai" @selected($activeStatus === 'selesai')>Selesai</option>
                         <option value="ditolak" @selected($activeStatus === 'ditolak')>Ditolak</option>
                         <option value="batal" @selected($activeStatus === 'batal')>Batal</option>
+                        <option value="expired" @selected($activeStatus === 'expired')>Kedaluwarsa</option>
                         <option value="ditolak-batal" @selected($activeStatus === 'ditolak-batal')>Ditolak / Batal</option>
                     </select>
                 </div>
@@ -421,6 +422,7 @@
                                     'selesai' => 'bg-emerald-100 text-emerald-800 border border-emerald-200/60',
                                     'ditolak' => 'bg-rose-100 text-rose-800 border border-rose-200/60',
                                     'batal' => 'bg-stone-200 text-stone-800 border border-stone-300',
+                                    'expired' => 'bg-stone-200 text-stone-700 border border-stone-300',
                                     default => 'bg-stone-100 text-stone-700',
                                 };
                                 $statusLabel = match($statusVal) {
@@ -429,6 +431,7 @@
                                     'selesai' => 'Selesai',
                                     'ditolak' => 'Ditolak',
                                     'batal' => 'Batal',
+                                    'expired' => 'Kedaluwarsa',
                                     default => ucfirst($statusVal),
                                 };
 
@@ -616,6 +619,15 @@
                                                         class="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-colors">
                                                     Tolak
                                                 </button>
+                                                @if ($order->tipe_pesanan === \App\Enums\TipePesanan::Custom)
+                                                    <button type="submit"
+                                                            name="status"
+                                                            value="batal"
+                                                            onclick="return confirm('Batalkan diskusi custom {{ $order->kode_pesanan }}?')"
+                                                            class="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-stone-500 hover:bg-stone-600 text-white shadow-xs transition-colors">
+                                                        Batal
+                                                    </button>
+                                                @endif
                                             </form>
                                             @break
 

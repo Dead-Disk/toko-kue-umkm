@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
     'tipe_pesanan',
     'nama_pemesan',
     'nomor_wa',
+    'nomor_wa_normalized',
     'chat_pin',
     'alamat_lengkap',
     'opsi_pengiriman',
@@ -29,6 +31,11 @@ use Illuminate\Support\Facades\Hash;
     'catatan',
     'bukti_pembayaran',
     'tanggal_ambil',
+    'expires_at',
+    'acc_at',
+    'cancelled_at',
+    'expired_at',
+    'cancel_reason',
 ])]
 class Order extends Model
 {
@@ -36,6 +43,17 @@ class Order extends Model
     use HasFactory;
 
     use SoftDeletes;
+
+    /**
+     * Sinkronkan nomor_wa_normalized setiap kali order disimpan.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Order $order): void {
+            $normalized = ChatThread::normalizePhone($order->nomor_wa);
+            $order->nomor_wa_normalized = $normalized !== '' ? $normalized : null;
+        });
+    }
 
     /**
      * Sembunyikan hash PIN chat dari serialisasi array/JSON.
@@ -59,6 +77,48 @@ class Order extends Model
     }
 
     /**
+     * Apakah pesanan custom ini masih dalam status aktif/diskusi (belum ACC 100%, selesai, batal, ditolak, atau expired).
+     */
+    public function isCustomActive(): bool
+    {
+        if ($this->tipe_pesanan !== TipePesanan::Custom) {
+            return false;
+        }
+
+        if ($this->status !== StatusPesanan::Pending || $this->acc_at !== null) {
+            return false;
+        }
+
+        if ($this->expires_at !== null && $this->expires_at->isPast()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Apakah pesanan ini sudah melewati batas kedaluwarsa diskusi custom.
+     */
+    public function isCustomPastDue(?int $expiryHours = null): bool
+    {
+        if ($this->tipe_pesanan !== TipePesanan::Custom) {
+            return false;
+        }
+
+        if ($this->status !== StatusPesanan::Pending || $this->acc_at !== null) {
+            return false;
+        }
+
+        if ($this->expires_at !== null) {
+            return $this->expires_at->isPast();
+        }
+
+        $hours = $expiryHours ?? (int) config('custom_order.expiry_hours', 24);
+
+        return $this->created_at !== null && $this->created_at->copy()->addHours($hours)->isPast();
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -72,6 +132,10 @@ class Order extends Model
             'status' => StatusPesanan::class,
             'total_harga' => 'integer',
             'tanggal_ambil' => 'date',
+            'expires_at' => 'datetime',
+            'acc_at' => 'datetime',
+            'cancelled_at' => 'datetime',
+            'expired_at' => 'datetime',
         ];
     }
 
@@ -93,6 +157,16 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Thread chat yang terhubung dengan pesanan ini.
+     *
+     * @return HasOne<ChatThread, $this>
+     */
+    public function chatThread(): HasOne
+    {
+        return $this->hasOne(ChatThread::class, 'order_code', 'kode_pesanan');
     }
 
     /**

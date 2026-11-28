@@ -32,6 +32,7 @@ class AdminProfileController extends PanelController
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:30'],
             'current_password' => ['nullable', 'required_with:password', 'current_password'],
             'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
         ], [
@@ -49,6 +50,7 @@ class AdminProfileController extends PanelController
             'name' => $data['name'],
             'username' => $data['username'],
             'email' => blank($data['email'] ?? null) ? null : $data['email'],
+            'phone' => blank($data['phone'] ?? null) ? null : $data['phone'],
         ];
 
         if (! empty($data['password'])) {
