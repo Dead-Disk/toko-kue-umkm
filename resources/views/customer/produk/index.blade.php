@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[#FBF7F2] text-[#2C1810] min-h-screen antialiased flex flex-col font-sans">
+<body class="bg-[#FAF2EE] text-[#2C1810] min-h-screen antialiased flex flex-col font-sans">
 
     {{-- Top Navigation Bar --}}
     @include('customer.partials.navbar')
@@ -63,7 +63,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 lg:gap-10 mb-8">
-                    <div class="lg:col-span-5 aspect-square rounded-2xl overflow-hidden bg-[#F4ECE3] border border-[#EAE0D5] flex items-center justify-center">
+                    <div class="lg:col-span-5 aspect-square rounded-2xl overflow-hidden bg-[#F9F3F1] border border-[#EAE0D5] flex items-center justify-center">
                         @if ($product->foto_url)
                             <img src="{{ $product->foto_url }}" alt="{{ $product->nama_kue }}" class="w-full h-full object-cover">
                         @else
@@ -357,7 +357,7 @@
                 >
                     <div>
                         {{-- Cake Image Container --}}
-                        <div class="aspect-square w-full overflow-hidden bg-[#F4ECE3] relative flex items-center justify-center">
+                        <div class="aspect-square w-full overflow-hidden bg-[#F9F3F1] relative flex items-center justify-center">
                             @if ($item->foto_url)
                                 @if ($isReady)
                                     <img src="{{ $item->foto_url }}" alt="{{ $item->nama_kue }}" class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500">
