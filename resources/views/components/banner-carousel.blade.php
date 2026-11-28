@@ -20,44 +20,52 @@
 <div id="{{ $previewId }}" class="w-full relative select-none group" data-interval="{{ $duration * 1000 }}" data-auto-slide="{{ $autoSlide ? 'true' : 'false' }}">
     @if ($totalSlides > 0)
         {{-- Carousel Viewport --}}
-        <div class="relative overflow-hidden {{ $withHero ? 'rounded-[24px] lg:rounded-[32px] border border-[#F4DDD5] bg-[#FAF0EB] shadow-xs' : 'rounded-2xl lg:rounded-3xl border border-[#F3E1DC] bg-white shadow-2xs' }}">
-            <div id="{{ $previewId }}Track" class="relative w-full {{ $aspectClass }} {{ $withHero ? 'min-h-[190px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[340px] xl:min-h-[380px]' : '' }} overflow-hidden">
+        <div class="relative {{ $withHero ? 'overflow-visible' : 'overflow-hidden rounded-2xl lg:rounded-3xl border border-[#F3E1DC] bg-white shadow-2xs' }}">
+            <div id="{{ $previewId }}Track" class="relative w-full {{ $withHero ? 'min-h-[540px] min-[420px]:min-h-[510px] sm:min-h-[340px] md:min-h-[380px] lg:min-h-[430px] xl:min-h-[460px] overflow-visible' : $aspectClass . ' overflow-hidden' }}">
                 @if ($withHero)
-                    {{-- Slide 0: Hero Section Bawaan --}}
-                    <div class="{{ $previewId }}-slide absolute inset-0 w-full h-full transition-all duration-600 ease-out opacity-100 z-10 translate-x-0"
+                    {{-- Slide 0: Hero Section Bawaan (Modern Artisan Patisserie + Centered Cake Composition) --}}
+                    <div class="{{ $previewId }}-slide absolute inset-0 w-full h-full overflow-visible transition-all duration-600 ease-out opacity-100 z-10 translate-x-0"
                          data-slide-index="0">
-                        <div class="w-full h-full p-3.5 sm:p-5 lg:p-6 xl:p-8 flex items-center">
-                            <div class="w-full grid grid-cols-12 gap-2.5 sm:gap-6 lg:gap-8 items-center relative z-10">
+                        {{-- Card Surface Layer (z-10) --}}
+                        <div aria-hidden="true" class="absolute inset-0 rounded-2xl lg:rounded-3xl border border-[#E6D9CC] bg-[#F5EDE4] z-10 pointer-events-none"></div>
+
+                        <div class="relative w-full h-full px-4 py-5 sm:px-8 sm:py-8 lg:px-12 lg:py-10 xl:px-16 flex items-center overflow-visible">
+                            <div class="relative w-full grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 lg:gap-10 items-center overflow-visible">
+                                {{-- Right Hero Cake Composition (Top on mobile, Right on sm+) --}}
+                                <div class="sm:col-span-5 lg:col-span-5 order-1 sm:order-2 relative flex items-center justify-center overflow-visible">
+                                    <x-hero-cake-showcase :store-name="$storeSetting->store_name ?? 'Nak Mbarep'" />
+                                </div>
+
                                 {{-- Left Text Info --}}
-                                <div class="col-span-7 lg:col-span-6 space-y-1.5 sm:space-y-3 lg:space-y-4 xl:space-y-5">
-                                    {{-- Mini Brand Tag --}}
-                                    <div class="inline-flex items-center gap-1.5 lg:gap-2 text-[#6B0F1A]">
-                                        <x-store-logo class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 shrink-0" />
-                                        <span class="font-serif font-bold text-[11px] sm:text-xs lg:text-sm tracking-tight truncate">Nak Mbarep <span class="text-rose-500 font-sans">Kue</span></span>
-                                        <span class="hidden sm:inline text-[9px] sm:text-[10px] lg:text-xs text-rose-800/80 font-normal">· Kue Lezat, Momen Lebih Manis ♡</span>
+                                <div class="sm:col-span-7 lg:col-span-7 order-2 sm:order-1 relative z-20 space-y-2.5 sm:space-y-3.5 lg:space-y-5 text-center sm:text-left">
+                                    {{-- Eyebrow Brand Tag --}}
+                                    <div class="inline-flex items-center justify-center sm:justify-start gap-2.5 text-[#7A4B3E]">
+                                        <span class="hidden sm:inline-block w-6 h-px bg-[#C9A89A]"></span>
+                                        <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em]">
+                                            {{ $storeSetting->store_name ?? 'Nak Mbarep' }} · Artisan Patisserie
+                                        </span>
                                     </div>
 
                                     {{-- Main Headline --}}
-                                    <h2 class="text-sm sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif font-bold text-[#540F18] leading-tight">
-                                        Kue Spesial untuk<br>Setiap Momen Berharga
+                                    <h2 class="text-[26px] sm:text-3xl md:text-[34px] lg:text-[44px] xl:text-[50px] font-serif font-semibold text-[#2C1810] leading-[1.08] tracking-[-0.015em]">
+                                        Kue Spesial untuk<br>
+                                        <span class="italic font-medium text-[#6B0F1A]">Setiap Momen Berharga</span>
                                     </h2>
 
-                                    {{-- Quote Badge --}}
-                                    <div class="inline-block bg-white/70 border border-dashed border-[#DE9DA7] text-[#6B0F1A] text-[9px] sm:text-xs lg:text-sm px-2 sm:px-2.5 py-0.5 lg:px-4 lg:py-1 rounded-full font-medium shadow-2xs max-w-full truncate">
-                                        Karena setiap kebahagiaan layak dirayakan dengan kue terbaik ♡
-                                    </div>
+                                    {{-- Editorial Subtitle --}}
+                                    <p class="text-[13px] sm:text-sm lg:text-[15px] text-[#5E463B] max-w-[34ch] sm:max-w-md mx-auto sm:mx-0 leading-relaxed">
+                                        Karena setiap kebahagiaan layak dirayakan dengan kue terbaik — dibuat segar dari dapur kami untuk momen istimewa Anda.
+                                    </p>
 
-                                    {{-- Cute Chef Mascot --}}
-                                    <div class="pt-0.5 lg:pt-1 flex items-center gap-1.5 lg:gap-2.5">
-                                        <img src="{{ asset('images/hero-mascot.png') }}" alt="Maskot Nak Mbarep" class="h-8 sm:h-12 lg:h-16 xl:h-18 w-auto object-contain shrink-0">
-                                        <span class="text-[9px] sm:text-xs lg:text-sm text-[#7A2832] italic line-clamp-1">Dari dapur kecil, untuk kebahagiaan besar ♡</span>
-                                    </div>
-                                </div>
-
-                                {{-- Right Hero Cake Image --}}
-                                <div class="col-span-5 lg:col-span-6 relative flex items-center justify-center h-full">
-                                    <div class="relative w-full max-w-[150px] sm:max-w-[220px] lg:max-w-[320px] xl:max-w-[380px] flex items-center justify-center">
-                                        <img src="{{ asset('images/hero-new-banner.png') }}" alt="Strawberry Cake Spesial Nak Mbarep" class="block w-full h-auto max-h-[140px] sm:max-h-[220px] lg:max-h-[300px] xl:max-h-[360px] object-contain drop-shadow-sm">
+                                    {{-- Primary & Secondary CTA --}}
+                                    <div class="pt-1.5 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                                        <a href="{{ route('customer.produk.index') }}" class="inline-flex items-center gap-2 bg-[#6B0F1A] hover:bg-[#520912] text-white text-xs sm:text-sm font-medium px-5 py-2.5 lg:px-6 lg:py-3 rounded-full transition">
+                                            <span>Jelajahi Katalog</span>
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                        </a>
+                                        <a href="{{ route('customer.custom.create') }}" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#2C1810] hover:text-[#6B0F1A] px-3 py-2 underline underline-offset-4 decoration-[#C9A89A] hover:decoration-[#6B0F1A] transition">
+                                            <span>Pesan Custom Cake</span>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -80,7 +88,7 @@
                         $scaleClass = $storeSetting->bannerScaleClass($bScale);
                     @endphp
 
-                    <div class="{{ $previewId }}-slide absolute inset-0 w-full h-full transition-all duration-600 ease-out {{ $isFirst ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 z-0 pointer-events-none translate-x-full' }}"
+                    <div class="{{ $previewId }}-slide absolute inset-0 w-full h-full {{ $withHero ? 'rounded-2xl lg:rounded-3xl overflow-hidden border border-[#E6D9CC] bg-[#FAF2EE]' : '' }} transition-all duration-600 ease-out {{ $isFirst ? 'opacity-100 z-10 translate-x-0' : 'opacity-0 invisible z-0 pointer-events-none translate-x-full' }}"
                          data-slide-index="{{ $slideIdx }}">
                         @if ($bLink)
                             <a href="{{ $bLink }}" class="block w-full h-full relative group/item overflow-hidden" title="{{ $bTitle ?? 'Lihat Promo' }}">
@@ -106,13 +114,13 @@
                 {{-- Navigation Arrows (Default tersembunyi/idle, muncul saat hover di desktop atau sentuh di mobile) --}}
                 <button type="button"
                         id="{{ $previewId }}Prev"
-                        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-800 shadow-md flex items-center justify-center opacity-0 pointer-events-none -translate-x-2 group-hover:opacity-100 group-hover:pointer-events-auto group-hover:translate-x-0 group-[.nav-active]:opacity-100 group-[.nav-active]:pointer-events-auto group-[.nav-active]:translate-x-0 transition-all duration-300 cursor-pointer"
+                        class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-800 shadow-md flex items-center justify-center opacity-0 pointer-events-none -translate-x-2 group-hover:opacity-100 group-hover:pointer-events-auto group-hover:translate-x-0 group-[.nav-active]:opacity-100 group-[.nav-active]:pointer-events-auto group-[.nav-active]:translate-x-0 transition-all duration-300 cursor-pointer"
                         aria-label="Slide Sebelumnya">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                 </button>
                 <button type="button"
                         id="{{ $previewId }}Next"
-                        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-800 shadow-md flex items-center justify-center opacity-0 pointer-events-none translate-x-2 group-hover:opacity-100 group-hover:pointer-events-auto group-hover:translate-x-0 group-[.nav-active]:opacity-100 group-[.nav-active]:pointer-events-auto group-[.nav-active]:translate-x-0 transition-all duration-300 cursor-pointer"
+                        class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-800 shadow-md flex items-center justify-center opacity-0 pointer-events-none translate-x-2 group-hover:opacity-100 group-hover:pointer-events-auto group-hover:translate-x-0 group-[.nav-active]:opacity-100 group-[.nav-active]:pointer-events-auto group-[.nav-active]:translate-x-0 transition-all duration-300 cursor-pointer"
                         aria-label="Slide Selanjutnya">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                 </button>
@@ -155,6 +163,8 @@
         const root = document.getElementById('{{ $previewId }}');
         if (!root) return;
 
+        const track = document.getElementById('{{ $previewId }}Track');
+        const hasHero = {{ $withHero ? 'true' : 'false' }};
         const slides = Array.from(root.querySelectorAll('.{{ $previewId }}-slide'));
         const dots = Array.from(root.querySelectorAll('.{{ $previewId }}-dot'));
         const prevBtn = document.getElementById('{{ $previewId }}Prev');
@@ -185,8 +195,13 @@
             const currentSlide = slides[currentIndex];
             const nextSlide = slides[targetIndex];
 
+            if (hasHero && track) {
+                track.classList.remove('overflow-visible');
+                track.classList.add('overflow-hidden', 'rounded-2xl', 'lg:rounded-3xl');
+            }
+
             // Posisi awal slide target sebelum transisi dimulai
-            nextSlide.classList.remove('transition-all', 'duration-600', 'ease-out');
+            nextSlide.classList.remove('transition-all', 'duration-600', 'ease-out', 'invisible');
             if (direction > 0) {
                 nextSlide.classList.remove('-translate-x-full', 'translate-x-0');
                 nextSlide.classList.add('translate-x-full', 'opacity-0', 'z-10');
@@ -219,6 +234,11 @@
             currentIndex = targetIndex;
 
             setTimeout(() => {
+                currentSlide.classList.add('invisible');
+                if (hasHero && track && targetIndex === 0) {
+                    track.classList.remove('overflow-hidden', 'rounded-2xl', 'lg:rounded-3xl');
+                    track.classList.add('overflow-visible');
+                }
                 isTransitioning = false;
             }, 620);
         }
