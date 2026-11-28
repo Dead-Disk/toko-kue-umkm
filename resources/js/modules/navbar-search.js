@@ -37,11 +37,10 @@ export function initNavbarSearch() {
     let navLinksTimeout = null;
 
     const OPEN_SHAPE_CLASSES = [
-        'max-w-[150px]',
-        'min-[380px]:max-w-[185px]',
-        'sm:max-w-[240px]',
-        'md:max-w-[280px]',
-        'lg:max-w-[320px]',
+        'max-w-[300px]',
+        'sm:max-w-[272px]',
+        'md:max-w-[304px]',
+        'lg:max-w-[340px]',
         'opacity-100',
         'pointer-events-auto',
     ];
@@ -53,10 +52,10 @@ export function initNavbarSearch() {
     ];
 
     const NAV_COLLAPSED_CLASSES = [
-        'max-md:max-w-0',
-        'max-md:opacity-0',
-        'max-md:overflow-hidden',
-        'max-md:pointer-events-none',
+        'sm:max-md:max-w-0',
+        'sm:max-md:opacity-0',
+        'sm:max-md:overflow-hidden',
+        'sm:max-md:pointer-events-none',
     ];
 
     function isSearchOpen() {
