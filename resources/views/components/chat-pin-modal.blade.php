@@ -1,5 +1,10 @@
 @props(['formId'])
 
+@php
+    $savedChatPin = session('customer_chat_pin');
+    $hasSavedChatPin = is_string($savedChatPin) && preg_match('/^\d{6}$/', $savedChatPin) === 1;
+@endphp
+
 <div id="chatPinModal"
      class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-xs p-4"
      role="dialog"
@@ -176,7 +181,37 @@
             targetForm.appendChild(hiddenPinInput);
         }
 
-        let createdPin = '';
+        hiddenPinInput.value = @json($hasSavedChatPin ? $savedChatPin : '');
+
+        if (!/^\d{6}$/.test(hiddenPinInput.value)) {
+            hiddenPinInput.value = '';
+        }
+
+        const savePinUrl = "{{ route('customer.chat.pin.store') }}";
+        const csrfTokenInput = targetForm.querySelector('input[name="_token"]');
+
+        async function persistChatPin(pin) {
+            if (!csrfTokenInput) {
+                return;
+            }
+
+            try {
+                await fetch(savePinUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfTokenInput.value,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ chat_pin: pin }),
+                });
+            } catch (error) {
+                // PIN tetap dipakai untuk pesanan ini walau sesi gagal disimpan.
+            }
+        }
+
+        let createdPin = hiddenPinInput.value;
+        let pinPersistPromise = null;
 
         function getBoxValue(boxes) {
             return boxes.map((b) => b.value).join('');
@@ -290,7 +325,9 @@
                 return;
             }
 
+            hiddenPinInput.value = createdPin;
             successValueEl.textContent = createdPin;
+            pinPersistPromise = persistChatPin(createdPin);
             goToStep(3);
         }
 
@@ -301,12 +338,31 @@
         backBtn.addEventListener('click', () => goToStep(1));
         confirmBtn.addEventListener('click', handleStep2Confirm);
 
+        if (createdPin) {
+            successValueEl.textContent = createdPin;
+            goToStep(3);
+        }
+
         targetForm.addEventListener('submit', (event) => {
             if (targetForm.dataset.pinConfirmed === 'true') {
                 return;
             }
 
             if (typeof targetForm.reportValidity === 'function' && !targetForm.reportValidity()) {
+                return;
+            }
+
+            if (/^\d{6}$/.test(hiddenPinInput.value)) {
+                createdPin = hiddenPinInput.value;
+
+                if (pinPersistPromise) {
+                    event.preventDefault();
+                    targetForm.dataset.pinConfirmed = 'true';
+                    const pendingPinSave = pinPersistPromise;
+                    pinPersistPromise = null;
+                    pendingPinSave.then(() => targetForm.submit());
+                }
+
                 return;
             }
 
@@ -354,11 +410,19 @@
             }
         });
 
-        finishBtn.addEventListener('click', () => {
+        finishBtn.addEventListener('click', async () => {
             if (!/^\d{6}$/.test(createdPin)) return;
             hiddenPinInput.value = createdPin;
             targetForm.dataset.pinConfirmed = 'true';
+            finishBtn.disabled = true;
             closeModal();
+
+            if (pinPersistPromise) {
+                const pendingPinSave = pinPersistPromise;
+                pinPersistPromise = null;
+                await pendingPinSave;
+            }
+
             targetForm.submit();
         });
     })();

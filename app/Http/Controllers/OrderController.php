@@ -170,8 +170,10 @@ class OrderController extends Controller
             ? null
             : $request->file('bukti_pembayaran')?->store('bukti_pembayaran');
 
-        $chatPinHash = $request->filled('chat_pin')
-            ? Hash::make((string) $request->input('chat_pin'))
+        $chatPin = $request->input('chat_pin') ?? session('customer_chat_pin');
+
+        $chatPinHash = filled($chatPin)
+            ? Hash::make((string) $chatPin)
             : null;
 
         try {
@@ -233,7 +235,7 @@ class OrderController extends Controller
                 ->withErrors($exception->errors());
         }
 
-        session()->forget('order_draft');
+        session()->forget(['order_draft', 'customer_chat_pin']);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }
@@ -258,6 +260,8 @@ class OrderController extends Controller
         ], [
             'chat_pin.digits' => 'PIN rahasia chat harus berupa tepat 6 digit angka.',
         ]);
+
+        $data['chat_pin'] ??= session('customer_chat_pin');
 
         $cart = session('cart', []);
 
@@ -351,7 +355,7 @@ class OrderController extends Controller
                 ->withErrors($exception->errors());
         }
 
-        session()->forget(['cart', 'cart_note']);
+        session()->forget(['cart', 'cart_note', 'customer_chat_pin']);
 
         return redirect()->route('customer.pesanan.sukses', $order->kode_pesanan);
     }
